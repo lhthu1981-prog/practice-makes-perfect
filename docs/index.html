@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practice Makes Perfect – Ba Chuc High School</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#fff;
+      background:linear-gradient(180deg,#3b1a7a 0%,#5b21b6 55%,#9d174d 100%);display:flex;flex-direction:column;align-items:center}
+    .banner{width:100%;aspect-ratio:1400/860;max-height:55vh;background:url('login.png') center top/cover no-repeat;position:relative}
+    .banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(59,26,122,0) 40%,#3b1a7a 100%)}
+    .box{text-align:center;padding:10px 20px 40px;margin-top:-60px;position:relative}
+    h1{font-size:clamp(28px,6vw,44px);margin:0 0 6px}
+    .school{letter-spacing:2px;text-transform:uppercase;opacity:.9;margin-bottom:28px}
+    a.go{display:inline-block;background:#fff;color:#6d28d9;font-weight:800;font-size:18px;padding:16px 36px;border-radius:999px;text-decoration:none;
+      box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    a.go:hover{transform:translateY(-2px)}
+    .note{margin-top:18px;opacity:.8;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="banner"></div>
+  <div class="box">
+    <h1>Practice Makes Perfect</h1>
+    <div class="school">Ba Chuc High School</div>
+    <a class="go" id="go" href="#">Vào học ngay →</a>
+    <div class="note" id="note">Đang chuyển đến trang luyện tập…</div>
+  </div>
+  <script>
+    // ===== DÁN LINK ỨNG DỤNG WEB (đuôi /exec) VÀO GIỮA HAI DẤU NHÁY =====
+    const APP_URL = 'DAN_LINK_EXEC_VAO_DAY';
+
+    const ok = /^https:\/\/script\.google\.com\/.+\/exec/.test(APP_URL);
+    const go = document.getElementById('go'), note = document.getElementById('note');
+    if (ok) {
+      go.href = APP_URL;
+      setTimeout(() => { location.href = APP_URL; }, 2500);
+    } else {
+      go.removeAttribute('href');
+      note.textContent = 'Thầy cô chưa dán link ứng dụng web vào file docs/index.html.';
+    }
+  </script>
+</body>
+</html>
