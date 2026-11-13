@@ -11,6 +11,8 @@ Mỗi bộ có 12 từ và 6 câu luyện điểm ngữ pháp của Unit. Câu v
 ---
 
 ## Unit 1 – Family Life
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Hiện tại đơn và hiện tại tiếp diễn
 
 **Từ vựng**
@@ -41,6 +43,8 @@ I am not watching TV because I am ironing clothes. | Tôi không xem TV vì tôi
 ---
 
 ## Unit 2 – Humans and the Environment
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Will và be going to · Câu bị động
 
 **Từ vựng**
@@ -71,6 +75,8 @@ I will turn off the fan when I leave the room. | Tôi sẽ tắt quạt khi rờ
 ---
 
 ## Unit 3 – Music
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Câu ghép (and, but, or, so) · To-infinitive và động từ nguyên mẫu không "to"
 
 **Từ vựng**
@@ -101,6 +107,8 @@ He decided to join the school band. | Cậu ấy quyết định tham gia ban nh
 ---
 
 ## Unit 4 – For a Better Community
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Quá khứ đơn và quá khứ tiếp diễn (when / while)
 *Bộ từ này đầy đủ hơn bộ mẫu có sẵn trong app. Bạn nên xoá bộ mẫu "Unit 4 – For a better community" để không bị trùng.*
 
@@ -132,6 +140,8 @@ We were teaching the children when the teacher arrived. | Chúng tôi đang dạ
 ---
 
 ## Unit 5 – Inventions
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Hiện tại hoàn thành · Danh động từ và to-infinitive chỉ mục đích (used for + V-ing / to + V)
 
 **Từ vựng**
@@ -162,6 +172,8 @@ She has just bought a new electric bike. | Cô ấy vừa mua một chiếc xe �
 ---
 
 ## Unit 6 – Gender Equality
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Câu bị động với động từ khuyết thiếu (can / must / should + be + V3)
 
 **Từ vựng**
@@ -192,6 +204,8 @@ Everyone should be treated with respect. | Mọi người nên được đối x
 ---
 
 ## Unit 7 – Viet Nam and International Organisations
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: So sánh hơn, so sánh nhất · Mạo từ a / an / the
 
 **Từ vựng**
@@ -222,6 +236,8 @@ Life in the city is more expensive than in the countryside. | Cuộc sống ở 
 ---
 
 ## Unit 8 – New Ways to Learn
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Mệnh đề quan hệ xác định và không xác định (who / which / that / whose)
 
 **Từ vựng**
@@ -252,6 +268,8 @@ Students who study online need good self-discipline. | Học sinh học trực t
 ---
 
 ## Unit 9 – Protecting the Environment
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Câu tường thuật (câu trần thuật)
 
 **Từ vựng**
@@ -282,6 +300,8 @@ My father told me that he had stopped using plastic bags. | Bố tôi bảo rằ
 ---
 
 ## Unit 10 – Ecotourism
+Cấp độ: THPT
+Lớp: Lớp 10
 Ngữ pháp: Câu điều kiện loại 1 và loại 2
 
 **Từ vựng**

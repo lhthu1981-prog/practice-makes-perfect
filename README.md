@@ -13,6 +13,7 @@ Web app luyện Tiếng Anh online cho học sinh **Ba Chuc High School**, chạ
 - Xem điểm, đáp án và giải thích ngay sau khi nộp
 - Mục **Bài được giao** có hạn nộp
 - 4 trò chơi ôn tập: Flashcard, Ghép từ – nghĩa, Sắp xếp câu, Đua tốc độ, có bảng xếp hạng
+- **Luyện đề** khối 10 – 11 – 12 (giữa kì, cuối kì, luyện thi tốt nghiệp): làm cả đề có đồng hồ đếm ngược, phần nghe do máy tự đọc, chấm thang 10 kèm điểm từng phần
 
 **Giáo viên** (trang Quản trị)
 - Tổng quan, duyệt tài khoản, quản lý học sinh (khoá, xếp lớp, cấp quyền GV, đặt lại mật khẩu)
@@ -20,6 +21,7 @@ Web app luyện Tiếng Anh online cho học sinh **Ba Chuc High School**, chạ
 - Giao bài theo lớp, theo dõi ai đã làm, chưa làm, nộp muộn
 - Kho bài tập: soạn bài, dán nhanh nhiều câu một lần
 - Bộ từ cho trò chơi, nhập nhiều bộ cùng lúc
+- Đề thi: nhập cả đề bằng một file, công tắc xem đáp án (ngay / khi GV mở), thống kê điểm từng phần theo lớp
 
 | Quản trị | Trò chơi | Học sinh |
 |---|---|---|
@@ -32,9 +34,10 @@ Web app luyện Tiếng Anh online cho học sinh **Ba Chuc High School**, chạ
 | `Code.gs` | Phần máy chủ (Apps Script): tài khoản, chấm điểm, lưu dữ liệu vào Google Sheet |
 | `Index.html` | Giao diện (HTML + CSS + JavaScript) |
 | `Banner.html` | Hình nền trường, mã hoá dạng data URI |
-| `data/bo-tu-lop-10.md` | 10 bộ từ lớp 10 để nhập bằng chức năng "Nhập nhiều bộ" |
+| `data/bo-tu-lop-10.md`, `bo-tu-lop-11.md`, `bo-tu-lop-12.md` | 30 bộ từ lớp 10 – 11 – 12 cho chức năng "Nhập nhiều bộ" |
+| `data/de-thi/` | Đề thi để nhập vào mục Luyện đề (Quản trị → Đề thi → + Thêm đề) |
 
-Dữ liệu nằm trong Google Sheet, gồm các trang tính Users, Exercises, Questions, Results, WordSets, Words, GameScores, Classes, Assignments. Các trang tính này được tạo tự động khi chạy `setup`.
+Dữ liệu nằm trong Google Sheet, gồm các trang tính Users, Exercises, Questions, Results, WordSets, Words, GameScores, Classes, Assignments, Exams, ExamParts, ExamResults. Các trang tính này được tạo tự động khi chạy `setup`.
 
 ## Cài đặt
 

@@ -46,8 +46,16 @@ const SCHEMA = {
   GameScores: ['id', 'userId', 'username', 'fullName', 'className', 'setId', 'setTitle', 'level', 'game',
                'score', 'correct', 'total', 'seconds', 'playedAt'],
   Classes:     ['id', 'name', 'level', 'createdBy', 'createdAt'],
-  Assignments: ['id', 'classId', 'className', 'kind', 'refId', 'refTitle', 'level', 'game', 'dueAt', 'note', 'createdBy', 'createdAt']
+  Assignments: ['id', 'classId', 'className', 'kind', 'refId', 'refTitle', 'level', 'game', 'dueAt', 'note', 'createdBy', 'createdAt'],
+  Exams:       ['id', 'title', 'grade', 'examType', 'duration', 'answerMode', 'released', 'status', 'questionCount', 'createdBy', 'createdAt', 'updatedAt'],
+  ExamParts:   ['examId', 'order', 'json'],
+  ExamResults: ['id', 'userId', 'username', 'fullName', 'className', 'examId', 'title', 'grade', 'examType',
+                'score', 'correct', 'total', 'partsJson', 'answersJson', 'seconds', 'submittedAt']
 };
+
+// Luyện đề: các khối và loại đề
+const EXAM_GRADES = ['10', '11', '12'];
+const EXAM_TYPES = { GK1: 'Giữa kì 1', CK1: 'Cuối kì 1', GK2: 'Giữa kì 2', CK2: 'Cuối kì 2', TN: 'Luyện thi tốt nghiệp' };
 
 // Các trò chơi ôn tập
 const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ' };
@@ -63,6 +71,7 @@ function doGet() {
   catch (e) { t.bannerUrl = ''; }
   t.levelsJson = JSON.stringify(LEVELS);
   t.skillsJson = JSON.stringify(SKILLS);
+  t.examJson = JSON.stringify({ grades: EXAM_GRADES, types: EXAM_TYPES });
   return t.evaluate()
     .setTitle(APP_NAME)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -178,7 +187,21 @@ const ACTIONS = {
   assign: assign_,
   listAssignments: listAssignments_,
   assignmentDetail: assignmentDetail_,
-  deleteAssignment: deleteAssignment_
+  deleteAssignment: deleteAssignment_,
+
+  // ---- Luyện đề ----
+  examsList: examsList_,
+  examGet: examGet_,
+  examSubmit: examSubmit_,
+  examMyResults: examMyResults_,
+  examResultDetail: examResultDetail_,
+  examsAdmin: examsAdmin_,
+  examFull: examFull_,
+  examSave: examSave_,
+  examToggle: examToggle_,
+  examRelease: examRelease_,
+  examDelete: examDelete_,
+  examResults: examResultsAdmin_
 };
 
 
@@ -776,8 +799,8 @@ function setClass_(p, token) {
 
 function assign_(p, token) {
   const me = requireTeacher_(token);
-  const kind = p.kind === 'wordset' ? 'wordset' : 'exercise';
-  const ref = kind === 'exercise' ? findExercise_(p.refId) : findSet_(p.refId);
+  const kind = ['wordset', 'exam'].indexOf(p.kind) >= 0 ? p.kind : 'exercise';
+  const ref = kind === 'exercise' ? findExercise_(p.refId) : kind === 'exam' ? findExam_(p.refId) : findSet_(p.refId);
   const game = kind === 'wordset' && GAMES[p.game] ? p.game : '';
   const due = p.dueAt ? new Date(p.dueAt) : null;
   if (due && isNaN(due.getTime())) throw new Error('Hạn nộp không hợp lệ.');
@@ -786,7 +809,7 @@ function assign_(p, token) {
   return withLock_(function () {
     classes.forEach(function (c) {
       append_('Assignments', {
-        id: newId_('A'), classId: c.id, className: c.name, kind: kind, refId: ref.id, refTitle: ref.title, level: ref.level,
+        id: newId_('A'), classId: c.id, className: c.name, kind: kind, refId: ref.id, refTitle: ref.title, level: ref.level || (ref.grade ? 'THPT' : ''),
         game: game, dueAt: due ? due.toISOString() : '', note: clean_(p.note, 300), createdBy: me.fullName, createdAt: now_()
       });
     });
@@ -795,7 +818,9 @@ function assign_(p, token) {
 }
 
 /** Tình trạng làm bài của một học sinh với một bài được giao */
-function asgStatus_(a, userId, results, scores) {
+function asgData_() { return { results: rows_('Results'), scores: rows_('GameScores'), exams: rows_('ExamResults') }; }
+function asgStatus_(a, userId, data) {
+  const results = data.results, scores = data.scores;
   let done = false, onTime = false, best = null, at = '';
   const due = a.dueAt ? new Date(a.dueAt).getTime() : Infinity;
   const consider = function (time, value) {
@@ -808,6 +833,10 @@ function asgStatus_(a, userId, results, scores) {
     results.forEach(function (r) {
       if (r.userId === userId && r.exerciseId === a.refId && r.submittedAt >= a.createdAt) consider(r.submittedAt, r.percent === '' ? null : num_(r.percent));
     });
+  } else if (a.kind === 'exam') {
+    data.exams.forEach(function (r) {
+      if (r.userId === userId && r.examId === a.refId && r.submittedAt >= a.createdAt) consider(r.submittedAt, num_(r.score));
+    });
   } else {
     scores.forEach(function (g) {
       if (g.userId === userId && g.setId === a.refId && (!a.game || g.game === a.game) && g.playedAt >= a.createdAt) consider(g.playedAt, num_(g.score));
@@ -818,12 +847,12 @@ function asgStatus_(a, userId, results, scores) {
 
 function myAssignments_(u) {
   if (!u.className) return [];
-  const results = rows_('Results'), scores = rows_('GameScores');
+  const data = asgData_();
   const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
   return rows_('Assignments')
     .filter(function (a) { return a.className === u.className; })
     .map(function (a) {
-      const st = asgStatus_(a, u.id, results, scores);
+      const st = asgStatus_(a, u.id, data);
       return { id: a.id, kind: a.kind, refId: a.refId, title: a.refTitle, level: a.level, game: a.game, dueAt: a.dueAt, note: a.note,
                createdBy: a.createdBy, done: st.done, late: st.late, best: st.best };
     })
@@ -835,11 +864,11 @@ function myAssignments_(u) {
 function listAssignments_(p, token) {
   requireTeacher_(token);
   const users = rows_('Users').filter(function (u) { return u.role === 'student' && u.status === 'approved'; });
-  const results = rows_('Results'), scores = rows_('GameScores');
+  const data = asgData_();
   return rows_('Assignments').map(function (a) {
     const studs = users.filter(function (u) { return u.className === a.className; });
     let done = 0, late = 0;
-    studs.forEach(function (u) { const st = asgStatus_(a, u.id, results, scores); if (st.done) { done++; if (st.late) late++; } });
+    studs.forEach(function (u) { const st = asgStatus_(a, u.id, data); if (st.done) { done++; if (st.late) late++; } });
     return { id: a.id, classId: a.classId, className: a.className, kind: a.kind, refId: a.refId, title: a.refTitle, level: a.level,
              game: a.game, dueAt: a.dueAt, note: a.note, createdBy: a.createdBy, createdAt: a.createdAt,
              students: studs.length, done: done, late: late };
@@ -850,11 +879,11 @@ function assignmentDetail_(p, token) {
   requireTeacher_(token);
   const a = rows_('Assignments').find(function (x) { return x.id === p.id; });
   if (!a) throw new Error('Không tìm thấy bài đã giao.');
-  const results = rows_('Results'), scores = rows_('GameScores');
+  const data = asgData_();
   const rows = rows_('Users')
     .filter(function (u) { return u.role === 'student' && u.status === 'approved' && u.className === a.className; })
     .map(function (u) {
-      const st = asgStatus_(a, u.id, results, scores);
+      const st = asgStatus_(a, u.id, data);
       return { fullName: u.fullName, username: u.username, done: st.done, late: st.late, best: st.best, at: st.at };
     })
     .sort(function (x, y) { return (x.done - y.done) || x.fullName.localeCompare(y.fullName, 'vi'); });
@@ -869,6 +898,244 @@ function deleteAssignment_(p, token) {
     sh_('Assignments').deleteRow(a._row);
     return true;
   });
+}
+
+
+// ===================== 8d. LUYỆN ĐỀ =====================
+/*
+  Mỗi đề gồm nhiều "phần nhỏ" (section), mỗi phần lưu thành 1 dòng JSON trong trang ExamParts:
+  { part, title, instruction, passage, audioUrl, script: [[người nói, lời], …],
+    questions: [{ type: 'mcq'|'fill', q, options: {A,B,C,D}, answer, explanation }] }
+*/
+function findExam_(id) {
+  const e = rows_('Exams').find(function (x) { return x.id === id; });
+  if (!e) throw new Error('Không tìm thấy đề.');
+  return e;
+}
+function examSections_(id) {
+  return rows_('ExamParts')
+    .filter(function (r) { return r.examId === id; })
+    .sort(function (a, b) { return num_(a.order) - num_(b.order); })
+    .map(function (r) { try { return JSON.parse(r.json); } catch (e) { return null; } })
+    .filter(Boolean);
+}
+function examMeta_(e) {
+  return { id: e.id, title: e.title, grade: e.grade, examType: e.examType, duration: num_(e.duration) || 60,
+           answerMode: e.answerMode === 'teacher' ? 'teacher' : 'instant', released: isTrue_(e.released),
+           status: e.status, questionCount: num_(e.questionCount) };
+}
+function canSeeAnswers_(e, u) { return u.role === 'teacher' || e.answerMode !== 'teacher' || isTrue_(e.released); }
+
+/** Học sinh: danh sách đề đang mở + điểm cao nhất của mình */
+function examsList_(p, token) {
+  const u = currentUser_(token);
+  const best = {}, tries = {};
+  rows_('ExamResults').forEach(function (r) {
+    if (r.userId !== u.id) return;
+    tries[r.examId] = (tries[r.examId] || 0) + 1;
+    if (!(r.examId in best) || num_(r.score) > best[r.examId]) best[r.examId] = num_(r.score);
+  });
+  return rows_('Exams').filter(function (e) { return e.status === 'open'; }).map(function (e) {
+    const m = examMeta_(e); m.best = (e.id in best) ? best[e.id] : null; m.tries = tries[e.id] || 0; return m;
+  });
+}
+
+/** Lấy đề để làm: không kèm đáp án và giải thích */
+function examGet_(p, token) {
+  const u = currentUser_(token);
+  const e = findExam_(p.id);
+  if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Đề này đang đóng.');
+  let n = 0;
+  const sections = examSections_(e.id).map(function (s) {
+    return { part: s.part, title: s.title, instruction: s.instruction, passage: s.passage, audioUrl: audioSrc_(s.audioUrl),
+             script: s.script || [],
+             questions: (s.questions || []).map(function (q) { n++; return { n: n, type: q.type, q: q.q, options: q.options || null }; }) };
+  });
+  const m = examMeta_(e); m.sections = sections; return m;
+}
+
+function gradeExam_(sections, answers) {
+  let n = 0, correct = 0, total = 0;
+  const parts = {}, items = [];
+  sections.forEach(function (s, si) {
+    const key = s.part || 'Khác';
+    const pt = parts[key] || (parts[key] = { part: key, correct: 0, total: 0 });
+    (s.questions || []).forEach(function (q) {
+      n++;
+      const given = String(answers[String(n)] == null ? '' : answers[String(n)]).slice(0, 500);
+      const ok = q.type === 'fill' ? fillMatch_(given, q.answer) : given.trim().toUpperCase() === String(q.answer).trim().toUpperCase();
+      total++; pt.total++;
+      if (ok) { correct++; pt.correct++; }
+      items.push({ n: n, si: si, given: given, ok: ok });
+    });
+  });
+  return { correct: correct, total: total, score: total ? Math.round(correct / total * 1000) / 100 : 0,
+           parts: Object.keys(parts).map(function (k) { return parts[k]; }), items: items };
+}
+
+function examSubmit_(p, token) {
+  const u = currentUser_(token);
+  const e = findExam_(p.id);
+  if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Đề này đang đóng.');
+  const secs = examSections_(e.id);
+  const answers = p.answers || {};
+  const g = gradeExam_(secs, answers);
+  const clean = {};
+  Object.keys(answers).forEach(function (k) { if (/^\d+$/.test(k)) clean[k] = String(answers[k]).slice(0, 500); });
+  const row = {
+    id: newId_('ER'), userId: u.id, username: u.username, fullName: u.fullName, className: u.className,
+    examId: e.id, title: e.title, grade: e.grade, examType: e.examType,
+    score: g.score, correct: g.correct, total: g.total, partsJson: JSON.stringify(g.parts), answersJson: JSON.stringify(clean),
+    seconds: clampInt_(p.seconds, 0, (num_(e.duration) || 60) * 60 + 120), submittedAt: now_()
+  };
+  withLock_(function () { append_('ExamResults', row); });
+  return examResultView_(row, e, secs, u);
+}
+
+/** Kết quả một lần làm đề; chỉ kèm đáp án khi được phép xem */
+function examResultView_(r, e, secs, viewer) {
+  let parts = [], answers = {};
+  try { parts = JSON.parse(r.partsJson || '[]'); } catch (x) {}
+  try { answers = JSON.parse(r.answersJson || '{}'); } catch (x) {}
+  const out = {
+    id: r.id, examId: r.examId, title: r.title, grade: r.grade, examType: r.examType, fullName: r.fullName, className: r.className,
+    username: r.username, score: num_(r.score), correct: num_(r.correct), total: num_(r.total), seconds: num_(r.seconds),
+    submittedAt: r.submittedAt, parts: parts, answerMode: e ? e.answerMode : '', canSee: false, sections: null
+  };
+  if (!e || !canSeeAnswers_(e, viewer)) return out;
+  out.canSee = true;
+  let n = 0;
+  out.sections = secs.map(function (s) {
+    return { part: s.part, title: s.title, instruction: s.instruction, passage: s.passage, script: s.script || [],
+      items: (s.questions || []).map(function (q) {
+        n++;
+        const given = answers[String(n)] || '';
+        const ok = q.type === 'fill' ? fillMatch_(given, q.answer) : String(given).toUpperCase() === String(q.answer).toUpperCase();
+        return { n: n, type: q.type, question: q.q, options: q.options || null, given: given, correct: ok,
+                 answerText: answerText_({ type: q.type, answer: q.answer }), explanation: q.explanation || '' };
+      }) };
+  });
+  return out;
+}
+
+function examSummary_(r) {
+  let parts = []; try { parts = JSON.parse(r.partsJson || '[]'); } catch (x) {}
+  return { id: r.id, userId: r.userId, examId: r.examId, title: r.title, grade: r.grade, examType: r.examType, fullName: r.fullName,
+           className: r.className, username: r.username, score: num_(r.score), correct: num_(r.correct), total: num_(r.total),
+           seconds: num_(r.seconds), submittedAt: r.submittedAt, parts: parts };
+}
+
+function examMyResults_(p, token) {
+  const u = currentUser_(token);
+  return rows_('ExamResults').filter(function (r) { return r.userId === u.id; }).map(examSummary_).sort(byDateDesc_);
+}
+
+function examResultDetail_(p, token) {
+  const u = currentUser_(token);
+  const r = rows_('ExamResults').find(function (x) { return x.id === p.id; });
+  if (!r) throw new Error('Không tìm thấy kết quả.');
+  if (u.role !== 'teacher' && r.userId !== u.id) throw new Error('Bạn không có quyền xem kết quả này.');
+  const e = rows_('Exams').find(function (x) { return x.id === r.examId; });
+  return examResultView_(r, e || null, e ? examSections_(e.id) : [], u);
+}
+
+/** Giáo viên */
+function examsAdmin_(p, token) {
+  requireTeacher_(token);
+  const stat = {};
+  rows_('ExamResults').forEach(function (r) {
+    const s = stat[r.examId] || (stat[r.examId] = { n: 0, sum: 0 });
+    s.n++; s.sum += num_(r.score);
+  });
+  return rows_('Exams').map(function (e) {
+    const m = examMeta_(e), s = stat[e.id];
+    m.attempts = s ? s.n : 0; m.avg = s ? Math.round(s.sum / s.n * 100) / 100 : null;
+    m.createdBy = e.createdBy; m.updatedAt = e.updatedAt || e.createdAt;
+    return m;
+  });
+}
+
+function examFull_(p, token) {
+  requireTeacher_(token);
+  const e = findExam_(p.id);
+  const m = examMeta_(e); m.sections = examSections_(e.id); return m;
+}
+
+function examSave_(p, token) {
+  const me = requireTeacher_(token);
+  const x = p.exam || {};
+  const title = clean_(x.title, 200);
+  if (!title) throw new Error('Đề cần có tên.');
+  if (EXAM_GRADES.indexOf(String(x.grade)) < 0) throw new Error('Hãy chọn khối.');
+  if (!EXAM_TYPES[x.examType]) throw new Error('Hãy chọn loại đề.');
+  const duration = clampInt_(x.duration, 5, 240);
+  let count = 0;
+  const secs = (p.sections || []).map(function (s, si) {
+    const label = 'Phần ' + (si + 1) + (s.title ? ' (' + s.title + ')' : '');
+    const qs = (s.questions || []).map(function (q) {
+      count++;
+      const type = q.type === 'fill' ? 'fill' : 'mcq';
+      const o = { type: type, q: clean_(q.q, 3000), answer: clean_(q.answer, 300), explanation: clean_(q.explanation, 1500) };
+      if (type === 'mcq') {
+        o.options = {};
+        ['A', 'B', 'C', 'D', 'E'].forEach(function (k) { if (q.options && String(q.options[k] || '').trim()) o.options[k] = clean_(q.options[k], 600); });
+        o.answer = o.answer.toUpperCase();
+        if (Object.keys(o.options).length < 2) throw new Error(label + ': câu ' + count + ' cần ít nhất 2 lựa chọn.');
+        if (!o.options[o.answer]) throw new Error(label + ': câu ' + count + ' chưa có đáp án đúng.');
+      } else if (!o.answer) throw new Error(label + ': câu ' + count + ' chưa có đáp án.');
+      return o;
+    });
+    const script = (s.script || []).map(function (l) { return [clean_(l[0], 40), clean_(l[1], 3000)]; }).filter(function (l) { return l[1]; });
+    const obj = { part: clean_(s.part, 120), title: clean_(s.title, 120), instruction: clean_(s.instruction, 1500),
+                  passage: clean_(s.passage, 20000), audioUrl: clean_(s.audioUrl, 500), script: script, questions: qs };
+    const json = JSON.stringify(obj);
+    if (json.length > 45000) throw new Error(label + ' quá dài, hãy tách thành 2 phần nhỏ.');
+    return { json: json };
+  });
+  if (!count) throw new Error('Đề cần ít nhất 1 câu hỏi.');
+  return withLock_(function () {
+    let id = x.id;
+    const data = { title: title, grade: String(x.grade), examType: x.examType, duration: duration,
+                   answerMode: x.answerMode === 'teacher' ? 'teacher' : 'instant', status: x.status === 'closed' ? 'closed' : 'open',
+                   questionCount: count, updatedAt: now_() };
+    const old = id ? rows_('Exams').find(function (e) { return e.id === id; }) : null;
+    if (old) update_('Exams', old._row, data);
+    else { id = newId_('EZ'); append_('Exams', Object.assign({ id: id, released: 'FALSE', createdBy: me.fullName, createdAt: now_() }, data)); }
+    replaceChildren_('ExamParts', 'examId', id, secs);
+    return { id: id, questions: count };
+  });
+}
+
+function examToggle_(p, token) {
+  requireTeacher_(token);
+  const e = findExam_(p.id);
+  const status = e.status === 'open' ? 'closed' : 'open';
+  update_('Exams', e._row, { status: status });
+  return status;
+}
+
+function examRelease_(p, token) {
+  requireTeacher_(token);
+  const e = findExam_(p.id);
+  const v = !isTrue_(e.released);
+  update_('Exams', e._row, { released: v ? 'TRUE' : 'FALSE' });
+  return v;
+}
+
+function examDelete_(p, token) {
+  requireTeacher_(token);
+  return withLock_(function () {
+    const e = findExam_(p.id);
+    sh_('Exams').deleteRow(e._row);
+    replaceChildren_('ExamParts', 'examId', e.id, []);
+    return true;
+  });
+}
+
+function examResultsAdmin_(p, token) {
+  requireTeacher_(token);
+  return rows_('ExamResults').filter(function (r) { return !p.examId || r.examId === p.examId; })
+    .map(examSummary_).sort(function (a, b) { return b.score - a.score || a.seconds - b.seconds; });
 }
 
 
