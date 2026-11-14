@@ -1,45 +1,2662 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+  <base target="_top">
+  <title>Practice Makes Perfect</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Practice Makes Perfect – Ba Chuc High School</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    /* ================= MÀU SẮC & KIỂU CHỮ ================= */
+    :root{
+      --violet:#7c3aed; --violet-d:#6d28d9; --pink:#db2777; --ink:#1f1235; --muted:#6b6280;
+      --line:#ece6f7; --card:#fff; --ok:#059669; --ok-bg:#dcfce7; --bad:#dc2626; --bad-bg:#fee2e2;
+      --warn:#c2410c; --warn-bg:#ffedd5; --grad:linear-gradient(100deg,#6d28d9 0%,#9333ea 45%,#db2777 100%);
+      --radius:18px; --shadow:0 6px 24px rgba(91,33,182,.08);
+    }
     *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#fff;
-      background:linear-gradient(180deg,#3b1a7a 0%,#5b21b6 55%,#9d174d 100%);display:flex;flex-direction:column;align-items:center}
-    .banner{width:100%;aspect-ratio:1400/860;max-height:55vh;background:url('login.png') center top/cover no-repeat;position:relative}
-    .banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(59,26,122,0) 40%,#3b1a7a 100%)}
-    .box{text-align:center;padding:10px 20px 40px;margin-top:-60px;position:relative}
-    h1{font-size:clamp(28px,6vw,44px);margin:0 0 6px}
-    .school{letter-spacing:2px;text-transform:uppercase;opacity:.9;margin-bottom:28px}
-    a.go{display:inline-block;background:#fff;color:#6d28d9;font-weight:800;font-size:18px;padding:16px 36px;border-radius:999px;text-decoration:none;
-      box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    a.go:hover{transform:translateY(-2px)}
-    .note{margin-top:18px;opacity:.8;font-size:14px}
+    html,body{margin:0}
+    body{font-family:'Be Vietnam Pro',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);
+      background:linear-gradient(160deg,#f3edff 0%,#fbf7ff 45%,#fdf0f7 100%);min-height:100vh;font-size:15px;line-height:1.5}
+    button,input,select,textarea{font:inherit;color:inherit}
+    h1,h2,h3{margin:0;line-height:1.25}
+    h1{font-size:28px;font-weight:800}
+    h2{font-size:20px;font-weight:700}
+    h3{font-size:16px;font-weight:700}
+    a{color:var(--violet-d)}
+    .muted{color:var(--muted)} .small{font-size:13px}
+    [hidden]{display:none!important}
+
+    /* ================= THANH TRÊN CÙNG ================= */
+    .topbar{position:sticky;top:0;z-index:20;background:var(--grad);color:#fff;display:flex;align-items:center;
+      justify-content:space-between;gap:12px;padding:10px clamp(12px,3vw,32px);box-shadow:0 4px 20px rgba(109,40,217,.25)}
+    .brand{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:700;font-size:19px;min-width:0}
+    .brand span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .logo{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.6);
+      display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+    .nav{display:flex;align-items:center;gap:6px}
+    .nav-btn{border:0;background:transparent;color:#fff;padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:600;
+      display:flex;align-items:center;gap:6px;white-space:nowrap}
+    .nav-btn:hover{background:rgba(255,255,255,.15)}
+    .nav-btn.on{background:#fff;color:var(--violet-d)}
+    .avatar{width:42px;height:42px;border-radius:50%;background:#fde047;color:#713f12;border:0;font-weight:800;cursor:pointer;flex:none;font-size:17px}
+    #busy{position:fixed;top:0;left:0;height:3px;width:0;background:#fde047;z-index:50;transition:width .3s}
+    body.busy #busy{width:80%;transition:width 8s cubic-bezier(.1,.7,.2,1)}
+
+    /* ================= KHUNG TRANG ================= */
+    .page{max-width:1240px;margin:0 auto;padding:24px clamp(12px,3vw,32px) 120px}
+    .page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px;border:1px solid #f1ecfa}
+    .btn{border:1px solid var(--line);background:#fff;padding:10px 18px;border-radius:12px;cursor:pointer;font-weight:600;
+      display:inline-flex;align-items:center;gap:6px;justify-content:center;transition:transform .05s}
+    .btn:active{transform:scale(.98)}
+    .btn.primary{background:var(--grad);color:#fff;border:0;box-shadow:0 6px 18px rgba(147,51,234,.3)}
+    .btn.ghost{background:transparent}
+    .btn.danger{color:var(--bad);border-color:#fecaca}
+    .btn.sm{padding:6px 12px;font-size:13px;border-radius:10px}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .pill{border:1px solid var(--line);background:#fff;padding:10px 20px;border-radius:999px;cursor:pointer;font-weight:600;font-size:15px;
+      display:inline-flex;align-items:center;gap:8px}
+    .pill.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(147,51,234,.3)}
+    .pill .badge{background:var(--bad);color:#fff;border-radius:999px;font-size:12px;padding:0 7px;line-height:20px}
+    .pill.on .badge{background:#fff;color:var(--bad)}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .chip{border:1px solid var(--line);background:#fff;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+    .chip.on{background:#ede9fe;border-color:#c4b5fd;color:var(--violet-d);font-weight:600}
+    .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#f3f0fa;color:var(--muted)}
+    .tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.bad{background:var(--bad-bg);color:var(--bad)} .tag.warn{background:var(--warn-bg);color:var(--warn)}
+    .empty{text-align:center;padding:40px 20px;color:var(--muted)}
+    .inp,select.inp{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;background:#fff;outline:none}
+    .inp:focus{border-color:#a78bfa;box-shadow:0 0 0 3px #ede9fe}
+    textarea.inp{resize:vertical;min-height:80px}
+    label.f{display:block;font-weight:600;font-size:14px;margin:12px 0 6px}
+    .row{display:flex;gap:12px;flex-wrap:wrap} .row>*{flex:1;min-width:160px}
+    .tablewrap{overflow-x:auto}
+    .tablewrap table{min-width:680px}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th{text-align:left;color:var(--muted);font-weight:600;padding:10px;border-bottom:1px solid var(--line);white-space:nowrap}
+    td{padding:12px 10px;border-bottom:1px solid #f4f0fb;vertical-align:middle}
+    tr:last-child td{border-bottom:0}
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
+
+    /* ================= ĐĂNG NHẬP ================= */
+    .auth{min-height:100vh;position:relative;display:flex;justify-content:center;align-items:flex-start;
+      padding:calc(100vw * 574 / 1600 * .58) 16px 40px;background:linear-gradient(180deg,#3b1a7a 0%,#5b21b6 55%,#9d174d 100%)}
+    .auth-banner{position:absolute;top:0;left:0;right:0;aspect-ratio:1600/574;
+      background:var(--banner-img,var(--grad)) center top/100% auto no-repeat}
+    .auth-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(59,26,122,0) 50%,rgba(59,26,122,.75) 80%,#3b1a7a 100%)}
+    .auth-card{position:relative}
+    @media (max-width:700px){.auth{padding-top:calc(100vw * 574 / 1600 + 8px)}}
+    .auth-card{width:100%;max-width:440px;position:relative}
+    .auth-hero{text-align:center;margin-bottom:22px;color:#fff;text-shadow:0 2px 12px rgba(20,8,50,.6)}
+    .auth-hero h1{font-size:34px;letter-spacing:.3px}
+    .auth-hero .school{font-weight:600;font-size:16px;opacity:.95;margin-top:4px;letter-spacing:1.5px;text-transform:uppercase}
+    .auth-hero .logo{width:64px;height:64px;margin:0 auto 12px;background:var(--grad);color:#fff;font-size:26px;border:0}
+    .seg{display:flex;background:#f3effb;border-radius:12px;padding:4px;margin-bottom:8px}
+    .seg button{flex:1;border:0;background:transparent;padding:9px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--muted)}
+    .seg button.on{background:#fff;color:var(--violet-d);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    .msg{padding:10px 14px;border-radius:12px;margin-top:12px;font-size:14px}
+    .msg.err{background:var(--bad-bg);color:var(--bad)} .msg.ok{background:var(--ok-bg);color:var(--ok)}
+
+    /* ================= LUYỆN TẬP ================= */
+    .hello{background-image:linear-gradient(90deg,rgba(76,29,149,.95) 0%,rgba(124,58,237,.8) 40%,rgba(219,39,119,.25) 100%),var(--banner-img,var(--grad));
+      background-size:cover;background-position:center 30%;min-height:180px;color:#fff;border:0;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+    .hello .stat{background:rgba(30,10,70,.45);backdrop-filter:blur(6px);padding:10px 16px;border-radius:14px;text-align:center}
+    .hello .stat b{display:block;font-size:22px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+    .ex-card{display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform .15s, box-shadow .15s}
+    .ex-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(91,33,182,.14)}
+    .ex-card h3{font-size:16px}
+    .ex-card .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    .ex-card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:6px}
+    .skill{padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700}
+
+    /* ================= LÀM BÀI ================= */
+    .back{border:0;background:none;color:var(--violet-d);font-weight:600;cursor:pointer;padding:0;margin-bottom:10px}
+    .crumbs{color:var(--muted);font-size:14px;margin-bottom:4px}
+    .ex-layout{display:grid;gap:18px;margin-top:18px}
+    .ex-layout.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+    .ex-side{display:flex;flex-direction:column;gap:16px}
+    .ex-layout.two .ex-side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 170px);overflow:auto}
+    .ptext{white-space:pre-wrap;line-height:1.75;margin-top:10px;font-size:15.5px}
+    audio{width:100%;margin:10px 0 6px}
+    .ex-main{display:flex;flex-direction:column;gap:14px}
+    .qhead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .qnum{font-weight:800;color:var(--violet-d)}
+    .qtype{font-size:12px;color:var(--muted);background:#f5f2fb;padding:2px 8px;border-radius:6px}
+    .qpts{font-size:12px;color:var(--warn);font-weight:600}
+    .qtext{white-space:pre-wrap;font-size:16px;margin-bottom:12px;font-weight:500}
+    .opts{display:grid;gap:8px}
+    .opt{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;transition:all .12s}
+    .opt:hover{border-color:#c4b5fd}
+    .opt input{display:none}
+    .opt b{width:26px;height:26px;border-radius:50%;background:#f3f0fa;display:grid;place-items:center;flex:none;font-size:13px}
+    .opt.on{border-color:var(--violet);background:#f5f0ff}
+    .opt.on b{background:var(--violet);color:#fff}
+    .wc{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+    .submitbar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--line);
+      padding:12px clamp(12px,3vw,32px);display:flex;justify-content:space-between;align-items:center;gap:16px;z-index:15}
+    .progress{display:flex;align-items:center;gap:12px;flex:1;max-width:520px}
+    .bar{flex:1;height:8px;background:#efe9fa;border-radius:99px;overflow:hidden}
+    .bar i{display:block;height:100%;background:var(--grad);width:0;transition:width .2s}
+
+    /* ================= KẾT QUẢ ================= */
+    .score-card{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+    .ring{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;flex:none}
+    .ring div{width:96px;height:96px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:800;font-size:26px}
+    .rv{border-left:5px solid var(--line)}
+    .rv.ok{border-left-color:var(--ok)} .rv.bad{border-left-color:var(--bad)} .rv.essay{border-left-color:#a78bfa}
+    .ans{display:grid;gap:6px;margin-top:6px;font-size:14px}
+    .ans .k{color:var(--muted);display:inline-block;min-width:118px}
+    .opt-line{padding:6px 10px;border-radius:8px;font-size:14px}
+    .opt-line.right{background:var(--ok-bg);color:var(--ok);font-weight:600}
+    .opt-line.wrong{background:var(--bad-bg);color:var(--bad);text-decoration:line-through}
+    .explain{background:#faf7ff;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:8px}
+    .essay-box{white-space:pre-wrap;background:#faf9fc;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14.5px}
+
+    /* ================= QUẢN TRỊ ================= */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px}
+    .stat-card{border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);cursor:default}
+    .stat-card b{display:block;font-size:34px;font-weight:800;line-height:1.1}
+    .stat-card span{color:#55506a}
+    .s1{background:#ffe4e9} .s1 b{color:#1f1235}
+    .s2{background:#dff5ec} .s2 b{color:#059669}
+    .s3{background:#e0f2fe} .s3 b{color:#0369a1}
+    .s4{background:#ede9fe} .s4 b{color:#7c3aed}
+    .s5{background:#fce7f3} .s5 b{color:#db2777}
+    .s6{background:#ffedd5} .s6 b{color:#c2410c}
+    .stat-card.click{cursor:pointer} .stat-card.click:hover{filter:brightness(.98)}
+    .bank-card{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+    .toolbar .inp{width:auto;min-width:200px;flex:1;max-width:340px}
+    .switch{position:relative;width:42px;height:24px;border-radius:99px;background:#d6d0e2;border:0;cursor:pointer;flex:none}
+    .switch::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+    .switch.on{background:var(--ok)} .switch.on::after{left:21px}
+
+    /* ================= SOẠN BÀI ================= */
+    .q-edit{border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px;background:#fdfcff}
+    .q-edit .top{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:6px}
+    .q-edit .opt-row{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center;margin-top:6px}
+    .add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .hint{font-size:13px;color:var(--muted);margin-top:4px}
+    .sticky-save{position:sticky;bottom:0;background:rgba(255,255,255,.95);padding:12px 0;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line);margin-top:16px}
+
+    /* ================= TRÒ CHƠI ================= */
+    .game-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px}
+    .game-tile{cursor:pointer;transition:transform .15s, box-shadow .15s}
+    .game-tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(91,33,182,.14)}
+    .game-tile .gi{font-size:36px;margin-bottom:6px}
+    .game-tile.off{opacity:.45;cursor:not-allowed;transform:none}
+    .game-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+    .gbtn{border:1px solid var(--line);background:#faf7ff;border-radius:10px;padding:5px 10px;font-size:13px;cursor:pointer;font-weight:600}
+    .gbtn:hover{background:#ede9fe}
+    .gbtn:disabled{opacity:.35;cursor:not-allowed}
+    .gbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 18px}
+    .gstat{font-weight:700;background:#fff;border-radius:12px;padding:8px 14px;box-shadow:var(--shadow);font-size:14px}
+    .fc{perspective:1200px;max-width:560px;margin:0 auto;height:300px;cursor:pointer}
+    .fc-in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+    .fc.flip .fc-in{transform:rotateY(180deg)}
+    .fc-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:24px;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;padding:24px;text-align:center;box-shadow:0 14px 40px rgba(91,33,182,.18)}
+    .fc-front{background:var(--grad);color:#fff}
+    .fc-front .w{font-size:40px;font-weight:800;line-height:1.2}
+    .fc-back{background:#fff;transform:rotateY(180deg)}
+    .fc-back .m{font-size:26px;font-weight:700;color:var(--violet-d)}
+    .fc-back .ex{margin-top:12px;color:var(--muted);font-style:italic}
+    .speak{border:0;background:rgba(255,255,255,.22);color:inherit;border-radius:999px;padding:7px 16px;margin-top:14px;cursor:pointer;font-weight:600}
+    .fc-actions{display:flex;gap:12px;justify-content:center;margin-top:22px}
+    .match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .match .col{display:grid;gap:10px;align-content:start}
+    .mt{border:2px solid var(--line);background:#fff;border-radius:14px;padding:14px;font-weight:600;cursor:pointer;min-height:58px;transition:all .15s;font-size:15px}
+    .mt:hover{border-color:#c4b5fd}
+    .mt.sel{border-color:var(--violet);background:#f5f0ff;box-shadow:0 0 0 3px #ede9fe}
+    .mt.done{border-color:#86efac;background:var(--ok-bg);color:var(--ok);opacity:.5;cursor:default}
+    .mt.wrong{border-color:var(--bad);background:var(--bad-bg);animation:shake .35s}
+    @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .sc-area{min-height:72px;border:2px dashed #c4b5fd;border-radius:16px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fdfcff}
+    .sc-pool{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;justify-content:center;min-height:48px}
+    .tok{background:#fff;border:1px solid #e9e3f7;box-shadow:0 3px 0 #ddd6fe;border-radius:12px;padding:10px 15px;font-weight:600;font-size:16px;cursor:pointer}
+    .tok:active{transform:translateY(2px);box-shadow:0 1px 0 #ddd6fe}
+    .tok.in{background:#ede9fe;border-color:#c4b5fd}
+    .fb{margin-top:16px;padding:12px 14px;border-radius:12px;font-weight:600}
+    .fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.bad{background:var(--bad-bg);color:var(--bad)}
+    .sp-q{text-align:center;font-size:30px;font-weight:800;margin:8px 0 22px;line-height:1.3}
+    .sp-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .sp-o{border:2px solid var(--line);background:#fff;border-radius:14px;padding:16px;font-weight:600;cursor:pointer;font-size:16px}
+    .sp-o:hover:not(:disabled){border-color:#c4b5fd;background:#faf7ff}
+    .sp-o.right{border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+    .sp-o.wrong{border-color:var(--bad);background:var(--bad-bg);color:var(--bad)}
+    .tbar{height:10px;border-radius:99px;background:#efe9fa;overflow:hidden}
+    .tbar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#f59e0b,#ef4444);transition:width .1s linear}
+    table.lb{min-width:0}
+    .lb td{padding:10px}
+    .lb tr.me td{background:#f5f0ff;font-weight:700}
+    .medal{font-size:18px;width:44px}
+    textarea.mono{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;line-height:1.6}
+    @media (max-width:600px){
+      .fc{height:260px} .fc-front .w{font-size:30px}
+      .sp-opts{grid-template-columns:1fr} .sp-q{font-size:24px}
+      .match{gap:8px} .mt{padding:10px;font-size:14px}
+    }
+
+    /* ================= GIAO BÀI ================= */
+    .asg-card{margin-bottom:22px;border-left:5px solid var(--violet)}
+    .asg-row{display:flex;gap:14px;align-items:center;padding:12px;border-radius:14px;cursor:pointer;border:1px solid transparent;flex-wrap:wrap}
+    .asg-row:hover{background:#faf7ff;border-color:var(--line)}
+    .asg-row+.asg-row{margin-top:4px}
+    .asg-row.done{opacity:.7}
+    .asg-ic{width:44px;height:44px;border-radius:12px;background:#f3effb;display:grid;place-items:center;font-size:22px;flex:none}
+    .xbtn{border:0;background:none;color:var(--bad);cursor:pointer;font-size:12px;margin-left:4px;padding:0 2px}
+    label.chip input{margin:0 4px 0 0;vertical-align:middle}
+    /* ================= LUYỆN ĐỀ ================= */
+    .xwrap{max-width:1400px;margin:0 auto;padding:0 clamp(12px,2.5vw,32px) 120px}
+    .xtop{position:sticky;top:62px;z-index:12;display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;padding:10px 16px;margin-bottom:16px;box-shadow:0 6px 18px rgba(91,33,182,.08)}
+    .xtop .xclock{font-size:22px;color:var(--violet-d);min-width:92px}
+    .xtop .xgrid{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+    .xtop .xn{width:32px;padding:4px 0;font-size:12px}
+    .xtop .xgridbtn{display:none}
+    /* ---- 2 cột: bài đọc | câu hỏi ---- */
+    .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+    .split-left{position:sticky;top:var(--stick,84px);max-height:calc(100vh - var(--stick,84px) - 16px);overflow:auto;margin:0!important;
+      border:1.5px solid #ddd6fe;background:#fdfcff;border-radius:14px;padding:16px 20px;line-height:1.75;font-size:15.5px}
+    .split-left h4{margin:0 0 10px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--violet-d)}
+    .split-right{min-width:0}
+    .mread{display:none}
+    .solution{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:8px}
+    .solution b.h{color:var(--ok)}
+    .xclock{font-weight:800;font-variant-numeric:tabular-nums}
+    .xclock.big{font-size:30px;text-align:center;color:var(--violet-d)}
+    .xclock.low{color:var(--bad)!important}
+    .xgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+    .xn{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:6px 0;font-weight:700;font-size:13px;cursor:pointer}
+    .xn.done{background:#ede9fe;border-color:#c4b5fd;color:var(--violet-d)}
+    .xn.flag{background:#ffedd5;border-color:#fdba74;color:var(--warn)}
+    .xpart{margin:26px 0 12px;padding-left:12px;border-left:5px solid var(--violet)}
+    .xsec{margin-bottom:16px}
+    .xins{font-style:italic;color:#4b4363;margin-bottom:12px}
+    .xaudio{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+    .xpassage{border:1.5px solid #ddd6fe;background:#fdfcff;border-radius:14px;padding:16px 18px;margin:8px 0 16px;line-height:1.7}
+    .xq{padding:14px 0;border-top:1px dashed var(--line)}
+    .xq.pulse{animation:pulse .9s}
+    @keyframes pulse{0%{background:#f5f0ff}100%{background:transparent}}
+    .opts.xshort{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+    .flag{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;opacity:.45;padding:2px 8px}
+    .flag.on{opacity:1;background:#ffedd5;border-color:#fdba74}
+    .xbar{display:none}
+    @media (max-width:1100px){
+      .xtop .xgrid{display:none}
+      .xtop .xgridbtn{display:inline-flex;margin-left:auto}
+    }
+    @media (max-width:900px){
+      .split{grid-template-columns:1fr}
+      .split-left{position:static;max-height:340px}
+      .mread{display:inline-flex;position:sticky;top:var(--stick,70px);z-index:5;margin-bottom:8px;box-shadow:0 4px 12px rgba(91,33,182,.15)}
+      .xtop{top:62px;gap:8px;padding:8px 10px}
+      .xtop .btn{white-space:nowrap;padding:7px 10px}
+      .xtop .xclock{font-size:18px;min-width:0}
+      .xsec .split{--stick:122px!important}
+    }
+    /* ================= HỘP THOẠI & THÔNG BÁO ================= */
+    .modal{position:fixed;inset:0;background:rgba(31,18,53,.45);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:5vh 12px;overflow:auto}
+    .modal-box{background:#fff;border-radius:20px;padding:24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .modal-box.wide{max-width:900px}
+    .m-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+    #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:#1f1235;color:#fff;padding:12px 20px;
+      border-radius:12px;opacity:0;pointer-events:none;transition:all .25s;z-index:60;max-width:90vw;text-align:center}
+    #toast.show{opacity:1;transform:translateX(-50%)}
+    #toast.err{background:var(--bad)} #toast.ok{background:var(--ok)}
+    .skeleton{height:120px;border-radius:var(--radius);background:linear-gradient(90deg,#f1ecfa 0%,#faf7ff 50%,#f1ecfa 100%);background-size:200% 100%;animation:sk 1.2s infinite}
+    @keyframes sk{to{background-position:-200% 0}}
+
+    /* ================= ĐIỆN THOẠI ================= */
+    @media (max-width:900px){
+      .ex-layout.two{grid-template-columns:1fr}
+      .ex-layout.two .ex-side{position:static;max-height:none}
+      .stats{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:600px){
+      h1{font-size:23px}
+      .brand span{display:none}
+      .nav-btn{padding:8px 11px;font-size:14px}
+      .nav-btn .lbl-long{display:none}
+      .stats{grid-template-columns:1fr 1fr;gap:10px}
+      .stat-card{padding:16px}
+      .stat-card b{font-size:26px}
+      .card{padding:16px}
+      .pill{padding:8px 14px;font-size:14px}
+      .submitbar .progress span{font-size:13px}
+    }
   </style>
 </head>
-<body>
-  <div class="banner"></div>
-  <div class="box">
-    <h1>Practice Makes Perfect</h1>
-    <div class="school">Ba Chuc High School</div>
-    <a class="go" id="go" href="#">Vào học ngay →</a>
-    <div class="note" id="note">Đang chuyển đến trang luyện tập…</div>
-  </div>
-  <script>
-    // ===== DÁN LINK ỨNG DỤNG WEB (đuôi /exec) VÀO GIỮA HAI DẤU NHÁY =====
-    const APP_URL = 'https://script.google.com/macros/s/AKfycbxYbyQTid9AkhtGhuuX_J_TdMlUS0kBgsi56hElVyHV4pucVDUEjG4FTcwiyK6i2_161g/exec';
+<body style="--banner-img:url('banner.jpg')">
+  <div id="busy"></div>
+  <header class="topbar" id="topbar" hidden>
+    <div class="brand" data-act="home"><div class="logo">P</div><span id="brandName"></span></div>
+    <div class="nav" id="nav"></div>
+  </header>
+  <main id="app"></main>
+  <div class="modal" id="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+  <div id="toast"></div>
 
-    const ok = /^https:\/\/script\.google\.com\/.+\/exec/.test(APP_URL);
-    const go = document.getElementById('go'), note = document.getElementById('note');
-    if (ok) {
-      go.href = APP_URL;
-      setTimeout(() => { location.href = APP_URL; }, 2500);
+<script>
+/* Bản GitHub Pages: giao diện ở đây, dữ liệu ở Google Apps Script */
+const API_URL = "https://script.google.com/macros/s/AKfycbxYbyQTid9AkhtGhuuX_J_TdMlUS0kBgsi56hElVyHV4pucVDUEjG4FTcwiyK6i2_161g/exec";
+window.google = { script: { run: (function mk(ok, fail) {
+  return new Proxy({}, { get(_, fn) {
+    if (fn === 'withSuccessHandler') return h => mk(h, fail);
+    if (fn === 'withFailureHandler') return h => mk(ok, h);
+    return (...args) => fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args }) })
+      .then(r => { if (!r.ok) throw new Error('Máy chủ trả lỗi ' + r.status); return r.text(); })
+      .then(t => { try { return JSON.parse(t); } catch (e) { window.__serverOld = true; throw new Error('máy chủ chưa có cổng API'); } })
+      .then(x => ok && ok(x))
+      .catch(e => fail && fail(new Error('Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại. (' + e.message + ')')));
+  } });
+})() } };
+</script>
+<script>
+/* =====================================================================
+   PHẦN GIAO DIỆN (chạy trên trình duyệt của học sinh/giáo viên)
+   ===================================================================== */
+var APP_NAME = "Practice Makes Perfect";
+var SCHOOL_NAME = "Ba Chuc High School";
+var LEVELS = [{"id":"THCS","name":"THCS","subs":["Lớp 6","Lớp 7","Lớp 8","Lớp 9"]},{"id":"THPT","name":"THPT","subs":["Lớp 10","Lớp 11","Lớp 12"]},{"id":"HSG","name":"Học sinh giỏi","subs":["Cấp trường","Cấp tỉnh","Cấp quốc gia"]},{"id":"IELTS","name":"IELTS","subs":["Band 4.0–5.0","Band 5.5–6.5","Band 7.0+"]}];
+var SKILLS = ["Ngữ pháp","Từ vựng","Đọc hiểu","Nghe","Viết","Tổng hợp"];
+
+const TYPE_LABEL = { mcq: 'Trắc nghiệm', fill: 'Điền / viết lại', essay: 'Tự luận' };
+const SKILL_COLOR = {
+  'Ngữ pháp': ['#ede9fe', '#6d28d9'], 'Từ vựng': ['#dcfce7', '#047857'], 'Đọc hiểu': ['#e0f2fe', '#0369a1'],
+  'Nghe': ['#fce7f3', '#be185d'], 'Viết': ['#ffedd5', '#c2410c'], 'Tổng hợp': ['#f1f5f9', '#334155']
+};
+
+// Trạng thái của ứng dụng
+const S = {
+  token: load('token'), user: null,
+  catalog: null, level: '', sub: '', skill: '',
+  ex: null, answers: {},
+  adminTab: 'overview', adm: {}, f: { bankLevel: '', bankSub: '', bankQ: '', resLevel: '', resState: '', resQ: '', userQ: '', userRole: '', setLevel: '', asgClass: '', examGrade: '' },
+  edit: null
+};
+const app = document.getElementById('app');
+
+/* ---------------- Tiện ích nhỏ ---------------- */
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function store(k, v) { try { if (v == null) localStorage.removeItem('ea_' + k); else localStorage.setItem('ea_' + k, JSON.stringify(v)); } catch (e) {} }
+function load(k) { try { return JSON.parse(localStorage.getItem('ea_' + k)); } catch (e) { return null; } }
+function fmtDate(iso) {
+  if (!iso) return ''; const d = new Date(iso); if (isNaN(d)) return esc(iso);
+  return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+function fmtNum(n) { n = Number(n) || 0; return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100); }
+function wordCount(s) { return (String(s).trim().match(/\S+/g) || []).length; }
+function levelName(id) { const l = LEVELS.find(x => x.id === id); return l ? l.name : (id || ''); }
+function skillTag(s) { const c = SKILL_COLOR[s] || SKILL_COLOR['Tổng hợp']; return `<span class="skill" style="background:${c[0]};color:${c[1]}">${esc(s)}</span>`; }
+function pctTag(p) {
+  if (p == null) return '<span class="tag warn">Chờ chấm</span>';
+  return `<span class="tag ${p >= 80 ? 'ok' : p >= 50 ? '' : 'bad'}">${p}%</span>`;
+}
+function toast(msg, type) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'show ' + (type || '');
+  clearTimeout(t._h); t._h = setTimeout(() => t.className = '', 3200);
+}
+function busy(on) { document.body.classList.toggle('busy', !!on); }
+function skeleton(n) { return `<div class="page"><div class="grid">${'<div class="skeleton"></div>'.repeat(n || 6)}</div></div>`; }
+
+/** Gọi máy chủ Apps Script */
+function call(action, payload) {
+  busy(true);
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(res => {
+        busy(false);
+        if (res && res.ok) return resolve(res.data);
+        if (res && res.error === 'AUTH') { forceLogout(); return reject(new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.')); }
+        reject(new Error(res && res.error ? res.error : 'Có lỗi xảy ra.'));
+      })
+      .withFailureHandler(err => { busy(false); reject(new Error(err && err.message ? err.message : 'Mất kết nối, thử lại nhé.')); })
+      .api(action, payload || {}, S.token);
+  });
+}
+/** Chạy một việc, nếu lỗi thì hiện thông báo */
+async function run(fn) { try { return await fn(); } catch (e) { toast(e.message, 'err'); } }
+
+/* ---------------- Hộp thoại ---------------- */
+function openModal(html, wide) { const b = $('#modalBox'); b.className = 'modal-box' + (wide ? ' wide' : ''); b.innerHTML = html; $('#modal').hidden = false; }
+function closeModal() { $('#modal').hidden = true; $('#modalBox').innerHTML = ''; }
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+function confirmBox(msg, okText, danger) {
+  return new Promise(res => {
+    openModal(`<h3>Xác nhận</h3><p>${esc(msg)}</p><div class="m-actions"><button class="btn" id="mNo">Huỷ</button>
+      <button class="btn ${danger ? 'danger' : 'primary'}" id="mYes">${esc(okText || 'Đồng ý')}</button></div>`);
+    $('#mNo').onclick = () => { closeModal(); res(false); };
+    $('#mYes').onclick = () => { closeModal(); res(true); };
+  });
+}
+function promptBox(title, label, type) {
+  return new Promise(res => {
+    openModal(`<h3>${esc(title)}</h3><label class="f">${esc(label)}</label><input class="inp" id="mIn" type="${type || 'text'}">
+      <div class="m-actions"><button class="btn" id="mNo">Huỷ</button><button class="btn primary" id="mYes">Lưu</button></div>`);
+    $('#mIn').focus();
+    $('#mNo').onclick = () => { closeModal(); res(null); };
+    $('#mYes').onclick = () => { const v = $('#mIn').value; closeModal(); res(v); };
+  });
+}
+
+/* ---------------- Bắt sự kiện bấm nút (data-act) ---------------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = ACTS[el.dataset.act];
+  if (fn) { e.preventDefault(); fn(el.dataset, el); }
+});
+['input', 'change'].forEach(evt => document.addEventListener(evt, onField));
+
+const ACTS = {
+  home: () => goHome(),
+  practice: () => showPractice(),
+  myResults: () => showMyResults(),
+  admin: d => showAdmin(d.tab || S.adminTab),
+  menu: () => openUserMenu(),
+  logout: () => doLogout(),
+  changePw: () => changePassword(),
+  closeModal: () => closeModal(),
+  authMode: d => showAuth(d.mode),
+  // luyện tập
+  level: d => { S.level = d.id; S.sub = ''; renderPractice(); },
+  sub: d => { S.sub = d.id; renderPractice(); },
+  skill: d => { S.skill = d.id; renderPractice(); },
+  openEx: d => openExercise(d.id),
+  submit: () => submitExercise(),
+  viewResult: d => run(async () => showResult(await call('resultDetail', { id: d.id }), true)),
+  retry: d => openExercise(d.id),
+  // quản trị
+  approve: d => setStatus(d.id, 'approved'),
+  reject: d => setStatus(d.id, 'rejected'),
+  lock: d => setStatus(d.id, 'locked'),
+  unlock: d => setStatus(d.id, 'approved'),
+  approveAll: () => approveAll(),
+  makeTeacher: d => setRole(d.id, 'teacher'),
+  makeStudent: d => setRole(d.id, 'student'),
+  resetPw: d => resetPw(d.id, d.name),
+  gradeOpen: d => openGrade(d.id),
+  gradeSave: d => saveGrade(d.id),
+  newEx: () => showEditor(null),
+  editEx: d => showEditor(d.id),
+  previewEx: d => openExercise(d.id, true),
+  toggleEx: d => toggleEx(d.id),
+  delEx: d => deleteEx(d.id, d.title),
+  bankLevel: d => { S.f.bankLevel = d.id; S.f.bankSub = ''; renderAdmin(); },
+  openSheet: () => { if (S.adm.overview) window.open(S.adm.overview.sheetUrl, '_blank'); },
+  // soạn bài
+  qAdd: d => { S.edit.questions.push(blankQ(d.type)); renderEditor(); scrollToQ(S.edit.questions.length - 1); },
+  qDel: d => { S.edit.questions.splice(+d.i, 1); renderEditor(); },
+  qUp: d => moveQ(+d.i, -1),
+  qDown: d => moveQ(+d.i, 1),
+  quick: () => openQuickImport(),
+  quickDo: () => doQuickImport(),
+  saveEx: () => saveExercise(),
+  cancelEdit: () => showAdmin('bank'),
+  // trò chơi
+  games: () => showGames(),
+  gLevel: d => { G.level = d.id; renderGames(); },
+  openSet: d => openSet(d.id),
+  setHome: () => renderSetHome(),
+  lbGame: d => { G.lbGame = d.game; renderSetHome(); },
+  play: d => play(d),
+  speak: d => speak(d.text),
+  fcFlip: () => { const c = $('#fc'); if (c) c.classList.toggle('flip'); },
+  fcAns: d => fcAns(+d.k),
+  fcReview: () => { G.t0 = Date.now(); fcStart(shuffle(G.st.unknown), true); },
+  mPick: d => mPick(d),
+  scPick: d => scPick(+d.j),
+  scRemove: d => scRemove(+d.j),
+  scCheck: () => scCheck(),
+  scSkip: () => scSkip(),
+  scNext: () => scNext(),
+  spAns: d => spAnswer(+d.k),
+  setLevel: d => { S.f.setLevel = d.id; renderAdmin(); },
+  newSet: () => showSetEditor(null),
+  editSet: d => showSetEditor(d.id),
+  toggleSet: d => toggleSet(d.id),
+  delSet: d => deleteSet(d.id, d.title),
+  saveSet: () => saveSet(),
+  // giao bài
+  doAsg: d => doAsg(d),
+  newClass: () => newClass(),
+  delClass: d => delClass(d.id, d.name),
+  newAssign: () => openAssign(),
+  assignEx: d => openAssign({ kind: 'exercise', refId: d.id }),
+  assignSet: d => openAssign({ kind: 'wordset', refId: d.id }),
+  asgKind: d => { readAssignModal(); if (S.asg.kind !== d.kind) { S.asg.kind = d.kind; S.asg.refId = ''; S.asg.game = ''; } renderAssignModal(); },
+  asgSave: () => saveAssign(),
+  asgDetail: d => asgDetail(d.id),
+  delAssign: d => delAssign(d.id),
+  // nhập nhiều bộ
+  impOpen: () => showImport(),
+  impDo: () => doImport(),
+  // luyện đề
+  exams: () => showExams(),
+  xGrade: d => { X.grade = d.id; X.type = ''; renderExams(); },
+  xType: d => { X.type = d.id; renderExams(); },
+  xOpen: d => examIntro(d.id),
+  xStart: () => examStart(false),
+  xRestart: async () => { if (await confirmBox('Xoá bài đang làm dở và làm lại từ đầu?', 'Làm lại', true)) examStart(true); },
+  xListen: d => ttsPlay(+d.si),
+  xFlag: d => examFlag(d.n),
+  xJump: d => examJump(d.n),
+  xGridOpen: () => examGridModal(),
+  xSubmit: () => examSubmit(false),
+  xResult: d => run(async () => showExamResult(await call('examResultDetail', { id: d.id }), 'results')),
+  xaGrade: d => { S.f.examGrade = d.id; renderAdmin(); },
+  xaNew: () => showExamEditor(null),
+  xaEdit: d => showExamEditor(d.id),
+  xaPreview: d => examIntro(d.id, true),
+  xaToggle: d => xaToggle(d.id),
+  xaRelease: d => xaRelease(d.id),
+  xaDel: d => xaDel(d.id, d.title),
+  xaResults: d => xaResults(d.id, d.title),
+  xaView: d => xaView(d.id),
+  xeSample: () => openModal(`<h3>Mẫu nội dung đề</h3><textarea class="inp mono" rows="22" readonly>${esc(EXAM_SAMPLE)}</textarea><div class="m-actions"><button class="btn" data-act="closeModal">Đóng</button></div>`, true),
+  xeSave: () => saveExamEdit(),
+  assignExam: d => openAssign({ kind: 'exam', refId: d.id }),
+  readOpen: d => readOpen(d.id)
+};
+
+/** Gõ phím / chọn đáp án */
+function onField(e) {
+  const el = e.target;
+  // --- đang làm bài ---
+  if (el.dataset.q && S.ex) {
+    S.answers[el.dataset.q] = el.value;
+    if (el.type === 'radio') el.closest('.opts').querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.querySelector('input').checked));
+    const wc = document.querySelector(`[data-wc="${el.dataset.q}"]`);
+    if (wc) wc.textContent = wordCount(el.value) + ' từ';
+    store('draft_' + S.ex.id, S.answers);
+    updateProgress();
+  }
+  // --- đang soạn bài ---
+  if (S.edit && el.dataset.ef) {
+    S.edit.exercise[el.dataset.ef] = el.value;
+    if (el.dataset.ef === 'level' && e.type === 'change') { S.edit.exercise.subLevel = ''; renderEditor(); }
+  }
+  if (S.edit && el.dataset.qf) {
+    const q = S.edit.questions[+el.dataset.qi];
+    q[el.dataset.qf] = el.value;
+    if (el.dataset.qf === 'type' && e.type === 'change') renderEditor();
+  }
+  // --- đang soạn bộ từ ---
+  if (S.setEdit && el.dataset.sf) onSetField(el, e.type);
+  if (S.imp && el.dataset.imp) onImpField(el, e.type);
+  if (el.dataset.xq && X.st) onExamField(el);
+  if (S.xEdit && el.dataset.xe) onExamEditField(el, e.type);
+  if (el.dataset.userclass && e.type === 'change') setUserClass(el.dataset.userclass, el.value);
+  // --- bộ lọc quản trị ---
+  if (el.dataset.filter) {
+    S.f[el.dataset.filter] = el.type === 'checkbox' ? el.checked : el.value;
+    if (e.type === 'input' && el.tagName === 'INPUT') { clearTimeout(onField._t); onField._t = setTimeout(renderAdmin, 200); }
+    else if (e.type === 'change') renderAdmin();
+  }
+}
+
+/* =====================================================================
+   ĐĂNG NHẬP / ĐĂNG KÝ
+   ===================================================================== */
+function renderTopbar(active) {
+  stopGame();
+  stopExamTimers();
+  const u = S.user;
+  $('#topbar').hidden = !u;
+  if (!u) return;
+  $('#brandName').textContent = APP_NAME;
+  const b = (act, icon, label, key) => `<button class="nav-btn ${active === key ? 'on' : ''}" data-act="${act}">${icon}<span class="lbl-long">${label}</span></button>`;
+  let html = '';
+  if (u.role === 'teacher') html += b('admin', '🛡️', 'Quản trị', 'admin');
+  html += b('practice', '🏠', 'Luyện tập', 'practice');
+  html += b('exams', '📝', 'Luyện đề', 'exams');
+  html += b('games', '🎮', 'Trò chơi', 'games');
+  html += b('myResults', '📊', 'Kết quả', 'results');
+  html += `<button class="avatar" data-act="menu" title="${esc(u.fullName)}">${esc((u.fullName || u.username).trim().split(/\s+/).pop().charAt(0).toUpperCase())}</button>`;
+  $('#nav').innerHTML = html;
+}
+
+function showAuth(mode) {
+  mode = mode || 'login';
+  if (mode === 'register' && !S.pubClasses) {
+    call('publicInfo').then(r => { S.pubClasses = r.classes; if (!S.user && $('[name=fullName]')) showAuth('register'); }).catch(() => { S.pubClasses = []; showAuth('register'); });
+    S.pubClasses = [];  // tạm thời, tránh gọi lặp
+  }
+  S.user = null; renderTopbar();
+  const levelOpts = LEVELS.map(l => `<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('');
+  app.innerHTML = `<div class="auth"><div class="auth-banner"></div><div class="auth-card">
+    <div class="auth-hero"><div class="logo">P</div><h1>${esc(APP_NAME)}</h1>${SCHOOL_NAME ? `<div class="school">${esc(SCHOOL_NAME)}</div>` : ''}</div>
+    <div class="card">
+      <div class="seg"><button class="${mode === 'login' ? 'on' : ''}" data-act="authMode" data-mode="login">Đăng nhập</button>
+        <button class="${mode === 'register' ? 'on' : ''}" data-act="authMode" data-mode="register">Đăng ký</button></div>
+      <form id="authForm" autocomplete="on">
+      ${mode === 'login' ? `
+        <label class="f">Tên đăng nhập</label><input class="inp" name="username" autocomplete="username" autocapitalize="off" required>
+        <label class="f">Mật khẩu</label><input class="inp" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn primary" style="width:100%;margin-top:18px">Đăng nhập</button>` : `
+        <label class="f">Họ và tên</label><input class="inp" name="fullName" required placeholder="Nguyễn Văn An">
+        <div class="row"><div><label class="f">Lớp</label>${S.pubClasses && S.pubClasses.length
+          ? `<select class="inp" name="className" required><option value="">— Chọn lớp —</option>${S.pubClasses.map(c => `<option>${esc(c.name)}</option>`).join('')}</select>`
+          : '<input class="inp" name="className" placeholder="10A1">'}</div>
+          <div><label class="f">Cấp độ</label><select class="inp" name="level" required><option value="">— Chọn —</option>${levelOpts}</select></div></div>
+        <label class="f">Tên đăng nhập</label><input class="inp" name="username" autocapitalize="off" required placeholder="vd: an.nguyen">
+        <div class="hint">Chữ không dấu, số, dấu _ hoặc dấu chấm</div>
+        <label class="f">Mật khẩu (ít nhất 6 ký tự)</label><input class="inp" name="password" type="password" autocomplete="new-password" required>
+        <button class="btn primary" style="width:100%;margin-top:18px">Đăng ký</button>`}
+      </form>
+      <div id="authMsg"></div>
+    </div></div></div>`;
+  $('#authForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    const btn = e.target.querySelector('button'); btn.disabled = true;
+    const msg = $('#authMsg');
+    try {
+      if (mode === 'login') {
+        const r = await call('login', data);
+        S.token = r.token; S.user = r.user; store('token', r.token);
+        goHome();
+      } else {
+        const r = await call('register', data);
+        showAuth('login');
+        $('#authMsg').innerHTML = `<div class="msg ok">${esc(r.message)}</div>`;
+      }
+    } catch (err) { msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`; btn.disabled = false; }
+  });
+}
+
+function forceLogout() { S.token = null; S.user = null; store('token', null); showAuth(); }
+async function doLogout() { closeModal(); try { await call('logout'); } catch (e) {} forceLogout(); }
+
+function openUserMenu() {
+  const u = S.user;
+  openModal(`<h3>${esc(u.fullName)}</h3>
+    <p class="muted small">@${esc(u.username)} · ${u.role === 'teacher' ? 'Giáo viên' : 'Học sinh'}${u.className ? ' · Lớp ' + esc(u.className) : ''}${u.level ? ' · ' + esc(levelName(u.level)) : ''}</p>
+    <div style="display:grid;gap:10px;margin-top:16px">
+      <button class="btn" data-act="changePw">🔑 Đổi mật khẩu</button>
+      <button class="btn danger" data-act="logout">↪ Đăng xuất</button>
+      <button class="btn ghost" data-act="closeModal">Đóng</button>
+    </div>`);
+}
+
+function changePassword() {
+  openModal(`<h3>Đổi mật khẩu</h3>
+    <label class="f">Mật khẩu hiện tại</label><input class="inp" id="pwOld" type="password">
+    <label class="f">Mật khẩu mới (ít nhất 6 ký tự)</label><input class="inp" id="pwNew" type="password">
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" id="pwSave">Lưu</button></div>`);
+  $('#pwSave').onclick = () => run(async () => {
+    await call('changePassword', { oldPassword: $('#pwOld').value, newPassword: $('#pwNew').value });
+    closeModal(); toast('Đã đổi mật khẩu', 'ok');
+  });
+}
+
+function goHome() {
+  if (!S.user) return showAuth();
+  if (S.user.role === 'teacher') showAdmin('overview'); else showPractice();
+}
+
+/* =====================================================================
+   HỌC SINH: CHỌN BÀI
+   ===================================================================== */
+async function showPractice() {
+  S.ex = null; S.edit = null;
+  renderTopbar('practice');
+  app.innerHTML = skeleton(6);
+  await run(async () => {
+    S.catalog = await call('catalog');
+    if (!S.level) S.level = S.user.level || LEVELS[0].id;
+    renderPractice();
+  });
+}
+
+function renderPractice() {
+  const all = S.catalog.exercises;
+  const lv = LEVELS.find(l => l.id === S.level) || LEVELS[0];
+  const inLevel = all.filter(e => e.level === lv.id);
+  const list = inLevel.filter(e => (!S.sub || e.subLevel === S.sub) && (!S.skill || e.skill === S.skill));
+  const done = all.filter(e => e.tries > 0).length;
+  const bests = all.filter(e => e.best != null);
+  const avg = bests.length ? Math.round(bests.reduce((s, e) => s + e.best, 0) / bests.length) : 0;
+  const skillsHere = SKILLS.filter(s => inLevel.some(e => e.skill === s));
+
+  app.innerHTML = `<div class="page">
+    <div class="card hello">
+      <div><h2>Xin chào, ${esc(S.user.fullName)} 👋</h2><div style="opacity:.9">Hôm nay mình luyện bài nào nhỉ?</div></div>
+      <div style="display:flex;gap:10px"><div class="stat"><b>${done}</b>bài đã làm</div><div class="stat"><b>${avg}%</b>điểm TB</div></div>
+    </div>
+    ${myAsgHTML()}
+    <div class="pills">${LEVELS.map(l => {
+      const n = all.filter(e => e.level === l.id).length;
+      return `<button class="pill ${l.id === lv.id ? 'on' : ''}" data-act="level" data-id="${esc(l.id)}">${esc(l.name)} <span class="muted small" style="color:inherit;opacity:.75">${n}</span></button>`;
+    }).join('')}</div>
+    <div class="chips"><button class="chip ${!S.sub ? 'on' : ''}" data-act="sub" data-id="">Tất cả</button>
+      ${lv.subs.map(s => `<button class="chip ${S.sub === s ? 'on' : ''}" data-act="sub" data-id="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    ${skillsHere.length > 1 ? `<div class="chips"><button class="chip ${!S.skill ? 'on' : ''}" data-act="skill" data-id="">Mọi kỹ năng</button>
+      ${skillsHere.map(s => `<button class="chip ${S.skill === s ? 'on' : ''}" data-act="skill" data-id="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+    ${list.length ? `<div class="grid">${list.map(exCard).join('')}</div>` : `<div class="card empty">Chưa có bài tập nào ở mục này. Thầy cô sẽ sớm cập nhật! 📚</div>`}
+  </div>`;
+}
+
+function exCard(e) {
+  return `<div class="card ex-card" data-act="openEx" data-id="${esc(e.id)}">
+    <div class="meta">${skillTag(e.skill)}<span class="tag">${esc(e.subLevel)}</span>${e.hasAudio ? '<span class="tag">🎧 Nghe</span>' : ''}${e.hasPassage ? '<span class="tag">📖 Bài đọc</span>' : ''}</div>
+    <h3>${esc(e.title)}</h3>
+    <div class="foot"><span class="muted small">${e.questionCount} câu${e.tries ? ' · đã làm ' + e.tries + ' lần' : ''}</span>
+      ${e.best != null ? `<span class="tag ${e.best >= 80 ? 'ok' : e.best >= 50 ? '' : 'bad'}">Cao nhất ${e.best}%</span>` : e.tries ? '<span class="tag warn">Chờ chấm</span>' : '<span class="btn sm primary">Làm bài</span>'}</div>
+  </div>`;
+}
+
+/* =====================================================================
+   HỌC SINH: LÀM BÀI
+   ===================================================================== */
+async function openExercise(id, preview) {
+  app.innerHTML = skeleton(3);
+  window.scrollTo(0, 0);
+  await run(async () => {
+    S.ex = await call('getExercise', { id });
+    S.ex.preview = !!preview;
+    S.answers = load('draft_' + id) || {};
+    renderExercise();
+  });
+}
+
+function renderExercise() {
+  const e = S.ex;
+  const side = [];
+  if (e.audioUrl) side.push(`<section class="card"><h3>🎧 Bài nghe</h3><audio controls preload="none" src="${esc(e.audioUrl)}"></audio>
+    <a class="small" href="${esc(e.audioOriginal || e.audioUrl)}" target="_blank" rel="noopener">Không nghe được? Mở file nghe ở tab mới</a></section>`);
+  if (e.passage) { side.push(`<section class="card"><h3>📖 Bài đọc</h3><div class="ptext">${esc(e.passage)}</div></section>`); READ.e = `<div class="ptext">${esc(e.passage)}</div>`; }
+  app.innerHTML = `<div class="page">
+    <button class="back" data-act="${e.preview ? 'admin' : 'practice'}" ${e.preview ? 'data-tab="bank"' : ''}>← Quay lại</button>
+    <div class="crumbs">${esc(levelName(e.level))} · ${esc(e.subLevel)} · ${esc(e.skill)}${e.preview ? ' · <b>Chế độ xem trước của GV</b>' : ''}</div>
+    <h1>${esc(e.title)}</h1>
+    <div class="ex-layout ${e.passage ? 'two' : ''}">
+      ${side.length ? `<aside class="ex-side">${side.join('')}</aside>` : ''}
+      <div class="ex-main">${e.passage ? readBtn('e') : ''}${e.questions.map(questionHTML).join('')}</div>
+    </div>
+  </div>
+  <div class="submitbar"><div class="progress"><div class="bar"><i id="pbar"></i></div><span id="ptext"></span></div>
+    <button class="btn primary" data-act="submit">Nộp bài</button></div>`;
+  updateProgress();
+}
+
+function questionHTML(q, i) {
+  const v = S.answers[q.order] || '';
+  let body = '';
+  if (q.type === 'mcq') {
+    body = `<div class="opts">${Object.keys(q.options).map(k => `<label class="opt ${v === k ? 'on' : ''}">
+      <input type="radio" name="q${esc(q.order)}" value="${k}" data-q="${esc(q.order)}" ${v === k ? 'checked' : ''}><b>${k}</b><span>${esc(q.options[k])}</span></label>`).join('')}</div>`;
+  } else if (q.type === 'fill') {
+    body = `<input class="inp" data-q="${esc(q.order)}" value="${esc(v)}" placeholder="Nhập câu trả lời..." autocomplete="off" autocapitalize="off" spellcheck="false">`;
+  } else {
+    body = `<textarea class="inp" rows="8" data-q="${esc(q.order)}" placeholder="Viết bài của bạn ở đây...">${esc(v)}</textarea><div class="wc" data-wc="${esc(q.order)}">${wordCount(v)} từ</div>`;
+  }
+  return `<div class="card" id="q-${esc(q.order)}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span><span class="qtype">${TYPE_LABEL[q.type]}</span>
+    ${q.points !== 1 ? `<span class="qpts">${fmtNum(q.points)} điểm</span>` : ''}</div><div class="qtext">${esc(q.question)}</div>${body}</div>`;
+}
+
+function updateProgress() {
+  if (!S.ex || !$('#pbar')) return;
+  const total = S.ex.questions.length;
+  const done = S.ex.questions.filter(q => String(S.answers[q.order] || '').trim()).length;
+  $('#pbar').style.width = (total ? done / total * 100 : 0) + '%';
+  $('#ptext').textContent = `Đã làm ${done}/${total} câu`;
+}
+
+async function submitExercise() {
+  const e = S.ex;
+  const missing = e.questions.filter(q => !String(S.answers[q.order] || '').trim()).length;
+  if (missing && !(await confirmBox(`Bạn còn ${missing} câu chưa làm. Vẫn nộp bài chứ?`, 'Nộp bài'))) return;
+  await run(async () => {
+    const r = await call('submit', { id: e.id, answers: S.answers });
+    store('draft_' + e.id, null);
+    S.ex = null;
+    showResult(r);
+  });
+}
+
+/* =====================================================================
+   KẾT QUẢ
+   ===================================================================== */
+function scoreSummary(r) {
+  const p = r.needsReview ? null : r.percent;
+  const color = p == null ? '#a78bfa' : p >= 80 ? '#059669' : p >= 50 ? '#7c3aed' : '#dc2626';
+  const ring = `conic-gradient(${color} ${(p || 0) * 3.6}deg, #efe9fa 0)`;
+  let line;
+  if (r.needsReview) {
+    line = r.autoTotal ? `Phần chấm tự động: <b>${fmtNum(r.autoScore)}/${fmtNum(r.autoTotal)}</b> điểm.<br>Phần tự luận (${fmtNum(r.essayTotal)} điểm) đang chờ thầy cô chấm.`
+      : `Bài tự luận (${fmtNum(r.essayTotal)} điểm) đang chờ thầy cô chấm.`;
+  } else {
+    const got = r.autoScore + (r.essayScore || 0), tot = r.autoTotal + r.essayTotal;
+    line = `Bạn đạt <b>${fmtNum(got)}/${fmtNum(tot)}</b> điểm.` + (r.essayTotal ? ` (Tự luận: ${fmtNum(r.essayScore)}/${fmtNum(r.essayTotal)})` : '');
+  }
+  const cheer = p == null ? '📝 Đã nộp bài!' : p >= 90 ? '🎉 Xuất sắc!' : p >= 70 ? '👏 Làm tốt lắm!' : p >= 50 ? '💪 Khá ổn, cố thêm chút nữa!' : '📚 Ôn lại và thử lần nữa nhé!';
+  return `<div class="card score-card">
+    <div class="ring" style="background:${ring}"><div style="color:${color}">${p == null ? '…' : p + '%'}</div></div>
+    <div style="flex:1;min-width:220px"><h2>${cheer}</h2><p style="margin:6px 0 0">${line}</p>
+      <p class="muted small" style="margin:6px 0 0">${esc(r.title)} · ${esc(levelName(r.level))} · ${esc(r.subLevel)} · ${fmtDate(r.submittedAt)}</p>
+      ${r.teacherComment ? `<div class="explain" style="margin-top:10px">💬 <b>Nhận xét của ${esc(r.reviewedBy || 'giáo viên')}:</b><br>${esc(r.teacherComment).replace(/\n/g, '<br>')}</div>` : ''}
+    </div></div>`;
+}
+
+function reviewItems(r) {
+  return r.items.map((it, i) => {
+    let cls = it.type === 'essay' ? 'essay' : it.correct ? 'ok' : 'bad';
+    let status = it.type === 'essay' ? '<span class="tag warn">Tự luận</span>' : it.correct ? '<span class="tag ok">✓ Đúng</span>' : '<span class="tag bad">✗ Sai</span>';
+    let body = '';
+    if (it.type === 'mcq') {
+      body = `<div class="ans">${Object.keys(it.options || {}).map(k => {
+        const right = k === it.answerText, chosen = k === String(it.given).toUpperCase();
+        return `<div class="opt-line ${right ? 'right' : chosen ? 'wrong' : ''}"><b>${k}.</b> ${esc(it.options[k])}${right ? ' ✓' : ''}${chosen && !right ? ' (bạn chọn)' : ''}</div>`;
+      }).join('')}${!it.given ? '<div class="muted small">Bạn chưa chọn đáp án.</div>' : ''}</div>`;
+    } else if (it.type === 'fill') {
+      body = `<div class="ans"><div><span class="k">Bạn trả lời:</span> <b style="color:${it.correct ? 'var(--ok)' : 'var(--bad)'}">${it.given ? esc(it.given) : '<i class="muted">(bỏ trống)</i>'}</b></div>
+        ${!it.correct ? `<div><span class="k">Đáp án đúng:</span> <b style="color:var(--ok)">${esc(it.answerText)}</b></div>` : ''}</div>`;
     } else {
-      go.removeAttribute('href');
-      note.textContent = 'Thầy cô chưa dán link ứng dụng web vào file docs/index.html.';
+      body = `<div class="essay-box">${it.given ? esc(it.given) : '<i class="muted">(bỏ trống)</i>'}</div><div class="wc">${wordCount(it.given)} từ</div>`;
     }
-  </script>
+    return `<div class="card rv ${cls}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span>${status}<span class="qpts">${fmtNum(it.points)} điểm</span></div>
+      <div class="qtext">${esc(it.question)}</div>${body}
+      ${it.explanation ? `<div class="solution">💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}</div>` : ''}</div>`;
+  }).join('');
+}
+
+function showResult(r, fromList) {
+  renderTopbar(fromList ? 'results' : 'practice');
+  window.scrollTo(0, 0);
+  app.innerHTML = `<div class="page" style="max-width:${r.passage ? 1400 : 1240}px">
+    <button class="back" data-act="${fromList ? 'myResults' : 'practice'}">← ${fromList ? 'Kết quả của tôi' : 'Về danh sách bài'}</button>
+    ${scoreSummary(r)}
+    <div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap">
+      <button class="btn primary" data-act="retry" data-id="${esc(r.exerciseId)}">↻ Làm lại</button>
+      <button class="btn" data-act="practice">Chọn bài khác</button></div>
+    ${r.passage ? (READ.er = `<div class="ptext">${esc(r.passage)}</div>`, `<div class="split"><div class="split-left"><h4>📖 Bài đọc</h4>${READ.er}</div>
+      <div class="split-right ex-main">${readBtn('er')}${reviewItems(r)}</div></div>`) : `<div class="ex-main">${reviewItems(r)}</div>`}</div>`;
+}
+
+async function showMyResults() {
+  S.ex = null; S.edit = null;
+  renderTopbar('results');
+  app.innerHTML = skeleton(4);
+  await run(async () => {
+    const list = await call('myResults');
+    const ex = await call('examMyResults');
+    app.innerHTML = `<div class="page"><div class="page-head"><h1>Kết quả của tôi</h1></div>
+      ${ex.length ? `<h2 style="margin:6px 0 12px">📝 Luyện đề</h2><div class="card tablewrap" style="margin-bottom:22px"><table><thead><tr><th>Đề</th><th>Loại</th><th>Thời gian</th><th>Điểm</th><th></th></tr></thead><tbody>
+      ${ex.map(r => `<tr><td><b>${esc(r.title)}</b></td><td>${esc(typeName(r.examType))} · Khối ${esc(r.grade)}</td><td class="muted">${fmtDate(r.submittedAt)}</td>
+        <td><span class="tag ${r.score >= 8 ? 'ok' : r.score >= 5 ? '' : 'bad'}">${fmtScore(r.score)}/10</span></td>
+        <td><button class="btn sm" data-act="xResult" data-id="${esc(r.id)}">Xem lại</button></td></tr>`).join('')}</tbody></table></div><h2 style="margin:6px 0 12px">📚 Bài tập</h2>` : ''}
+      ${list.length ? `<div class="card tablewrap"><table><thead><tr><th>Bài</th><th>Cấp độ</th><th>Thời gian</th><th>Điểm</th><th></th></tr></thead><tbody>
+      ${list.map(r => `<tr><td><b>${esc(r.title)}</b></td><td>${esc(levelName(r.level))} · ${esc(r.subLevel)}</td><td class="muted">${fmtDate(r.submittedAt)}</td>
+        <td>${pctTag(r.percent)}${r.needsReview && r.percent != null ? ' <span class="tag warn">Tự luận chờ chấm</span>' : ''}</td>
+        <td><button class="btn sm" data-act="viewResult" data-id="${esc(r.id)}">Xem lại</button></td></tr>`).join('')}
+      </tbody></table></div>` : `<div class="card empty">Bạn chưa làm bài nào. <a href="#" data-act="practice">Bắt đầu luyện tập →</a></div>`}</div>`;
+  });
+}
+
+/* =====================================================================
+   GIÁO VIÊN: QUẢN TRỊ
+   ===================================================================== */
+const ADMIN_TABS = [['overview', 'Tổng quan'], ['pending', 'Duyệt tài khoản'], ['users', 'Học sinh'], ['results', 'Kết quả'], ['assign', 'Giao bài'], ['bank', 'Kho bài tập'], ['exams', 'Đề thi'], ['games', 'Trò chơi']];
+
+async function showAdmin(tab) {
+  S.ex = null; S.edit = null; S.setEdit = null; S.xEdit = null; X.st = null;
+  S.adminTab = tab || 'overview';
+  renderTopbar('admin');
+  window.scrollTo(0, 0);
+  app.innerHTML = adminFrame('<div class="skeleton"></div>');
+  await loadAdmin(S.adminTab);
+}
+
+async function loadAdmin(tab) {
+  await run(async () => {
+    if (tab === 'overview') S.adm.overview = await call('overview');
+    if (tab === 'pending' || tab === 'users') S.adm.users = await call('listUsers');
+    if (tab === 'users' || tab === 'assign') S.adm.classes = await call('listClasses');
+    if (tab === 'assign') S.adm.assigns = await call('listAssignments');
+    if (tab === 'exams') S.adm.exams = await call('examsAdmin');
+    if (tab === 'results') S.adm.results = await call('listResults');
+    if (tab === 'bank') S.adm.exercises = await call('listExercises');
+    if (tab === 'games') { S.adm.sets = await call('listWordSets'); S.adm.plays = await call('recentPlays'); }
+    renderAdmin();
+  });
+}
+
+function adminFrame(inner) {
+  const pending = S.adm.overview ? S.adm.overview.pending : (S.adm.users ? S.adm.users.filter(u => u.status === 'pending').length : 0);
+  return `<div class="page">
+    <div class="page-head"><h1>Quản trị</h1><button class="btn" data-act="admin" data-tab="${S.adminTab}">↻ Làm mới</button></div>
+    <div class="pills">${ADMIN_TABS.map(([k, l]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" data-act="admin" data-tab="${k}">${l}
+      ${k === 'pending' && pending ? `<span class="badge">${pending}</span>` : ''}</button>`).join('')}</div>
+    <div id="adminBody">${inner}</div></div>`;
+}
+
+function renderAdmin() {
+  const t = S.adminTab;
+  const html = t === 'overview' ? aOverview() : t === 'pending' ? aPending() : t === 'users' ? aUsers() : t === 'results' ? aResults() : t === 'games' ? aGames() : t === 'assign' ? aAssign() : t === 'exams' ? aExams() : aBank();
+  // giữ con trỏ khi đang gõ ô tìm kiếm
+  const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.filter : null;
+  app.innerHTML = adminFrame(html);
+  if (focused) { const el = document.querySelector(`[data-filter="${focused}"]`); if (el && el.tagName === 'INPUT') { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+}
+
+/* ---- Tab Tổng quan ---- */
+function aOverview() {
+  const o = S.adm.overview; if (!o) return '';
+  const card = (cls, v, l, tab) => `<div class="stat-card ${cls} ${tab ? 'click' : ''}" ${tab ? `data-act="admin" data-tab="${tab}"` : ''}><b>${v}</b><span>${l}</span></div>`;
+  return `<div class="stats">
+      ${card('s1', o.pending, 'tài khoản chờ duyệt', 'pending')}
+      ${card('s2', o.students, 'học sinh đã duyệt', 'users')}
+      ${card('s3', o.week, 'lượt làm bài 7 ngày qua', 'results')}
+      ${card('s4', o.total, 'tổng lượt làm bài', 'results')}
+      ${card('s5', o.avg + '%', 'tỉ lệ đúng trung bình')}
+      ${card('s6', o.review, 'lượt cần GV xem lại', 'results')}
+    </div>
+    <div class="card bank-card">
+      <div><h3>Kho bài luyện</h3><div class="muted">${o.exercisesOpen} bài đang mở / ${o.exercisesTotal} bài. Thêm, sửa, xoá bài ngay trong “Kho bài tập”, hoặc sửa trực tiếp trên Google Sheets.</div></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-act="newEx">+ Thêm bài tập</button><button class="btn" data-act="openSheet">▦ Mở Google Sheet</button></div>
+    </div>
+    <div class="card tablewrap"><h3 style="margin-bottom:8px">Theo cấp độ</h3>
+      <table><thead><tr><th>Cấp độ</th><th>Bài đang mở</th><th>Học sinh</th><th>Lượt làm</th><th>Điểm TB</th></tr></thead><tbody>
+      ${o.byLevel.map(l => `<tr><td><b>${esc(l.name)}</b></td><td>${l.open} / ${l.exercises}</td><td>${l.students}</td><td>${l.attempts}</td><td>${l.avg == null ? '—' : l.avg + '%'}</td></tr>`).join('')}
+      </tbody></table></div>`;
+}
+
+/* ---- Tab Duyệt tài khoản ---- */
+function aPending() {
+  const list = (S.adm.users || []).filter(u => u.status === 'pending');
+  if (!list.length) return `<div class="card empty">🎉 Không có tài khoản nào chờ duyệt.</div>`;
+  return `<div class="card tablewrap">
+    <div class="toolbar" style="justify-content:space-between"><b>${list.length} tài khoản chờ duyệt</b><button class="btn sm primary" data-act="approveAll">✓ Duyệt tất cả</button></div>
+    <table><thead><tr><th>Họ tên</th><th>Lớp</th><th>Cấp độ</th><th>Tên đăng nhập</th><th>Đăng ký lúc</th><th></th></tr></thead><tbody>
+    ${list.map(u => `<tr><td><b>${esc(u.fullName)}</b></td><td>${esc(u.className)}</td><td>${esc(levelName(u.level))}</td><td>@${esc(u.username)}</td>
+      <td class="muted">${fmtDate(u.createdAt)}</td><td><div class="actions"><button class="btn sm primary" data-act="approve" data-id="${esc(u.id)}">Duyệt</button>
+      <button class="btn sm danger" data-act="reject" data-id="${esc(u.id)}">Từ chối</button></div></td></tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+/* ---- Tab Học sinh ---- */
+function classCell(u) {
+  const cls = S.adm.classes || [];
+  if (!cls.length || u.role === 'teacher') return esc(u.className);
+  const known = cls.some(c => c.name === u.className);
+  return `<select class="inp" style="padding:6px 8px;min-width:96px;width:auto" data-userclass="${esc(u.id)}"><option value="">— Chưa xếp —</option>
+    ${!known && u.className ? `<option selected value="${esc(u.className)}">${esc(u.className)} (cũ)</option>` : ''}
+    ${cls.map(c => `<option ${c.name === u.className ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>`;
+}
+function aUsers() {
+  const q = S.f.userQ.toLowerCase().trim();
+  const list = (S.adm.users || []).filter(u => u.status !== 'pending')
+    .filter(u => !S.f.userRole || u.role === S.f.userRole || (S.f.userRole === 'locked' && (u.status === 'locked' || u.status === 'rejected')))
+    .filter(u => !q || (u.fullName + ' ' + u.username + ' ' + u.className).toLowerCase().includes(q));
+  const stTag = u => u.status === 'approved' ? '<span class="tag ok">Hoạt động</span>' : u.status === 'locked' ? '<span class="tag bad">Đã khoá</span>' : '<span class="tag bad">Bị từ chối</span>';
+  return `<div class="toolbar">
+      <input class="inp" placeholder="🔍 Tìm tên, lớp, tên đăng nhập..." data-filter="userQ" value="${esc(S.f.userQ)}">
+      <select class="inp" style="max-width:200px" data-filter="userRole">
+        <option value="">Tất cả</option><option value="student" ${S.f.userRole === 'student' ? 'selected' : ''}>Học sinh</option>
+        <option value="teacher" ${S.f.userRole === 'teacher' ? 'selected' : ''}>Giáo viên</option><option value="locked" ${S.f.userRole === 'locked' ? 'selected' : ''}>Bị khoá / từ chối</option></select>
+      <span class="muted small">${list.length} tài khoản</span></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Họ tên</th><th>Lớp</th><th>Cấp độ</th><th>Vai trò</th><th>Lượt làm</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    ${list.map(u => `<tr><td><b>${esc(u.fullName)}</b><div class="muted small">@${esc(u.username)}</div></td><td>${classCell(u)}</td><td>${esc(levelName(u.level))}</td>
+      <td>${u.role === 'teacher' ? '<span class="tag" style="background:#ede9fe;color:#6d28d9">Giáo viên</span>' : 'Học sinh'}</td><td>${u.attempts}</td><td>${stTag(u)}</td>
+      <td><div class="actions">${u.id === S.user.id ? '<span class="muted small">(bạn)</span>' : `
+        ${u.status === 'approved' ? `<button class="btn sm" data-act="lock" data-id="${esc(u.id)}">Khoá</button>` : `<button class="btn sm" data-act="unlock" data-id="${esc(u.id)}">Mở khoá</button>`}
+        ${u.role === 'student' ? `<button class="btn sm" data-act="makeTeacher" data-id="${esc(u.id)}">Cấp quyền GV</button>` : `<button class="btn sm" data-act="makeStudent" data-id="${esc(u.id)}">Bỏ quyền GV</button>`}
+        <button class="btn sm" data-act="resetPw" data-id="${esc(u.id)}" data-name="${esc(u.fullName)}">Đặt lại MK</button>`}</div></td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Không có tài khoản phù hợp.</div>'}</div>`;
+}
+
+async function setStatus(id, status) {
+  if (status === 'rejected' && !(await confirmBox('Từ chối tài khoản này?', 'Từ chối', true))) return;
+  if (status === 'locked' && !(await confirmBox('Khoá tài khoản này? Học sinh sẽ không đăng nhập được.', 'Khoá', true))) return;
+  await run(async () => {
+    await call('setUserStatus', { userId: id, status });
+    const u = S.adm.users.find(x => x.id === id); if (u) u.status = status;
+    if (S.adm.overview && status !== 'locked') S.adm.overview.pending = S.adm.users.filter(x => x.status === 'pending').length;
+    toast(status === 'approved' ? 'Đã duyệt / mở khoá' : status === 'locked' ? 'Đã khoá tài khoản' : 'Đã từ chối', 'ok');
+    renderAdmin();
+  });
+}
+async function approveAll() {
+  if (!(await confirmBox('Duyệt tất cả tài khoản đang chờ?', 'Duyệt tất cả'))) return;
+  await run(async () => { const n = await call('approveAll'); toast(`Đã duyệt ${n} tài khoản`, 'ok'); S.adm.overview = null; await loadAdmin('pending'); });
+}
+async function setRole(id, role) {
+  const msg = role === 'teacher' ? 'Cấp quyền giáo viên cho tài khoản này? Họ sẽ vào được trang Quản trị.' : 'Bỏ quyền giáo viên của tài khoản này?';
+  if (!(await confirmBox(msg, 'Đồng ý'))) return;
+  await run(async () => { await call('setRole', { userId: id, role }); const u = S.adm.users.find(x => x.id === id); if (u) { u.role = role; u.status = 'approved'; } toast('Đã cập nhật vai trò', 'ok'); renderAdmin(); });
+}
+async function resetPw(id, name) {
+  const pw = await promptBox('Đặt lại mật khẩu', `Mật khẩu mới cho ${name} (ít nhất 6 ký tự):`, 'text');
+  if (pw == null) return;
+  await run(async () => { await call('resetPassword', { userId: id, newPassword: pw }); toast('Đã đặt lại mật khẩu. Hãy báo mật khẩu mới cho học sinh.', 'ok'); });
+}
+
+/* ---- Tab Kết quả ---- */
+function aResults() {
+  const q = S.f.resQ.toLowerCase().trim();
+  const all = S.adm.results || [];
+  const list = all.filter(r => (!S.f.resLevel || r.level === S.f.resLevel)
+    && (!S.f.resState || (S.f.resState === 'review' ? r.needsReview : !r.needsReview))
+    && (!q || (r.fullName + ' ' + r.username + ' ' + r.className + ' ' + r.title).toLowerCase().includes(q)));
+  return `<div class="toolbar">
+      <input class="inp" placeholder="🔍 Tìm học sinh, lớp, tên bài..." data-filter="resQ" value="${esc(S.f.resQ)}">
+      <select class="inp" style="max-width:180px" data-filter="resLevel"><option value="">Mọi cấp độ</option>
+        ${LEVELS.map(l => `<option value="${esc(l.id)}" ${S.f.resLevel === l.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
+      <select class="inp" style="max-width:200px" data-filter="resState"><option value="">Tất cả</option>
+        <option value="review" ${S.f.resState === 'review' ? 'selected' : ''}>Cần GV chấm (${all.filter(r => r.needsReview).length})</option>
+        <option value="done" ${S.f.resState === 'done' ? 'selected' : ''}>Đã có điểm</option></select>
+      <span class="muted small">${list.length} lượt</span></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Thời gian</th><th>Học sinh</th><th>Bài</th><th>Điểm</th><th></th></tr></thead><tbody>
+    ${list.slice(0, 300).map(r => `<tr><td class="muted">${fmtDate(r.submittedAt)}</td>
+      <td><b>${esc(r.fullName)}</b><div class="muted small">${r.className ? 'Lớp ' + esc(r.className) + ' · ' : ''}@${esc(r.username)}</div></td>
+      <td>${esc(r.title)}<div class="muted small">${esc(levelName(r.level))} · ${esc(r.subLevel)}</div></td>
+      <td>${pctTag(r.percent)} ${r.needsReview ? '<span class="tag warn">Cần chấm</span>' : ''}</td>
+      <td><button class="btn sm ${r.needsReview ? 'primary' : ''}" data-act="gradeOpen" data-id="${esc(r.id)}">${r.needsReview ? 'Chấm bài' : 'Xem'}</button></td></tr>`).join('')}
+    </tbody></table>${list.length > 300 ? '<p class="muted small">Đang hiện 300 lượt mới nhất. Dùng bộ lọc hoặc xem toàn bộ trên Google Sheet.</p>' : ''}` : '<div class="empty">Chưa có kết quả phù hợp.</div>'}</div>`;
+}
+
+async function openGrade(id) {
+  await run(async () => {
+    const r = await call('resultDetail', { id });
+    const essays = r.items.filter(i => i.type === 'essay');
+    const form = r.essayTotal > 0 || r.needsReview ? `<div class="card" style="background:#faf7ff;margin-top:14px">
+      <h3>✍️ Chấm điểm${r.needsReview ? '' : ' lại'}</h3>
+      ${r.essayTotal > 0 ? `<label class="f">Điểm phần tự luận (tối đa ${fmtNum(r.essayTotal)})</label>
+        <input class="inp" id="gScore" type="number" step="0.25" min="0" max="${r.essayTotal}" value="${r.essayScore == null ? '' : r.essayScore}" style="max-width:200px">` : ''}
+      <label class="f">Nhận xét cho học sinh</label><textarea class="inp" id="gComment" rows="4" placeholder="Điểm mạnh, lỗi cần sửa...">${esc(r.teacherComment)}</textarea>
+      <div class="m-actions"><button class="btn primary" data-act="gradeSave" data-id="${esc(r.id)}">Lưu điểm & nhận xét</button></div></div>` : `
+      <div class="card" style="background:#faf7ff;margin-top:14px"><label class="f" style="margin-top:0">Nhận xét cho học sinh (tuỳ chọn)</label>
+      <textarea class="inp" id="gComment" rows="3">${esc(r.teacherComment)}</textarea>
+      <div class="m-actions"><button class="btn primary" data-act="gradeSave" data-id="${esc(r.id)}">Lưu nhận xét</button></div></div>`;
+    openModal(`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2>${esc(r.fullName)}</h2>
+      <div class="muted small">${r.className ? 'Lớp ' + esc(r.className) + ' · ' : ''}@${esc(r.username)}</div></div><button class="btn sm" data-act="closeModal">✕ Đóng</button></div>
+      <div style="margin-top:14px">${scoreSummary(r)}</div>
+      ${essays.length ? form : ''}
+      <div class="ex-main" style="margin-top:14px">${reviewItems(r)}</div>
+      ${essays.length ? '' : form}`, true);
+  });
+}
+
+async function saveGrade(id) {
+  const scoreEl = $('#gScore');
+  await run(async () => {
+    await call('gradeResult', { id, essayScore: scoreEl ? scoreEl.value : 0, comment: $('#gComment').value });
+    closeModal(); toast('Đã lưu điểm', 'ok');
+    S.adm.overview = null;
+    await loadAdmin('results');
+  });
+}
+
+/* ---- Tab Kho bài tập ---- */
+function aBank() {
+  const all = S.adm.exercises || [];
+  const lv = LEVELS.find(l => l.id === S.f.bankLevel);
+  const q = S.f.bankQ.toLowerCase().trim();
+  const list = all.filter(e => (!lv || e.level === lv.id) && (!S.f.bankSub || e.subLevel === S.f.bankSub) && (!q || e.title.toLowerCase().includes(q)))
+    .sort((a, b) => LEVELS.findIndex(l => l.id === a.level) - LEVELS.findIndex(l => l.id === b.level) || String(a.subLevel).localeCompare(String(b.subLevel), 'vi', { numeric: true }) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  return `<div class="chips"><button class="chip ${!lv ? 'on' : ''}" data-act="bankLevel" data-id="">Tất cả (${all.length})</button>
+      ${LEVELS.map(l => `<button class="chip ${lv && lv.id === l.id ? 'on' : ''}" data-act="bankLevel" data-id="${esc(l.id)}">${esc(l.name)} (${all.filter(e => e.level === l.id).length})</button>`).join('')}</div>
+    <div class="toolbar">
+      <input class="inp" placeholder="🔍 Tìm tên bài..." data-filter="bankQ" value="${esc(S.f.bankQ)}">
+      ${lv ? `<select class="inp" style="max-width:200px" data-filter="bankSub"><option value="">Mọi lớp/cấp</option>
+        ${lv.subs.map(s => `<option ${S.f.bankSub === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
+      <span style="flex:1"></span><button class="btn primary" data-act="newEx">+ Thêm bài tập</button></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Bài tập</th><th>Cấp độ</th><th>Kỹ năng</th><th>Số câu</th><th>Lượt làm</th><th>Mở</th><th></th></tr></thead><tbody>
+    ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${e.hasAudio ? '🎧 ' : ''}${e.hasPassage ? '📖 ' : ''}${esc(e.createdBy || '')}</div></td>
+      <td>${esc(levelName(e.level))}<div class="muted small">${esc(e.subLevel)}</div></td><td>${skillTag(e.skill)}</td><td>${e.questionCount}</td><td>${e.attempts}</td>
+      <td><button class="switch ${e.status === 'open' ? 'on' : ''}" title="${e.status === 'open' ? 'Đang mở – bấm để đóng' : 'Đang đóng – bấm để mở'}" data-act="toggleEx" data-id="${esc(e.id)}"></button></td>
+      <td><div class="actions"><button class="btn sm primary" data-act="assignEx" data-id="${esc(e.id)}">Giao</button><button class="btn sm" data-act="previewEx" data-id="${esc(e.id)}">Xem thử</button><button class="btn sm" data-act="editEx" data-id="${esc(e.id)}">Sửa</button>
+        <button class="btn sm danger" data-act="delEx" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button></div></td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Chưa có bài tập nào ở mục này.</div>'}</div>`;
+}
+
+async function toggleEx(id) {
+  await run(async () => {
+    const st = await call('toggleExercise', { id });
+    const e = S.adm.exercises.find(x => x.id === id); if (e) e.status = st;
+    toast(st === 'open' ? 'Đã mở bài cho học sinh' : 'Đã đóng bài', 'ok'); renderAdmin();
+  });
+}
+async function deleteEx(id, title) {
+  if (!(await confirmBox(`Xoá bài "${title}"? Kết quả cũ của học sinh vẫn được giữ trong Sheet.`, 'Xoá', true))) return;
+  await run(async () => { await call('deleteExercise', { id }); S.adm.exercises = S.adm.exercises.filter(x => x.id !== id); toast('Đã xoá bài', 'ok'); renderAdmin(); });
+}
+
+/* =====================================================================
+   GIÁO VIÊN: SOẠN BÀI TẬP
+   ===================================================================== */
+function blankQ(type) { return { type: type || 'mcq', question: '', A: '', B: '', C: '', D: '', answer: type === 'mcq' || !type ? 'A' : '', explanation: '', points: type === 'essay' ? 5 : 1 }; }
+
+async function showEditor(id) {
+  renderTopbar('admin');
+  window.scrollTo(0, 0);
+  if (!id) {
+    const lv = LEVELS.find(l => l.id === S.f.bankLevel) || LEVELS[0];
+    S.edit = { exercise: { id: '', title: '', level: lv.id, subLevel: S.f.bankSub || lv.subs[0], skill: SKILLS[0], passage: '', audioUrl: '', status: 'open' }, questions: [blankQ('mcq')] };
+    return renderEditor();
+  }
+  app.innerHTML = skeleton(2);
+  await run(async () => { S.edit = await call('exerciseFull', { id }); renderEditor(); });
+}
+
+function renderEditor() {
+  const x = S.edit.exercise, qs = S.edit.questions;
+  const lv = LEVELS.find(l => l.id === x.level) || LEVELS[0];
+  const opt = (v, cur, label) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label || v)}</option>`;
+  app.innerHTML = `<div class="page" style="max-width:960px">
+    <button class="back" data-act="cancelEdit">← Kho bài tập</button>
+    <h1>${x.id ? 'Sửa bài tập' : 'Thêm bài tập mới'}</h1>
+    <div class="card" style="margin-top:16px">
+      <label class="f" style="margin-top:0">Tên bài *</label><input class="inp" data-ef="title" value="${esc(x.title)}" placeholder="vd: Unit 3 – Passive voice">
+      <div class="row">
+        <div><label class="f">Cấp độ *</label><select class="inp" data-ef="level">${LEVELS.map(l => opt(l.id, x.level, l.name)).join('')}</select></div>
+        <div><label class="f">Lớp / cấp nhỏ *</label><select class="inp" data-ef="subLevel"><option value="">— Chọn —</option>${lv.subs.map(s => opt(s, x.subLevel)).join('')}</select></div>
+        <div><label class="f">Kỹ năng</label><select class="inp" data-ef="skill">${SKILLS.map(s => opt(s, x.skill)).join('')}</select></div>
+        <div><label class="f">Trạng thái</label><select class="inp" data-ef="status">${opt('open', x.status, 'Mở cho học sinh')}${opt('closed', x.status, 'Đóng (ẩn)')}</select></div>
+      </div>
+      <label class="f">Bài đọc (nếu có)</label>
+      <textarea class="inp" data-ef="passage" rows="6" placeholder="Dán đoạn văn bài đọc hiểu vào đây. Các câu hỏi bên dưới sẽ dùng chung bài đọc này.">${esc(x.passage)}</textarea>
+      <label class="f">Link file nghe (nếu có)</label>
+      <input class="inp" data-ef="audioUrl" value="${esc(x.audioUrl)}" placeholder="Link chia sẻ Google Drive hoặc link .mp3">
+      <div class="hint">Google Drive: chuột phải file mp3 → Chia sẻ → “Bất kỳ ai có đường liên kết” → Sao chép đường liên kết.</div>
+    </div>
+
+    <div class="page-head" style="margin:26px 0 12px"><h2>Câu hỏi (${qs.length})</h2>
+      <button class="btn" data-act="quick">⚡ Dán nhanh nhiều câu</button></div>
+    ${qs.map(qEditHTML).join('')}
+    <div class="add-row"><button class="btn" data-act="qAdd" data-type="mcq">+ Trắc nghiệm</button><button class="btn" data-act="qAdd" data-type="fill">+ Điền / viết lại</button>
+      <button class="btn" data-act="qAdd" data-type="essay">+ Tự luận</button></div>
+    <div class="sticky-save"><button class="btn" data-act="cancelEdit">Huỷ</button><button class="btn primary" data-act="saveEx">💾 Lưu bài tập</button></div>
+  </div>`;
+}
+
+function qEditHTML(q, i) {
+  const f = (name, val, ph) => `<input class="inp" data-qi="${i}" data-qf="${name}" value="${esc(val)}" placeholder="${esc(ph || '')}">`;
+  let body = '';
+  if (q.type === 'mcq') {
+    body = ['A', 'B', 'C', 'D'].map(k => `<div class="opt-row"><b>${k}</b>${f(k, q[k], k === 'C' || k === 'D' ? '(có thể bỏ trống)' : '')}</div>`).join('') +
+      `<div class="row"><div><label class="f">Đáp án đúng</label><select class="inp" data-qi="${i}" data-qf="answer">${['A', 'B', 'C', 'D'].map(k => `<option ${String(q.answer).toUpperCase() === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div>
+       <div><label class="f">Điểm</label>${f('points', q.points)}</div></div>`;
+  } else if (q.type === 'fill') {
+    body = `<div class="row"><div style="flex:3"><label class="f">Đáp án đúng</label>${f('answer', q.answer, 'vd: has gone|went')}
+      <div class="hint">Nhiều đáp án được chấp nhận thì ngăn bằng dấu <b>|</b>. Không phân biệt hoa/thường, bỏ qua dấu chấm cuối.</div></div>
+      <div><label class="f">Điểm</label>${f('points', q.points)}</div></div>`;
+  } else {
+    body = `<div class="row"><div><label class="f">Điểm tối đa</label>${f('points', q.points)}</div><div style="flex:3"></div></div>
+      <div class="hint">Học sinh viết bài; giáo viên chấm trong tab “Kết quả”.</div>`;
+  }
+  return `<div class="q-edit" id="qe-${i}">
+    <div class="top"><b class="qnum">Câu ${i + 1}</b>
+      <div class="actions"><select class="inp" style="width:auto;padding:6px 10px" data-qi="${i}" data-qf="type">
+        ${Object.keys(TYPE_LABEL).map(t => `<option value="${t}" ${q.type === t ? 'selected' : ''}>${TYPE_LABEL[t]}</option>`).join('')}</select>
+        <button class="btn sm" data-act="qUp" data-i="${i}" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn sm" data-act="qDown" data-i="${i}" ${i === S.edit.questions.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="btn sm danger" data-act="qDel" data-i="${i}">Xoá</button></div></div>
+    <label class="f">Nội dung câu hỏi</label>
+    <textarea class="inp" rows="2" data-qi="${i}" data-qf="question" placeholder="${q.type === 'essay' ? 'Đề bài viết...' : 'vd: She ___ to school every day.'}">${esc(q.question)}</textarea>
+    ${body}
+    ${q.type !== 'essay' ? `<label class="f">Giải thích (hiện sau khi nộp bài)</label>${f('explanation', q.explanation, 'Vì sao đáp án này đúng...')}` :
+      `<label class="f">Tiêu chí chấm (hiện sau khi nộp bài)</label>${f('explanation', q.explanation, 'vd: Nội dung 2đ, Ngữ pháp 2đ, Từ vựng 1đ')}`}
+  </div>`;
+}
+
+function moveQ(i, d) {
+  const qs = S.edit.questions, j = i + d;
+  if (j < 0 || j >= qs.length) return;
+  [qs[i], qs[j]] = [qs[j], qs[i]];
+  renderEditor(); scrollToQ(j);
+}
+function scrollToQ(i) { const el = document.getElementById('qe-' + i); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+
+async function saveExercise() {
+  await run(async () => {
+    const r = await call('saveExercise', S.edit);
+    S.edit.exercise.id = r.id;
+    toast('Đã lưu bài tập ✓', 'ok');
+    S.adm.overview = null;
+    S.edit = null;
+    showAdmin('bank');
+  });
+}
+
+/* ---- Dán nhanh nhiều câu ---- */
+const QUICK_SAMPLE = `She ___ to school every day.
+A. go
+B. goes
+C. going
+D. went
+Đáp án: B
+Giải thích: Chủ ngữ ngôi 3 số ít → goes
+
+Water ___ (boil) at 100°C.
+Đáp án: boils
+
+[Tự luận] Write a paragraph about your hobby.`;
+
+function openQuickImport() {
+  openModal(`<h3>⚡ Dán nhanh nhiều câu hỏi</h3>
+    <p class="small muted">Mỗi câu cách nhau <b>một dòng trống</b>. Câu có A. B. C. D. là trắc nghiệm; câu chỉ có “Đáp án:” là điền từ; câu bắt đầu bằng <b>[Tự luận]</b> là tự luận.</p>
+    <textarea class="inp" id="quickText" rows="14" style="font-family:ui-monospace,Consolas,monospace;font-size:13px" placeholder="${esc(QUICK_SAMPLE)}"></textarea>
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" data-act="quickDo">Thêm vào bài</button></div>`, true);
+}
+
+function parseQuick(text) {
+  return text.replace(/\r/g, '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).map(block => {
+    const q = blankQ('mcq'); q.answer = '';
+    const qLines = [];
+    block.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
+      let m;
+      if ((m = l.match(/^([A-Da-d])\s*[.)]\s*(.*)$/))) q[m[1].toUpperCase()] = m[2];
+      else if ((m = l.match(/^(đáp án|dap an|answer|key|đ\/a)\s*[:：]\s*(.*)$/i))) q.answer = m[2].trim();
+      else if ((m = l.match(/^(giải thích|giai thich|explanation|tiêu chí)\s*[:：]\s*(.*)$/i))) q.explanation = m[2].trim();
+      else qLines.push(l);
+    });
+    q.question = qLines.join('\n').replace(/^(câu|question)?\s*\d+\s*[.):]\s*/i, '');
+    if (/^\[(tự luận|tu luan|viết|essay)\]/i.test(q.question)) { q.type = 'essay'; q.points = 5; q.question = q.question.replace(/^\[[^\]]+\]\s*/, ''); }
+    else if (!q.A && !q.B) q.type = 'fill';
+    else q.answer = (q.answer.match(/[A-D]/i) || ['A'])[0].toUpperCase();
+    return q;
+  }).filter(q => q.question);
+}
+
+function doQuickImport() {
+  const qs = parseQuick($('#quickText').value);
+  if (!qs.length) return toast('Chưa đọc được câu nào. Kiểm tra lại định dạng nhé.', 'err');
+  // bỏ câu trống mặc định nếu chưa nhập gì
+  S.edit.questions = S.edit.questions.filter(q => q.question.trim());
+  S.edit.questions.push(...qs);
+  closeModal(); renderEditor();
+  toast(`Đã thêm ${qs.length} câu. Kiểm tra lại rồi bấm Lưu.`, 'ok');
+}
+
+/* =====================================================================
+   TRÒ CHƠI ÔN TẬP: Flashcard · Ghép từ – nghĩa · Sắp xếp câu · Đua tốc độ
+   ===================================================================== */
+const GAMES = {
+  flashcard: { name: 'Flashcard', icon: '🃏', desc: 'Lật thẻ để học nghĩa và cách dùng từ', need: 'words', min: 1 },
+  match: { name: 'Ghép từ – nghĩa', icon: '🧩', desc: 'Nối từ với nghĩa đúng, càng nhanh càng nhiều điểm', need: 'words', min: 3 },
+  scramble: { name: 'Sắp xếp câu', icon: '🔀', desc: 'Xếp các từ thành câu đúng ngữ pháp', need: 'sentences', min: 1 },
+  speed: { name: 'Đua tốc độ', icon: '⚡', desc: '10 giây mỗi câu, trả lời nhanh được thưởng điểm', need: 'words', min: 4 }
+};
+const SP_TIME = 10;  // số giây mỗi câu ở trò Đua tốc độ
+const G = { sets: null, level: '', set: null, game: '', st: null, t0: 0, tick: null, tmo: null, lbGame: 'speed' };
+
+function stopGame() { clearInterval(G.tick); clearTimeout(G.tmo); G.tick = G.tmo = null; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function speak(text) {
+  try { const u = new SpeechSynthesisUtterance(text); u.lang = 'en-US'; u.rate = 0.9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {}
+}
+function countOf(set, need) { return Array.isArray(set[need]) ? set[need].length : (set[need] || 0); }
+function elapsed() { return (Date.now() - G.t0) / 1000; }
+function fmtSec(s) { s = Math.round(s); return s >= 60 ? Math.floor(s / 60) + ' phút ' + (s % 60) + ' giây' : s + ' giây'; }
+
+/* ---------- Danh sách bộ từ ---------- */
+async function showGames() {
+  S.ex = null; S.edit = null;
+  renderTopbar('games');
+  app.innerHTML = skeleton(6);
+  await run(async () => {
+    G.sets = await call('wordSets');
+    if (!G.level) G.level = S.user.level || LEVELS[0].id;
+    renderGames();
+  });
+}
+
+function renderGames() {
+  const lv = LEVELS.find(l => l.id === G.level) || LEVELS[0];
+  const list = G.sets.filter(s => s.level === lv.id);
+  app.innerHTML = `<div class="page">
+    <div class="page-head"><div><h1>🎮 Trò chơi ôn tập</h1>
+      <div class="muted">Chọn một bộ từ rồi chọn trò chơi. Điểm cao nhất của bạn sẽ lên bảng xếp hạng!</div></div></div>
+    <div class="pills">${LEVELS.map(l => `<button class="pill ${l.id === lv.id ? 'on' : ''}" data-act="gLevel" data-id="${esc(l.id)}">${esc(l.name)}
+      <span class="small" style="opacity:.75">${G.sets.filter(s => s.level === l.id).length}</span></button>`).join('')}</div>
+    ${list.length ? `<div class="grid">${list.map(setCard).join('')}</div>` : '<div class="card empty">Chưa có bộ từ nào ở cấp độ này. 🎲</div>'}
+  </div>`;
+}
+
+function setCard(s) {
+  return `<div class="card ex-card" data-act="openSet" data-id="${esc(s.id)}">
+    <div class="meta"><span class="tag">${esc(s.subLevel)}</span></div>
+    <h3>${esc(s.title)}</h3>
+    <div class="muted small">${s.words} từ vựng · ${s.sentences} câu</div>
+    <div class="game-btns">${Object.keys(GAMES).map(g => {
+      const ok = countOf(s, GAMES[g].need) >= GAMES[g].min;
+      const best = s.best && s.best[g] != null ? ' ' + s.best[g] : '';
+      return `<button class="gbtn" ${ok ? '' : 'disabled'} data-act="play" data-game="${g}" data-id="${esc(s.id)}" title="${GAMES[g].name}">${GAMES[g].icon}${best}</button>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+/* ---------- Trang của một bộ từ ---------- */
+async function openSet(id) {
+  renderTopbar('games');
+  app.innerHTML = skeleton(3);
+  await run(async () => { G.set = await call('wordSet', { id }); renderSetHome(); });
+}
+
+function renderSetHome() {
+  stopGame();
+  const s = G.set;
+  window.scrollTo(0, 0);
+  app.innerHTML = `<div class="page">
+    <button class="back" data-act="games">← Tất cả bộ từ</button>
+    <div class="crumbs">${esc(levelName(s.level))} · ${esc(s.subLevel)}</div><h1>${esc(s.title)}</h1>
+    <p class="muted" style="margin:4px 0 0">${s.words.length} từ vựng · ${s.sentences.length} câu</p>
+    <div class="game-tiles">${Object.keys(GAMES).map(g => {
+      const x = GAMES[g], ok = s[x.need].length >= x.min;
+      return `<div class="card game-tile ${ok ? '' : 'off'}" ${ok ? `data-act="play" data-game="${g}" data-id="${esc(s.id)}"` : ''}>
+        <div class="gi">${x.icon}</div><h3>${x.name}</h3>
+        <div class="muted small">${ok ? x.desc : (x.need === 'words' ? `Cần ít nhất ${x.min} từ vựng` : 'Bộ này chưa có câu để sắp xếp')}</div></div>`;
+    }).join('')}</div>
+    <div class="card" style="margin-top:20px">
+      <div class="page-head" style="margin-bottom:6px"><h3>🏆 Bảng xếp hạng</h3>
+        <div class="chips" style="margin:0">${['match', 'scramble', 'speed'].map(g => `<button class="chip ${G.lbGame === g ? 'on' : ''}" data-act="lbGame" data-game="${g}">${GAMES[g].name}</button>`).join('')}</div></div>
+      <div id="lb" class="muted">Đang tải…</div></div>
+  </div>`;
+  loadLb();
+}
+
+async function loadLb() {
+  const el = () => $('#lb');
+  try { const r = await call('leaderboard', { setId: G.set.id, game: G.lbGame }); if (el()) el().innerHTML = lbHTML(r); }
+  catch (e) { if (el()) el().textContent = e.message; }
+}
+
+function lbHTML(r) {
+  if (!r.top.length) return '<div class="empty" style="padding:20px">Chưa ai chơi trò này. Hãy là người đầu tiên! 🚀</div>';
+  const medal = n => ['🥇', '🥈', '🥉'][n - 1] || n;
+  const row = x => `<tr class="${x.me ? 'me' : ''}"><td class="medal">${medal(x.rank)}</td>
+    <td>${esc(x.fullName)}${x.className ? ` <span class="muted small">${esc(x.className)}</span>` : ''}${x.me ? ' <span class="tag" style="background:#ede9fe;color:#6d28d9">Bạn</span>' : ''}</td>
+    <td><b>${x.score}</b> điểm</td><td class="muted small">${x.correct}/${x.total} đúng · ${fmtSec(x.seconds)}</td></tr>`;
+  const meRow = r.me && r.me.rank > 10 ? `<tr><td colspan="4" class="muted small" style="text-align:center">⋯</td></tr>` + row(r.me) : '';
+  return `<table class="lb"><tbody>${r.top.map(row).join('')}${meRow}</tbody></table>
+    <div class="muted small" style="margin-top:6px">${r.players} bạn đã chơi${r.me ? ` · Hạng của bạn: <b>${r.me.rank}</b>` : ''}</div>`;
+}
+
+/* ---------- Bắt đầu một trò ---------- */
+async function play(d) {
+  if (!G.set || G.set.id !== d.id) {
+    app.innerHTML = skeleton(2);
+    try { G.set = await call('wordSet', { id: d.id }); } catch (e) { return toast(e.message, 'err'); }
+  }
+  renderTopbar('games');
+  window.scrollTo(0, 0);
+  G.game = d.game;
+  G.t0 = Date.now();
+  if (d.game === 'flashcard') fcStart(shuffle(G.set.words), false);
+  else if (d.game === 'match') mStart();
+  else if (d.game === 'scramble') scStart();
+  else spStart();
+}
+
+function gameHead(stats) {
+  return `<button class="back" data-act="setHome">← ${esc(G.set.title)}</button>
+    <h1>${GAMES[G.game].icon} ${GAMES[G.game].name}</h1><div class="gbar">${stats}</div>`;
+}
+
+/** Màn hình kết thúc: lưu điểm và hiện bảng xếp hạng */
+async function gameEnd(r) {
+  stopGame();
+  r.seconds = Math.round(r.seconds);
+  const isFc = G.game === 'flashcard';
+  const pct = r.total ? Math.round(r.correct / r.total * 100) : 0;
+  const cheer = pct >= 90 ? '🎉 Tuyệt vời!' : pct >= 70 ? '👏 Giỏi lắm!' : pct >= 50 ? '💪 Cố lên chút nữa!' : '📚 Luyện thêm nhé!';
+  app.innerHTML = `<div class="page" style="max-width:780px">
+    <button class="back" data-act="setHome">← ${esc(G.set.title)}</button>
+    <div class="card score-card" style="margin-top:6px">
+      <div class="ring" style="background:conic-gradient(var(--violet) ${pct * 3.6}deg,#efe9fa 0)"><div style="color:var(--violet-d);font-size:22px">${isFc ? r.correct + '/' + r.total : r.score}</div></div>
+      <div style="flex:1;min-width:220px"><h2>${cheer}</h2>
+        <p style="margin:6px 0 0">${isFc ? `Bạn đã thuộc <b>${r.correct}/${r.total}</b> từ` : `Đúng <b>${r.correct}/${r.total}</b> · <b>${r.score}</b> điểm`} · ${fmtSec(r.seconds)}</p>${r.note || ''}</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">${r.extra || ''}
+      <button class="btn primary" data-act="play" data-game="${G.game}" data-id="${esc(G.set.id)}">↻ Chơi lại</button>
+      <button class="btn" data-act="setHome">Chọn trò khác</button></div>
+    ${isFc ? '' : `<div class="card"><h3>🏆 Bảng xếp hạng: ${GAMES[G.game].name}</h3><div id="lb" class="muted" style="margin-top:8px">Đang lưu điểm…</div></div>`}
+  </div>`;
+  if (r.noSave) return;
+  try {
+    const lb = await call('saveScore', { setId: G.set.id, game: G.game, score: r.score, correct: r.correct, total: r.total, seconds: r.seconds });
+    const el = $('#lb'); if (el) el.innerHTML = lbHTML(lb);
+  } catch (e) { toast('Không lưu được điểm: ' + e.message, 'err'); }
+}
+
+/* ---------- 1. Flashcard ---------- */
+function fcStart(deck, review) {
+  G.st = { deck, i: 0, known: 0, unknown: [], review };
+  if (!review) G.t0 = Date.now();
+  fcRender();
+}
+function fcRender() {
+  const st = G.st, w = st.deck[st.i];
+  app.innerHTML = `<div class="page" style="max-width:780px">
+    ${gameHead(`<span class="gstat">Thẻ ${st.i + 1}/${st.deck.length}</span><span class="gstat">😊 Đã thuộc: ${st.known}</span>${st.review ? '<span class="gstat">🔁 Ôn lại</span>' : ''}`)}
+    <div class="fc" id="fc" data-act="fcFlip"><div class="fc-in">
+      <div class="fc-face fc-front"><div class="w">${esc(w.word)}</div>
+        <button class="speak" data-act="speak" data-text="${esc(w.word)}">🔊 Nghe</button>
+        <div class="small" style="opacity:.85;margin-top:14px">Chạm vào thẻ để lật</div></div>
+      <div class="fc-face fc-back"><div class="m">${esc(w.meaning)}</div>
+        ${w.example ? `<div class="ex">“${esc(w.example)}”</div><button class="speak" style="background:#f3f0fa;color:var(--violet-d)" data-act="speak" data-text="${esc(w.example)}">🔊 Nghe câu ví dụ</button>` : ''}</div>
+    </div></div>
+    <div class="fc-actions"><button class="btn" data-act="fcAns" data-k="0">😕 Chưa thuộc</button><button class="btn primary" data-act="fcAns" data-k="1">😊 Đã thuộc</button></div>
+  </div>`;
+}
+function fcAns(k) {
+  const st = G.st;
+  if (k) st.known++; else st.unknown.push(st.deck[st.i]);
+  st.i++;
+  if (st.i < st.deck.length) return fcRender();
+  gameEnd({
+    score: st.known, correct: st.known, total: st.deck.length, seconds: elapsed(), noSave: st.review,
+    extra: st.unknown.length ? `<button class="btn" data-act="fcReview">🔁 Ôn lại ${st.unknown.length} từ chưa thuộc</button>` : ''
+  });
+}
+
+/* ---------- 2. Ghép từ – nghĩa ---------- */
+function mStart() {
+  const words = shuffle(G.set.words);
+  const rounds = [];
+  for (let i = 0; i < words.length; i += 6) rounds.push(words.slice(i, i + 6));
+  if (rounds.length > 1 && rounds[rounds.length - 1].length < 3) { const last = rounds.pop(); rounds[rounds.length - 1] = rounds[rounds.length - 1].concat(last); }
+  G.st = { rounds, r: 0, matched: 0, total: words.length, mistakes: 0, sel: null };
+  G.t0 = Date.now();
+  mRound();
+  G.tick = setInterval(() => { const el = $('#mTime'); if (el) el.textContent = '⏱ ' + Math.floor(elapsed()) + ' giây'; }, 500);
+}
+function mRound() {
+  const st = G.st, ws = st.rounds[st.r];
+  st.left = shuffle(ws.map((w, i) => ({ i, t: w.word })));
+  st.right = shuffle(ws.map((w, i) => ({ i, t: w.meaning })));
+  st.done = {}; st.sel = null;
+  mRender();
+}
+function mRender() {
+  const st = G.st;
+  const btn = (side, x) => `<button class="mt ${st.done[x.i] ? 'done' : ''} ${st.sel && st.sel.side === side && st.sel.i === x.i ? 'sel' : ''}"
+    data-act="mPick" data-side="${side}" data-i="${x.i}" ${st.done[x.i] ? 'disabled' : ''}>${esc(x.t)}</button>`;
+  app.innerHTML = `<div class="page" style="max-width:900px">
+    ${gameHead(`<span class="gstat" id="mTime">⏱ ${Math.floor(elapsed())} giây</span><span class="gstat">✅ ${st.matched}/${st.total}</span>
+      <span class="gstat">❌ ${st.mistakes}</span><span class="gstat">Vòng ${st.r + 1}/${st.rounds.length}</span>`)}
+    <div class="match"><div class="col">${st.left.map(x => btn('L', x)).join('')}</div><div class="col">${st.right.map(x => btn('R', x)).join('')}</div></div>
+  </div>`;
+}
+function mPick(d) {
+  const st = G.st, i = +d.i, side = d.side;
+  if (st.done[i]) return;
+  if (!st.sel || st.sel.side === side) {
+    st.sel = { side, i };
+    if (side === 'L') speak(st.left.find(x => x.i === i).t);
+    return mRender();
+  }
+  if (st.sel.i === i) {
+    st.done[i] = true; st.matched++; st.sel = null;
+    mRender();
+    if (Object.keys(st.done).length === st.rounds[st.r].length) {
+      G.tmo = setTimeout(() => { st.r++; if (st.r >= st.rounds.length) mEnd(); else mRound(); }, 450);
+    }
+  } else {
+    st.mistakes++;
+    const other = st.sel; st.sel = null;
+    mRender();
+    document.querySelectorAll(`.mt[data-side="${side}"][data-i="${i}"], .mt[data-side="${other.side}"][data-i="${other.i}"]`).forEach(b => b.classList.add('wrong'));
+  }
+}
+function mEnd() {
+  const st = G.st, sec = elapsed();
+  gameEnd({
+    score: Math.max(0, Math.round(st.total * 100 - st.mistakes * 25 - sec * 2)),
+    correct: Math.max(0, st.total - st.mistakes), total: st.total, seconds: sec,
+    note: `<p class="muted small" style="margin:4px 0 0">Ghép sai ${st.mistakes} lần. Điểm = 100 × số cặp − 25 × lần sai − 2 × số giây</p>`
+  });
+}
+
+/* ---------- 3. Sắp xếp câu ---------- */
+function scStart() {
+  G.st = { list: shuffle(G.set.sentences).slice(0, 10), i: 0, score: 0, correct: 0 };
+  G.t0 = Date.now();
+  scNew();
+}
+function scNew() {
+  const st = G.st, s = st.list[st.i];
+  const words = s.text.split(' ');
+  let pool = words.map(t => ({ t })), n = 0;
+  do { pool = shuffle(pool); n++; } while (n < 15 && words.length > 1 && pool.map(x => x.t).join(' ') === s.text);
+  Object.assign(st, { pool, picked: [], tries: 0, locked: false, fb: '' });
+  scRender();
+}
+function scRender() {
+  const st = G.st, s = st.list[st.i];
+  app.innerHTML = `<div class="page" style="max-width:820px">
+    ${gameHead(`<span class="gstat">Câu ${st.i + 1}/${st.list.length}</span><span class="gstat">⭐ ${st.score} điểm</span>`)}
+    <div class="card">
+      ${s.meaning ? `<div class="muted" style="margin-bottom:12px">💡 Nghĩa: <i>${esc(s.meaning)}</i></div>` : ''}
+      <div class="sc-area">${st.picked.length ? st.picked.map((x, j) => `<button class="tok in" data-act="scRemove" data-j="${j}" ${st.locked ? 'disabled' : ''}>${esc(x.t)}</button>`).join('')
+        : '<span class="muted">Chạm vào các từ bên dưới theo đúng thứ tự…</span>'}</div>
+      <div class="sc-pool">${st.pool.map((x, j) => `<button class="tok" data-act="scPick" data-j="${j}" ${st.locked ? 'disabled' : ''}>${esc(x.t)}</button>`).join('')}</div>
+      ${st.fb}
+      <div class="m-actions">${st.locked ? '<button class="btn primary" data-act="scNext">Câu tiếp →</button>'
+        : `<button class="btn" data-act="scSkip">Bỏ qua</button><button class="btn primary" data-act="scCheck" ${st.pool.length ? 'disabled' : ''}>Kiểm tra</button>`}</div>
+    </div></div>`;
+}
+function scPick(j) { const st = G.st; st.picked.push(st.pool.splice(j, 1)[0]); st.fb = ''; scRender(); }
+function scRemove(j) { const st = G.st; st.pool.push(st.picked.splice(j, 1)[0]); st.fb = ''; scRender(); }
+function scCheck() {
+  const st = G.st, s = st.list[st.i];
+  if (st.picked.map(x => x.t).join(' ') === s.text) {
+    const pts = st.tries === 0 ? 100 : 50;
+    st.score += pts; st.correct++; st.locked = true;
+    st.fb = `<div class="fb ok">✅ Chính xác! +${pts} điểm</div>`;
+    speak(s.text);
+  } else {
+    st.tries++;
+    if (st.tries >= 2) { st.locked = true; st.fb = `<div class="fb bad">❌ Chưa đúng. Đáp án: <b>${esc(s.text)}</b></div>`; }
+    else st.fb = '<div class="fb bad">❌ Chưa đúng, thử lại một lần nữa nhé! (Chạm vào từ ở trên để gỡ ra)</div>';
+  }
+  scRender();
+}
+function scSkip() { const st = G.st; st.locked = true; st.fb = `<div class="fb bad">Đáp án: <b>${esc(st.list[st.i].text)}</b></div>`; scRender(); }
+function scNext() {
+  const st = G.st; st.i++;
+  if (st.i >= st.list.length) gameEnd({ score: st.score, correct: st.correct, total: st.list.length, seconds: elapsed(),
+    note: '<p class="muted small" style="margin:4px 0 0">Đúng ngay lần đầu: 100 điểm · lần thứ hai: 50 điểm</p>' });
+  else scNew();
+}
+
+/* ---------- 4. Đua tốc độ ---------- */
+function spStart() {
+  const words = G.set.words;
+  const qs = shuffle(words).slice(0, Math.min(10, words.length)).map(w => {
+    const dir = Math.random() < 0.5 ? 'wm' : 'mw';          // wm: hỏi từ → chọn nghĩa; mw: hỏi nghĩa → chọn từ
+    const key = dir === 'wm' ? 'meaning' : 'word';
+    const others = shuffle(words.filter(x => x[key] !== w[key]).map(x => x[key])).filter((v, i, a) => a.indexOf(v) === i).slice(0, 3);
+    return { q: dir === 'wm' ? w.word : w.meaning, dir, right: w[key], opts: shuffle([w[key]].concat(others)) };
+  });
+  G.st = { qs, i: 0, score: 0, correct: 0 };
+  G.t0 = Date.now();
+  spNext();
+}
+function spNext() {
+  const st = G.st;
+  Object.assign(st, { left: SP_TIME, answered: false, qStart: Date.now() });
+  spRender();
+  clearInterval(G.tick);
+  G.tick = setInterval(() => {
+    st.left = Math.max(0, SP_TIME - (Date.now() - st.qStart) / 1000);
+    const b = $('#tb'); if (b) b.style.width = (st.left / SP_TIME * 100) + '%';
+    const t = $('#tleft'); if (t) t.textContent = '⏳ ' + Math.ceil(st.left) + 's';
+    if (st.left <= 0) spAnswer(null);
+  }, 100);
+}
+function spRender() {
+  const st = G.st, q = st.qs[st.i];
+  app.innerHTML = `<div class="page" style="max-width:780px">
+    ${gameHead(`<span class="gstat">Câu ${st.i + 1}/${st.qs.length}</span><span class="gstat">⭐ ${st.score}</span><span class="gstat" id="tleft">⏳ ${SP_TIME}s</span>`)}
+    <div class="tbar"><i id="tb" style="width:100%"></i></div>
+    <div class="card" style="margin-top:16px">
+      <div class="muted small" style="text-align:center">${q.dir === 'wm' ? 'Chọn nghĩa đúng của từ' : 'Chọn từ tiếng Anh đúng'}</div>
+      <div class="sp-q">${esc(q.q)}</div>
+      <div class="sp-opts">${q.opts.map((o, k) => `<button class="sp-o" data-act="spAns" data-k="${k}">${esc(o)}</button>`).join('')}</div>
+    </div></div>`;
+}
+function spAnswer(k) {
+  const st = G.st;
+  if (st.answered) return;
+  st.answered = true;
+  clearInterval(G.tick);
+  const q = st.qs[st.i], ok = k != null && q.opts[k] === q.right;
+  if (ok) { st.correct++; st.score += 50 + Math.round(st.left * 10); }
+  document.querySelectorAll('.sp-o').forEach((b, j) => {
+    b.disabled = true;
+    if (q.opts[j] === q.right) b.classList.add('right'); else if (j === k) b.classList.add('wrong');
+  });
+  if (k == null) toast('⏰ Hết giờ!');
+  G.tmo = setTimeout(() => {
+    st.i++;
+    if (st.i >= st.qs.length) gameEnd({ score: st.score, correct: st.correct, total: st.qs.length, seconds: elapsed(),
+      note: '<p class="muted small" style="margin:4px 0 0">Mỗi câu đúng: 50 điểm + 10 điểm cho mỗi giây còn lại</p>' });
+    else spNext();
+  }, ok ? 700 : 1500);
+}
+
+/* ---------- Quản trị: tab Trò chơi ---------- */
+const GAME_NAME = g => (GAMES[g] ? GAMES[g].icon + ' ' + GAMES[g].name : g);
+
+function aGames() {
+  const all = S.adm.sets || [], plays = S.adm.plays || [];
+  const lv = LEVELS.find(l => l.id === S.f.setLevel);
+  const list = all.filter(s => !lv || s.level === lv.id)
+    .sort((a, b) => LEVELS.findIndex(l => l.id === a.level) - LEVELS.findIndex(l => l.id === b.level) || String(a.subLevel).localeCompare(String(b.subLevel), 'vi', { numeric: true }));
+  return `<div class="chips"><button class="chip ${!lv ? 'on' : ''}" data-act="setLevel" data-id="">Tất cả (${all.length})</button>
+      ${LEVELS.map(l => `<button class="chip ${lv && lv.id === l.id ? 'on' : ''}" data-act="setLevel" data-id="${esc(l.id)}">${esc(l.name)} (${all.filter(s => s.level === l.id).length})</button>`).join('')}</div>
+    <div class="toolbar"><b>Bộ từ cho trò chơi</b><span style="flex:1"></span><button class="btn" data-act="impOpen">📥 Nhập nhiều bộ</button><button class="btn primary" data-act="newSet">+ Thêm bộ từ</button></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Bộ từ</th><th>Cấp độ</th><th>Từ vựng</th><th>Câu</th><th>Lượt chơi</th><th>Mở</th><th></th></tr></thead><tbody>
+      ${list.map(s => `<tr><td><b>${esc(s.title)}</b><div class="muted small">${esc(s.createdBy || '')}</div></td>
+        <td>${esc(levelName(s.level))}<div class="muted small">${esc(s.subLevel)}</div></td><td>${s.words}</td><td>${s.sentences}</td><td>${s.plays}</td>
+        <td><button class="switch ${s.status === 'open' ? 'on' : ''}" data-act="toggleSet" data-id="${esc(s.id)}" title="Bấm để mở/đóng"></button></td>
+        <td><div class="actions"><button class="btn sm primary" data-act="assignSet" data-id="${esc(s.id)}">Giao</button><button class="btn sm" data-act="openSet" data-id="${esc(s.id)}">Chơi thử</button><button class="btn sm" data-act="editSet" data-id="${esc(s.id)}">Sửa</button>
+          <button class="btn sm danger" data-act="delSet" data-id="${esc(s.id)}" data-title="${esc(s.title)}">Xoá</button></div></td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty">Chưa có bộ từ nào. Bấm “+ Thêm bộ từ” để tạo.</div>'}</div>
+    <h2 style="margin:28px 0 12px">Lượt chơi gần đây</h2>
+    <div class="card tablewrap">${plays.length ? `<table><thead><tr><th>Thời gian</th><th>Học sinh</th><th>Bộ từ</th><th>Trò chơi</th><th>Điểm</th><th>Đúng</th><th>Thời lượng</th></tr></thead><tbody>
+      ${plays.slice(0, 200).map(p => `<tr><td class="muted">${fmtDate(p.playedAt)}</td><td><b>${esc(p.fullName)}</b><div class="muted small">${p.className ? 'Lớp ' + esc(p.className) : '@' + esc(p.username)}</div></td>
+        <td>${esc(p.setTitle)}</td><td>${GAME_NAME(p.game)}</td><td><b>${p.game === 'flashcard' ? '—' : p.score}</b></td><td>${p.correct}/${p.total}</td><td class="muted">${fmtSec(p.seconds)}</td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty">Chưa có lượt chơi nào.</div>'}</div>`;
+}
+
+async function toggleSet(id) {
+  await run(async () => {
+    const st = await call('toggleWordSet', { id });
+    const s = S.adm.sets.find(x => x.id === id); if (s) s.status = st;
+    toast(st === 'open' ? 'Đã mở bộ từ cho học sinh' : 'Đã đóng bộ từ', 'ok'); renderAdmin();
+  });
+}
+async function deleteSet(id, title) {
+  if (!(await confirmBox(`Xoá bộ từ "${title}"? Điểm cũ của học sinh vẫn được giữ trong Sheet.`, 'Xoá', true))) return;
+  await run(async () => { await call('deleteWordSet', { id }); S.adm.sets = S.adm.sets.filter(x => x.id !== id); toast('Đã xoá bộ từ', 'ok'); renderAdmin(); });
+}
+
+/* ---------- Soạn bộ từ ---------- */
+function parseWords(text) {
+  const ok = [], bad = [];
+  String(text || '').split('\n').forEach((l, i) => {
+    l = l.trim(); if (!l) return;
+    const p = l.split(/\s*\|\s*|\t/).map(x => x.trim());
+    if (p[0] && p[1]) ok.push({ word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim() }); else bad.push(i + 1);
+  });
+  return { ok, bad };
+}
+function parseSentences(text) {
+  const ok = [], bad = [];
+  String(text || '').split('\n').forEach((l, i) => {
+    l = l.trim(); if (!l) return;
+    const p = l.split(/\s*\|\s*|\t/);
+    const t = (p[0] || '').trim().replace(/\s+/g, ' ');
+    if (t.split(' ').length >= 2) ok.push({ text: t, meaning: (p[1] || '').trim() }); else bad.push(i + 1);
+  });
+  return { ok, bad };
+}
+function parseInfo(r, unit) { return `<b>${r.ok.length}</b> ${unit} hợp lệ${r.bad.length ? ` · <span style="color:var(--bad)">⚠️ Dòng lỗi: ${r.bad.join(', ')}</span>` : ''}`; }
+
+async function showSetEditor(id) {
+  renderTopbar('admin');
+  window.scrollTo(0, 0);
+  if (!id) {
+    const lv = LEVELS.find(l => l.id === S.f.setLevel) || LEVELS[0];
+    S.setEdit = { id: '', title: '', level: lv.id, subLevel: lv.subs[0], status: 'open', wordsText: '', sentencesText: '' };
+    return renderSetEditor();
+  }
+  app.innerHTML = skeleton(2);
+  await run(async () => {
+    const s = await call('wordSet', { id });
+    S.setEdit = {
+      id: s.id, title: s.title, level: s.level, subLevel: s.subLevel, status: s.status,
+      wordsText: s.words.map(w => [w.word, w.meaning].concat(w.example ? [w.example] : []).join(' | ')).join('\n'),
+      sentencesText: s.sentences.map(c => c.meaning ? c.text + ' | ' + c.meaning : c.text).join('\n')
+    };
+    renderSetEditor();
+  });
+}
+
+function renderSetEditor() {
+  const x = S.setEdit;
+  const lv = LEVELS.find(l => l.id === x.level) || LEVELS[0];
+  const opt = (v, cur, label) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label || v)}</option>`;
+  app.innerHTML = `<div class="page" style="max-width:960px">
+    <button class="back" data-act="admin" data-tab="games">← Trò chơi</button>
+    <h1>${x.id ? 'Sửa bộ từ' : 'Thêm bộ từ mới'}</h1>
+    <div class="card" style="margin-top:16px">
+      <label class="f" style="margin-top:0">Tên bộ từ *</label><input class="inp" data-sf="title" value="${esc(x.title)}" placeholder="vd: Unit 5 – Inventions">
+      <div class="row">
+        <div><label class="f">Cấp độ *</label><select class="inp" data-sf="level">${LEVELS.map(l => opt(l.id, x.level, l.name)).join('')}</select></div>
+        <div><label class="f">Lớp / cấp nhỏ *</label><select class="inp" data-sf="subLevel"><option value="">— Chọn —</option>${lv.subs.map(s => opt(s, x.subLevel)).join('')}</select></div>
+        <div><label class="f">Trạng thái</label><select class="inp" data-sf="status">${opt('open', x.status, 'Mở cho học sinh')}${opt('closed', x.status, 'Đóng (ẩn)')}</select></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>📚 Từ vựng <span class="muted small" style="font-weight:400">(dùng cho Flashcard, Ghép từ – nghĩa, Đua tốc độ)</span></h3>
+      <div class="hint">Mỗi dòng một từ: <b>từ | nghĩa | câu ví dụ</b> (câu ví dụ có thể bỏ). Có thể copy thẳng 2–3 cột từ Excel/Google Sheets.</div>
+      <textarea class="inp mono" rows="12" data-sf="wordsText" style="margin-top:10px" placeholder="volunteer | tình nguyện viên | She works as a volunteer.&#10;donate | quyên góp&#10;remote | xa xôi, hẻo lánh | The village is in a remote area.">${esc(x.wordsText)}</textarea>
+      <div class="hint" id="wInfo">${parseInfo(parseWords(x.wordsText), 'từ')}</div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>🔀 Câu để sắp xếp <span class="muted small" style="font-weight:400">(dùng cho Sắp xếp câu: ôn ngữ pháp)</span></h3>
+      <div class="hint">Mỗi dòng một câu đúng, có thể thêm gợi ý nghĩa sau dấu <b>|</b>. Mỗi lần chơi lấy ngẫu nhiên tối đa 10 câu.</div>
+      <textarea class="inp mono" rows="8" data-sf="sentencesText" style="margin-top:10px" placeholder="She has lived here since 2010. | Cô ấy sống ở đây từ năm 2010.&#10;If it rains, we will stay at home.">${esc(x.sentencesText)}</textarea>
+      <div class="hint" id="sInfo">${parseInfo(parseSentences(x.sentencesText), 'câu')}</div>
+    </div>
+    <div class="sticky-save"><button class="btn" data-act="admin" data-tab="games">Huỷ</button><button class="btn primary" data-act="saveSet">💾 Lưu bộ từ</button></div>
+  </div>`;
+}
+
+function onSetField(el, type) {
+  const k = el.dataset.sf;
+  S.setEdit[k] = el.value;
+  if (k === 'level' && type === 'change') { S.setEdit.subLevel = ''; renderSetEditor(); }
+  if (k === 'wordsText') $('#wInfo').innerHTML = parseInfo(parseWords(el.value), 'từ');
+  if (k === 'sentencesText') $('#sInfo').innerHTML = parseInfo(parseSentences(el.value), 'câu');
+}
+
+async function saveSet() {
+  const x = S.setEdit, w = parseWords(x.wordsText), c = parseSentences(x.sentencesText);
+  if (w.bad.length || c.bad.length) return toast('Còn dòng bị lỗi định dạng (xem cảnh báo màu đỏ). Sửa hoặc xoá dòng đó rồi lưu lại.', 'err');
+  await run(async () => {
+    await call('saveWordSet', { set: { id: x.id, title: x.title, level: x.level, subLevel: x.subLevel, status: x.status }, words: w.ok, sentences: c.ok });
+    toast('Đã lưu bộ từ ✓', 'ok');
+    S.setEdit = null;
+    showAdmin('games');
+  });
+}
+
+/* =====================================================================
+   GIAO BÀI THEO LỚP
+   ===================================================================== */
+function dueTag(iso, done) {
+  if (!iso) return '<span class="tag">Không hạn</span>';
+  const ms = new Date(iso).getTime() - Date.now();
+  if (done) return `<span class="tag">Hạn ${fmtDate(iso)}</span>`;
+  if (ms < 0) return `<span class="tag bad">Quá hạn · ${fmtDate(iso)}</span>`;
+  const days = Math.floor(ms / 864e5), hours = Math.floor(ms / 36e5);
+  const left = days >= 1 ? `còn ${days} ngày` : `còn ${Math.max(hours, 0)} giờ`;
+  return `<span class="tag ${days < 1 ? 'warn' : ''}">Hạn ${fmtDate(iso)} · ${left}</span>`;
+}
+function asgIcon(a) { return a.kind === 'exam' ? '🗂️' : a.kind === 'exercise' ? '📝' : (a.game && GAMES[a.game] ? GAMES[a.game].icon : '🎮'); }
+function asgWhat(a) { return a.kind === 'exam' ? 'Đề luyện thi' : a.kind === 'exercise' ? 'Bài tập' : (a.game && GAMES[a.game] ? 'Trò chơi: ' + GAMES[a.game].name : 'Bộ từ: chơi trò bất kỳ'); }
+
+/* ---------- Học sinh: mục "Bài được giao" ---------- */
+function myAsgHTML() {
+  const list = (S.catalog && S.catalog.assignments) || [];
+  if (!list.length) return '';
+  const todo = list.filter(a => !a.done).length;
+  return `<div class="card asg-card">
+    <div class="page-head" style="margin-bottom:8px"><h3>📌 Bài được giao · Lớp ${esc(S.user.className)}</h3>
+      <span class="tag ${todo ? 'warn' : 'ok'}">${todo ? todo + ' bài chưa làm' : 'Đã làm hết 🎉'}</span></div>
+    ${list.map(a => `<div class="asg-row ${a.done ? 'done' : ''}" data-act="doAsg" data-kind="${a.kind}" data-ref="${esc(a.refId)}" data-game="${esc(a.game)}">
+      <div class="asg-ic">${asgIcon(a)}</div>
+      <div style="flex:1;min-width:0"><b>${esc(a.title)}</b>
+        <div class="muted small">${asgWhat(a)}${a.note ? ' · ' + esc(a.note) : ''}</div>
+        <div style="margin-top:4px">${dueTag(a.dueAt, a.done)}</div></div>
+      <div>${a.done ? `<span class="tag ok">✓ Đã làm${a.best != null ? ' · ' + (a.kind === 'exam' ? fmtScore(a.best) + '/10' : a.best + (a.kind === 'exercise' ? '%' : ' điểm')) : ''}</span>${a.late ? ' <span class="tag bad">Nộp muộn</span>' : ''}`
+        : '<span class="btn sm primary">Làm ngay</span>'}</div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function doAsg(d) {
+  if (d.kind === 'exam') return examIntro(d.ref);
+  if (d.kind === 'exercise') return openExercise(d.ref);
+  if (d.game) return play({ id: d.ref, game: d.game });
+  openSet(d.ref);
+}
+
+/* ---------- Giáo viên: tab "Giao bài" ---------- */
+function aAssign() {
+  const classes = S.adm.classes || [], list = S.adm.assigns || [];
+  const shown = list.filter(a => !S.f.asgClass || a.classId === S.f.asgClass);
+  return `<div class="card" style="margin-bottom:18px">
+      <div class="page-head" style="margin-bottom:10px"><h3>🏫 Lớp học (${classes.length})</h3><button class="btn sm" data-act="newClass">+ Thêm lớp</button></div>
+      ${classes.length ? `<div class="chips" style="margin:0">${classes.map(c => `<span class="chip" style="cursor:default">${esc(c.name)} · ${c.students} HS${c.level ? ' · ' + esc(levelName(c.level)) : ''}
+        <button class="xbtn" data-act="delClass" data-id="${esc(c.id)}" data-name="${esc(c.name)}" title="Xoá lớp">✕</button></span>`).join('')}</div>
+        <div class="hint">Học sinh chọn lớp khi đăng ký. Học sinh cũ: vào tab “Học sinh” để xếp lớp.</div>`
+        : '<div class="muted">Chưa có lớp nào. Hãy thêm lớp trước (vd: 10A1, 10A2), sau đó học sinh sẽ chọn lớp khi đăng ký.</div>'}
+    </div>
+    <div class="toolbar">
+      <select class="inp" style="max-width:220px" data-filter="asgClass"><option value="">Mọi lớp</option>
+        ${classes.map(c => `<option value="${esc(c.id)}" ${S.f.asgClass === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+      <span class="muted small">${shown.length} bài đã giao</span><span style="flex:1"></span>
+      <button class="btn primary" data-act="newAssign" ${classes.length ? '' : 'disabled'}>+ Giao bài</button></div>
+    <div class="card tablewrap">${shown.length ? `<table><thead><tr><th>Lớp</th><th>Nội dung</th><th>Hạn nộp</th><th>Hoàn thành</th><th></th></tr></thead><tbody>
+      ${shown.map(a => {
+        const pct = a.students ? Math.round(a.done / a.students * 100) : 0;
+        return `<tr><td><b>${esc(a.className)}</b></td>
+          <td>${asgIcon(a)} <b>${esc(a.title)}</b><div class="muted small">${asgWhat(a)}${a.note ? ' · ' + esc(a.note) : ''}</div></td>
+          <td>${dueTag(a.dueAt, false)}</td>
+          <td style="min-width:150px"><div class="small"><b>${a.done}/${a.students}</b> học sinh${a.late ? ` · <span style="color:var(--bad)">${a.late} muộn</span>` : ''}</div>
+            <div class="bar" style="margin-top:4px"><i style="width:${pct}%"></i></div></td>
+          <td><div class="actions"><button class="btn sm" data-act="asgDetail" data-id="${esc(a.id)}">Chi tiết</button>
+            <button class="btn sm danger" data-act="delAssign" data-id="${esc(a.id)}">Xoá</button></div></td></tr>`;
+      }).join('')}</tbody></table>` : '<div class="empty">Chưa giao bài nào. Bấm “+ Giao bài” để bắt đầu.</div>'}</div>`;
+}
+
+function newClass() {
+  openModal(`<h3>🏫 Thêm lớp</h3>
+    <label class="f">Tên lớp</label><input class="inp" id="cName" placeholder="vd: 10A1">
+    <label class="f">Cấp độ (tuỳ chọn)</label><select class="inp" id="cLevel"><option value="">—</option>${LEVELS.map(l => `<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('')}</select>
+    <div class="hint">Mẹo: muốn thêm nhiều lớp, nhập cách nhau bằng dấu phẩy: 10A1, 10A2, 10A3</div>
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" id="cSave">Lưu</button></div>`);
+  $('#cName').focus();
+  $('#cSave').onclick = () => run(async () => {
+    const names = $('#cName').value.split(',').map(x => x.trim()).filter(Boolean);
+    if (!names.length) return toast('Hãy nhập tên lớp', 'err');
+    for (const n of names) await call('saveClass', { name: n, level: $('#cLevel').value });
+    closeModal(); toast(`Đã thêm ${names.length} lớp`, 'ok');
+    S.pubClasses = null;
+    await loadAdmin('assign');
+  });
+}
+async function delClass(id, name) {
+  if (!(await confirmBox(`Xoá lớp ${name}? Các bài đã giao cho lớp này cũng bị xoá. Kết quả làm bài của học sinh vẫn giữ.`, 'Xoá lớp', true))) return;
+  await run(async () => { await call('deleteClass', { id }); S.pubClasses = null; toast('Đã xoá lớp', 'ok'); await loadAdmin('assign'); });
+}
+
+/** Mở hộp thoại giao bài; pre = { kind, refId } khi bấm “Giao” từ kho bài / bộ từ */
+async function openAssign(pre) {
+  await run(async () => {
+    if (!S.adm.classes) S.adm.classes = await call('listClasses');
+    if (!S.adm.classes.length) return toast('Hãy tạo lớp trước trong tab “Giao bài”.', 'err');
+    if (!S.adm.exercises) S.adm.exercises = await call('listExercises');
+    if (!S.adm.sets) S.adm.sets = await call('listWordSets');
+    if (!S.adm.exams) S.adm.exams = await call('examsAdmin');
+    const d = new Date(Date.now() + 7 * 864e5); d.setHours(23, 59, 0, 0);
+    const pad = n => String(n).padStart(2, '0');
+    S.asg = Object.assign({ kind: 'exercise', refId: '', game: '', classIds: [], note: '',
+      due: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T23:59` }, pre || {});
+    if (S.f.asgClass && !S.asg.classIds.length) S.asg.classIds = [S.f.asgClass];
+    renderAssignModal();
+  });
+}
+
+function renderAssignModal() {
+  const a = S.asg;
+  const items = a.kind === 'exercise' ? S.adm.exercises : a.kind === 'exam' ? S.adm.exams : S.adm.sets;
+  const groups = a.kind === 'exam' ? EXAM.grades.map(g => {
+    const its = items.filter(x => x.grade === g);
+    return its.length ? `<optgroup label="Khối ${g}">${its.map(x => `<option value="${esc(x.id)}" ${a.refId === x.id ? 'selected' : ''}>${esc(typeName(x.examType))} – ${esc(x.title)}${x.status === 'closed' ? ' (đang đóng)' : ''}</option>`).join('')}</optgroup>` : '';
+  }).join('') : LEVELS.map(l => {
+    const its = items.filter(x => x.level === l.id);
+    return its.length ? `<optgroup label="${esc(l.name)}">${its.map(x => `<option value="${esc(x.id)}" ${a.refId === x.id ? 'selected' : ''}>${esc(x.subLevel)} – ${esc(x.title)}${x.status === 'closed' ? ' (đang đóng)' : ''}</option>`).join('')}</optgroup>` : '';
+  }).join('');
+  openModal(`<h3>📌 Giao bài cho lớp</h3>
+    <div class="seg" style="margin-top:12px"><button class="${a.kind === 'exercise' ? 'on' : ''}" data-act="asgKind" data-kind="exercise">📝 Bài tập</button>
+      <button class="${a.kind === 'wordset' ? 'on' : ''}" data-act="asgKind" data-kind="wordset">🎮 Bộ từ</button>
+      <button class="${a.kind === 'exam' ? 'on' : ''}" data-act="asgKind" data-kind="exam">🗂️ Đề thi</button></div>
+    <label class="f">${a.kind === 'exercise' ? 'Chọn bài tập' : a.kind === 'exam' ? 'Chọn đề' : 'Chọn bộ từ'}</label>
+    <select class="inp" id="aRef"><option value="">— Chọn —</option>${groups}</select>
+    ${a.kind === 'wordset' ? `<label class="f">Trò chơi phải chơi</label><select class="inp" id="aGame"><option value="">Trò nào cũng được</option>
+      ${Object.keys(GAMES).map(g => `<option value="${g}" ${a.game === g ? 'selected' : ''}>${GAMES[g].icon} ${GAMES[g].name}</option>`).join('')}</select>` : ''}
+    <label class="f">Giao cho lớp</label>
+    <div class="chips" style="margin:0">${S.adm.classes.map(c => `<label class="chip"><input type="checkbox" class="aCls" value="${esc(c.id)}" ${a.classIds.indexOf(c.id) >= 0 ? 'checked' : ''}> ${esc(c.name)}</label>`).join('')}</div>
+    <div class="row"><div><label class="f">Hạn nộp</label><input class="inp" type="datetime-local" id="aDue" value="${esc(a.due)}"></div>
+      <div><label class="f">Ghi chú cho học sinh (tuỳ chọn)</label><input class="inp" id="aNote" value="${esc(a.note)}" placeholder="vd: Làm ít nhất 2 lần"></div></div>
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" data-act="asgSave">Giao bài</button></div>`);
+}
+
+function readAssignModal() {
+  const a = S.asg;
+  a.refId = $('#aRef').value;
+  a.game = $('#aGame') ? $('#aGame').value : '';
+  a.classIds = Array.from(document.querySelectorAll('.aCls:checked')).map(x => x.value);
+  a.due = $('#aDue').value; a.note = $('#aNote').value;
+}
+
+async function saveAssign() {
+  readAssignModal();
+  const a = S.asg;
+  if (!a.refId) return toast(a.kind === 'exercise' ? 'Hãy chọn bài tập' : a.kind === 'exam' ? 'Hãy chọn đề' : 'Hãy chọn bộ từ', 'err');
+  if (!a.classIds.length) return toast('Hãy chọn ít nhất một lớp', 'err');
+  await run(async () => {
+    const n = await call('assign', { kind: a.kind, refId: a.refId, game: a.game, classIds: a.classIds, note: a.note, dueAt: a.due ? new Date(a.due).toISOString() : '' });
+    closeModal(); toast(`Đã giao bài cho ${n} lớp ✓`, 'ok');
+    showAdmin('assign');
+  });
+}
+
+async function asgDetail(id) {
+  await run(async () => {
+    const d = await call('assignmentDetail', { id });
+    const done = d.rows.filter(r => r.done).length;
+    openModal(`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+        <div><h2>${esc(d.title)}</h2><div class="muted small">Lớp ${esc(d.className)} · ${asgWhat(d)}</div><div style="margin-top:6px">${dueTag(d.dueAt, false)}</div></div>
+        <button class="btn sm" data-act="closeModal">✕ Đóng</button></div>
+      <p><b>${done}/${d.rows.length}</b> học sinh đã làm.</p>
+      ${d.rows.length ? `<table class="lb"><thead><tr><th>Học sinh</th><th>Tình trạng</th><th>${d.kind === 'exercise' ? 'Điểm cao nhất' : 'Điểm cao nhất'}</th><th>Làm lúc</th></tr></thead><tbody>
+        ${d.rows.map(r => `<tr><td><b>${esc(r.fullName)}</b> <span class="muted small">@${esc(r.username)}</span></td>
+          <td>${r.done ? (r.late ? '<span class="tag bad">Nộp muộn</span>' : '<span class="tag ok">✓ Đã làm</span>') : '<span class="tag warn">Chưa làm</span>'}</td>
+          <td>${r.best == null ? '—' : d.kind === 'exam' ? fmtScore(r.best) + '/10' : r.best + (d.kind === 'exercise' ? '%' : '')}</td><td class="muted small">${r.at ? fmtDate(r.at) : ''}</td></tr>`).join('')}
+      </tbody></table>` : '<div class="empty">Lớp này chưa có học sinh nào.</div>'}`, true);
+  });
+}
+
+async function delAssign(id) {
+  if (!(await confirmBox('Xoá bài đã giao này? Kết quả làm bài của học sinh vẫn được giữ.', 'Xoá', true))) return;
+  await run(async () => { await call('deleteAssignment', { id }); S.adm.assigns = S.adm.assigns.filter(x => x.id !== id); toast('Đã xoá', 'ok'); renderAdmin(); });
+}
+
+async function setUserClass(userId, className) {
+  await run(async () => {
+    await call('setClass', { userId, className });
+    const u = S.adm.users.find(x => x.id === userId); if (u) u.className = className;
+    toast(className ? 'Đã xếp vào lớp ' + className : 'Đã bỏ lớp', 'ok');
+  });
+}
+
+/* =====================================================================
+   NHẬP NHIỀU BỘ TỪ CÙNG LÚC
+   ===================================================================== */
+function parseMulti(text, defLevel, defSub) {
+  const sets = []; let cur = null, mode = null;
+  String(text || '').replace(/\r/g, '').split('\n').forEach(raw => {
+    const l = raw.trim(); let m;
+    if ((m = l.match(/^#{2,3}\s+(.+)$/))) { cur = { title: m[1].replace(/\*/g, '').trim(), level: defLevel, subLevel: defSub, words: [], sentences: [], bad: [] }; sets.push(cur); mode = null; return; }
+    if (!cur || !l || l.startsWith('```') || /^-{3,}$/.test(l)) return;
+    if (!l.includes('|')) {
+      if ((m = l.match(/^\**\s*(cấp độ|level)\s*:\s*\**\s*(.+?)\s*\**$/i))) {
+        const v = m[2].trim().toLowerCase(), lv = LEVELS.find(x => x.id.toLowerCase() === v || x.name.toLowerCase() === v);
+        if (lv) cur.level = lv.id; else cur.bad.push('Cấp độ không rõ: ' + m[2]);
+        return;
+      }
+      if ((m = l.match(/^\**\s*(lớp|cấp nhỏ)\s*:\s*\**\s*(.+?)\s*\**$/i))) { cur.subLevel = m[2].trim(); return; }
+      if (/^\**\s*(từ vựng|vocabulary|words?)\b/i.test(l)) { mode = 'w'; return; }
+      if (/^\**\s*(câu|sentences?)(\s|\*|:|$)/i.test(l)) { mode = 's'; return; }
+    }
+    if (mode === 'w') {
+      const p = l.split(/\s*\|\s*|\t/).map(x => x.trim());
+      if (p[0] && p[1]) cur.words.push({ word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim() }); else cur.bad.push('Dòng từ vựng lỗi: ' + l);
+    } else if (mode === 's') {
+      const p = l.split(/\s*\|\s*|\t/), t = (p[0] || '').trim().replace(/\s+/g, ' ');
+      if (t.split(' ').length >= 2) cur.sentences.push({ text: t, meaning: (p[1] || '').trim() }); else cur.bad.push('Câu lỗi: ' + l);
+    }
+  });
+  sets.forEach(s => {
+    const lv = LEVELS.find(x => x.id === s.level);
+    if (!lv || lv.subs.indexOf(s.subLevel) < 0) s.bad.push(`Lớp/cấp nhỏ “${s.subLevel || '?'}” không thuộc ${lv ? lv.name : 'cấp độ'}`);
+    if (!s.words.length && !s.sentences.length) s.bad.push('Không có từ vựng hay câu nào');
+  });
+  return sets;
+}
+
+async function showImport() {
+  renderTopbar('admin');
+  window.scrollTo(0, 0);
+  if (!S.adm.sets) await run(async () => { S.adm.sets = await call('listWordSets'); });
+  const lv = LEVELS.find(l => l.id === 'THPT') || LEVELS[0];
+  S.imp = S.imp || { level: lv.id, sub: lv.subs[0], text: '' };
+  renderImport();
+}
+
+function renderImport() {
+  const x = S.imp, lv = LEVELS.find(l => l.id === x.level) || LEVELS[0];
+  app.innerHTML = `<div class="page" style="max-width:1000px">
+    <button class="back" data-act="admin" data-tab="games">← Trò chơi</button>
+    <h1>📥 Nhập nhiều bộ từ</h1>
+    <div class="card" style="margin-top:16px">
+      <p style="margin-top:0">Dán nội dung (hoặc chọn file .md / .txt) theo mẫu: mỗi bộ bắt đầu bằng dòng <b>## Tên bộ</b>, tiếp theo là dòng <b>Từ vựng</b> rồi các dòng <code>từ | nghĩa | ví dụ</code>, sau đó dòng <b>Câu</b> rồi các dòng <code>câu | gợi ý nghĩa</code>.
+        Bộ nào không ghi “Cấp độ:” và “Lớp:” sẽ dùng giá trị mặc định bên dưới. Bộ trùng tên (cùng cấp độ và lớp) sẽ được <b>cập nhật</b>.</p>
+      <div class="row">
+        <div><label class="f">Cấp độ mặc định</label><select class="inp" data-imp="level">${LEVELS.map(l => `<option value="${esc(l.id)}" ${l.id === x.level ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select></div>
+        <div><label class="f">Lớp / cấp nhỏ mặc định</label><select class="inp" data-imp="sub">${lv.subs.map(s => `<option ${s === x.sub ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
+        <div><label class="f">Hoặc chọn file</label><input class="inp" type="file" accept=".md,.txt,text/plain,text/markdown" id="impFile"></div>
+      </div>
+      <label class="f">Nội dung</label>
+      <textarea class="inp mono" rows="14" data-imp="text" placeholder="## Unit 1 – Family Life&#10;Từ vựng&#10;household chores | việc nhà | Everyone shares the household chores.&#10;Câu&#10;My mother cooks dinner every evening. | Mẹ tôi nấu bữa tối mỗi tối.">${esc(x.text)}</textarea>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Xem trước</h3><div id="impPreview" style="margin-top:8px"></div></div>
+    <div class="sticky-save"><button class="btn" data-act="admin" data-tab="games">Huỷ</button><button class="btn primary" id="impGo" data-act="impDo">Nhập</button></div>
+  </div>`;
+  $('#impFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { S.imp.text = r.result; renderImport(); };
+    r.readAsText(f, 'utf-8');
+  });
+  renderImportPreview();
+}
+
+function renderImportPreview() {
+  const sets = parseMulti(S.imp.text, S.imp.level, S.imp.sub);
+  S.imp.sets = sets;
+  const key = s => [s.title.trim().toLowerCase(), s.level, s.subLevel].join('|');
+  const existing = new Set((S.adm.sets || []).map(key));
+  const bad = sets.filter(s => s.bad.length).length;
+  $('#impPreview').innerHTML = sets.length ? `<table class="lb"><thead><tr><th>Bộ từ</th><th>Cấp độ</th><th>Từ</th><th>Câu</th><th>Tình trạng</th></tr></thead><tbody>
+    ${sets.map(s => `<tr><td><b>${esc(s.title)}</b>${s.bad.length ? `<div class="small" style="color:var(--bad)">⚠️ ${s.bad.map(esc).join('<br>⚠️ ')}</div>` : ''}</td>
+      <td>${esc(levelName(s.level))} · ${esc(s.subLevel)}</td><td>${s.words.length}</td><td>${s.sentences.length}</td>
+      <td>${s.bad.length ? '<span class="tag bad">Lỗi</span>' : existing.has(key(s)) ? '<span class="tag warn">Cập nhật</span>' : '<span class="tag ok">Mới</span>'}</td></tr>`).join('')}
+    </tbody></table>` : '<div class="muted">Chưa đọc được bộ từ nào. Mỗi bộ cần bắt đầu bằng dòng “## Tên bộ”.</div>';
+  const go = $('#impGo');
+  go.disabled = !sets.length || bad > 0;
+  go.textContent = bad ? `Còn ${bad} bộ bị lỗi` : `📥 Nhập ${sets.length} bộ`;
+}
+
+function onImpField(el, type) {
+  const k = el.dataset.imp;
+  S.imp[k] = el.value;
+  if (k === 'level' && type === 'change') { S.imp.sub = (LEVELS.find(l => l.id === el.value) || LEVELS[0]).subs[0]; renderImport(); return; }
+  if (k === 'text') { clearTimeout(onImpField._t); onImpField._t = setTimeout(renderImportPreview, 250); }
+  else renderImportPreview();
+}
+
+async function doImport() {
+  const sets = (S.imp.sets || []).filter(s => !s.bad.length);
+  if (!sets.length) return;
+  await run(async () => {
+    const r = await call('importWordSets', { sets: sets.map(s => ({ title: s.title, level: s.level, subLevel: s.subLevel, status: 'open', words: s.words, sentences: s.sentences })) });
+    toast(`Đã nhập: ${r.created} bộ mới, ${r.updated} bộ cập nhật ✓`, 'ok');
+    S.imp = null; S.adm.sets = null;
+    showAdmin('games');
+  });
+}
+
+/* =====================================================================
+   LUYỆN ĐỀ
+   ===================================================================== */
+var EXAM = {"grades":["10","11","12"],"types":{"GK1":"Giữa kì 1","CK1":"Cuối kì 1","GK2":"Giữa kì 2","CK2":"Cuối kì 2","TN":"Luyện thi tốt nghiệp"}};
+const X = { list: null, grade: '', type: '', e: null, st: null, timer: null, tts: { si: -1 } };
+const LET5 = ['A', 'B', 'C', 'D', 'E'];
+function typeName(t) { return EXAM.types[t] || t; }
+function fmtScore(s) { return (Math.round(s * 100) / 100).toLocaleString('vi-VN'); }
+function fmtClock(sec) { sec = Math.max(0, Math.floor(sec)); const m = Math.floor(sec / 60), s = sec % 60; return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0'); }
+function stopExamTimers() { clearInterval(X.timer); X.timer = null; ttsStop(); }
+
+/** Định dạng chữ trong đề: **đậm**  ~~gạch chân~~  ##đậm+gạch chân##  //nghiêng// */
+function fmt(t) {
+  return esc(t)
+    .replace(/##(.+?)##/g, '<b><u>$1</u></b>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/~~(.+?)~~/g, '<u>$1</u>')
+    .replace(/(^|[^:])\/\/(.+?)\/\//g, '$1<i>$2</i>');
+}
+function passageHTML(t) {
+  return String(t || '').split('\n').map(l => {
+    if (!l.trim()) return '<div style="height:8px"></div>';
+    if (l.startsWith('= ')) return `<div style="text-align:center">${fmt(l.slice(2))}</div>`;
+    if (l.startsWith('- ')) return `<div style="padding-left:18px;text-indent:-12px">• ${fmt(l.slice(2))}</div>`;
+    return `<p style="margin:0 0 6px;text-indent:24px">${fmt(l)}</p>`;
+  }).join('');
+}
+
+/* ---------- Xem bài đọc (dùng trên điện thoại) ---------- */
+const READ = {};
+function readBtn(key, label) { return `<button class="btn sm mread" data-act="readOpen" data-id="${key}">📖 ${label || 'Xem bài đọc'}</button>`; }
+function readOpen(key) { openModal(`<div style="display:flex;justify-content:space-between;align-items:center"><h3>📖 Bài đọc</h3><button class="btn sm" data-act="closeModal">✕ Đóng</button></div>
+  <div class="xpassage">${READ[key] || ''}</div>`, true); }
+function scriptHTML(script) { return script.map(([w, t]) => `<p style="margin:0 0 8px">${w ? `<b>${esc(w)}:</b> ` : ''}${esc(t)}</p>`).join(''); }
+
+/* ---------- Danh sách đề ---------- */
+async function showExams() {
+  S.ex = null; S.edit = null;
+  renderTopbar('exams');
+  app.innerHTML = skeleton(6);
+  await run(async () => {
+    X.list = await call('examsList');
+    if (!X.grade) { const m = String(S.user.className || '').match(/^(10|11|12)/); X.grade = m ? m[1] : EXAM.grades[EXAM.grades.length - 1]; }
+    renderExams();
+  });
+}
+function renderExams() {
+  const inGrade = X.list.filter(e => e.grade === X.grade);
+  const list = inGrade.filter(e => !X.type || e.examType === X.type);
+  const types = Object.keys(EXAM.types).filter(t => t !== 'TN' || X.grade === '12');
+  app.innerHTML = `<div class="page">
+    <div class="page-head"><div><h1>📝 Luyện đề</h1><div class="muted">Làm đề như thi thật: có giờ, có phần nghe, chấm điểm thang 10.</div></div></div>
+    <div class="pills">${EXAM.grades.map(g => `<button class="pill ${g === X.grade ? 'on' : ''}" data-act="xGrade" data-id="${g}">Khối ${g}
+      <span class="small" style="opacity:.75">${X.list.filter(e => e.grade === g).length}</span></button>`).join('')}</div>
+    <div class="chips"><button class="chip ${!X.type ? 'on' : ''}" data-act="xType" data-id="">Tất cả</button>
+      ${types.map(t => `<button class="chip ${X.type === t ? 'on' : ''}" data-act="xType" data-id="${t}">${esc(typeName(t))}</button>`).join('')}</div>
+    ${list.length ? `<div class="grid">${list.map(e => `<div class="card ex-card" data-act="xOpen" data-id="${esc(e.id)}">
+        <div class="meta"><span class="tag" style="background:#ede9fe;color:#6d28d9">${esc(typeName(e.examType))}</span><span class="tag">Khối ${esc(e.grade)}</span></div>
+        <h3>${esc(e.title)}</h3>
+        <div class="muted small">⏱ ${e.duration} phút · ${e.questionCount} câu</div>
+        <div class="foot"><span class="muted small">${e.tries ? 'Đã làm ' + e.tries + ' lần' : ''}</span>
+          ${e.best != null ? `<span class="tag ${e.best >= 8 ? 'ok' : e.best >= 5 ? '' : 'bad'}">Cao nhất ${fmtScore(e.best)}</span>` : '<span class="btn sm primary">Làm đề</span>'}</div>
+      </div>`).join('')}</div>` : '<div class="card empty">Chưa có đề nào ở mục này. Thầy cô sẽ sớm cập nhật! 📚</div>'}
+  </div>`;
+}
+
+/* ---------- Màn hình trước khi làm ---------- */
+async function examIntro(id, preview) {
+  renderTopbar('exams');
+  app.innerHTML = skeleton(2);
+  await run(async () => {
+    X.e = await call('examGet', { id });
+    X.e.preview = !!preview;
+    const draft = load('exam_' + id);
+    const parts = []; X.e.sections.forEach(s => { if (parts.indexOf(s.part) < 0) parts.push(s.part); });
+    const hasAudio = X.e.sections.some(s => s.script.length || s.audioUrl);
+    app.innerHTML = `<div class="page" style="max-width:760px">
+      <button class="back" data-act="${preview ? 'admin' : 'exams'}" ${preview ? 'data-tab="exams"' : ''}>← ${preview ? 'Đề thi' : 'Luyện đề'}</button>
+      <div class="card" style="margin-top:6px">
+        <div class="meta" style="display:flex;gap:6px;margin-bottom:8px"><span class="tag" style="background:#ede9fe;color:#6d28d9">${esc(typeName(X.e.examType))}</span><span class="tag">Khối ${esc(X.e.grade)}</span></div>
+        <h1>${esc(X.e.title)}</h1>
+        <div class="row" style="margin:16px 0">
+          <div class="gstat">⏱ ${X.e.duration} phút</div><div class="gstat">❓ ${X.e.questionCount} câu</div><div class="gstat">🏁 Thang điểm 10</div></div>
+        <h3>Cấu trúc đề</h3><ul style="margin:8px 0 14px">${parts.map(p => `<li>${esc(p)}</li>`).join('')}</ul>
+        <div class="explain">📌 <b>Lưu ý:</b><br>
+          • Đồng hồ bắt đầu chạy khi bấm "Bắt đầu". Hết giờ, bài được nộp tự động.<br>
+          ${hasAudio ? '• Mỗi bài nghe được phát tối đa <b>2 lần</b>. Hãy dùng tai nghe và bật âm lượng.<br>' : ''}
+          • Bài làm được lưu tạm trên máy. Lỡ tải lại trang thì vẫn làm tiếp được.<br>
+          • ${X.e.answerMode === 'teacher' ? 'Đáp án sẽ hiện khi thầy cô mở.' : 'Nộp bài xong, bạn xem được ngay điểm, đáp án và giải thích.'}</div>
+        <div class="m-actions">${draft ? `<button class="btn" data-act="xRestart">Làm lại từ đầu</button><button class="btn primary" data-act="xStart">▶ Tiếp tục làm bài</button>`
+          : '<button class="btn primary" data-act="xStart">▶ Bắt đầu</button>'}</div>
+      </div></div>`;
+  });
+}
+
+/* ---------- Làm bài ---------- */
+function examStart(fresh) {
+  const id = X.e.id;
+  if (fresh) store('exam_' + id, null);
+  X.st = load('exam_' + id) || { answers: {}, flags: {}, plays: {}, startedAt: Date.now() };
+  store('exam_' + id, X.st);
+  renderTopbar('exams');
+  window.scrollTo(0, 0);
+  renderExam();
+  X.timer = setInterval(tickExam, 1000);
+  tickExam();
+}
+function examLeft() { return X.e.duration * 60 - (Date.now() - X.st.startedAt) / 1000; }
+function tickExam() {
+  const left = examLeft();
+  document.querySelectorAll('.xclock').forEach(el => { el.textContent = '⏱ ' + fmtClock(left); el.classList.toggle('low', left < 300); });
+  if (left <= 0 && !X.submitting) { toast('⏰ Hết giờ! Bài đang được nộp…'); examSubmit(true); }
+}
+function saveExamDraft() { store('exam_' + X.e.id, X.st); }
+
+function renderExam() {
+  const e = X.e, st = X.st;
+  let lastPart = '';
+  const body = e.sections.map((s, si) => {
+    let h = '';
+    if (s.part !== lastPart) { h += `<h2 class="xpart">${esc(s.part)}</h2>`; lastPart = s.part; }
+    const plays = st.plays[si] || 0;
+    h += `<section class="card xsec">${s.title ? `<h3 style="margin-bottom:6px">${esc(s.title)}</h3>` : ''}
+      ${s.instruction ? `<div class="xins">${fmt(s.instruction)}</div>` : ''}
+      ${s.audioUrl ? `<div class="xaudio"><audio controls preload="none" src="${esc(s.audioUrl)}"></audio></div>`
+        : s.script.length ? `<div class="xaudio"><button class="btn ${plays >= 2 && !e.preview ? '' : 'primary'}" id="tts-${si}" data-act="xListen" data-si="${si}" ${plays >= 2 && !e.preview ? 'disabled' : ''}>
+            ${plays >= 2 && !e.preview ? '🔇 Đã nghe đủ 2 lần' : `🎧 Nghe bài (còn ${Math.max(0, 2 - plays)} lượt)`}</button>
+            <span class="muted small" id="ttsInfo-${si}"></span></div>` : ''}
+      ${s.passage ? (READ['x' + si] = passageHTML(s.passage), `<div class="split" style="--stick:132px"><div class="split-left"><h4>📖 Bài đọc</h4>${READ['x' + si]}</div>
+        <div class="split-right">${readBtn('x' + si)}${s.questions.map(q => examQHTML(q)).join('')}</div></div>`)
+        : s.questions.map(q => examQHTML(q)).join('')}
+    </section>`;
+    return h;
+  }).join('');
+  const grid = e.sections.map(s => s.questions.map(q => `<button class="xn" id="xn-${q.n}" data-act="xJump" data-n="${q.n}">${q.n}</button>`).join('')).join('');
+  app.innerHTML = `<div class="xwrap">
+    <div class="xtop"><span class="xclock">⏱ --:--</span>
+      <div class="xgrid">${grid}</div>
+      <span class="muted small" id="xcount" style="white-space:nowrap"></span>
+      <button class="btn sm xgridbtn" data-act="xGridOpen">📋 Câu hỏi</button>
+      <button class="btn sm primary" data-act="xSubmit">📤 Nộp bài</button></div>
+    <div class="crumbs">${esc(typeName(e.examType))} · Khối ${esc(e.grade)}${e.preview ? ' · <b>Giáo viên làm thử</b>' : ''} · <span class="muted">🟪 đã làm · 🟧 đánh dấu xem lại</span></div>
+    <h1 style="margin-bottom:10px">${esc(e.title)}</h1>${body}
+    <div class="card" style="text-align:center;margin-top:20px"><p>Bạn đã làm xong? Kiểm tra lại các câu được đánh dấu 🚩 rồi nộp bài.</p>
+      <button class="btn primary" data-act="xSubmit">📤 Nộp bài</button></div>
+  </div>`;
+  updateExamGrid();
+}
+
+function examQHTML(q) {
+  const v = X.st.answers[q.n] || '', fl = X.st.flags[q.n];
+  const blank = !String(q.q || '').trim() || /^\(\d+\)$/.test(String(q.q).trim());
+  let body;
+  if (q.type === 'fill') body = `<input class="inp" data-xq="${q.n}" value="${esc(v)}" placeholder="Nhập câu trả lời..." autocomplete="off" autocapitalize="off" spellcheck="false">`;
+  else {
+    const opts = Object.keys(q.options || {});
+    const short = opts.every(k => String(q.options[k]).length <= 22);
+    body = `<div class="opts ${short ? 'xshort' : ''}">${opts.map(k => `<label class="opt ${v === k ? 'on' : ''}">
+      <input type="radio" name="xq${q.n}" value="${k}" data-xq="${q.n}" ${v === k ? 'checked' : ''}><b>${k}</b><span>${fmt(q.options[k])}</span></label>`).join('')}</div>`;
+  }
+  return `<div class="xq" id="xq-${q.n}"><div class="qhead"><span class="qnum">Câu ${q.n}</span>
+      <button class="flag ${fl ? 'on' : ''}" data-act="xFlag" data-n="${q.n}" title="Đánh dấu xem lại">🚩</button></div>
+    ${blank ? `<div class="muted small" style="margin-bottom:8px">Chọn đáp án đúng cho chỗ trống (${q.n})</div>` : `<div class="qtext">${fmt(q.q)}</div>`}
+    ${body}</div>`;
+}
+
+function updateExamGrid() {
+  if (!X.e || !X.st) return;
+  let done = 0, total = 0;
+  X.e.sections.forEach(s => s.questions.forEach(q => {
+    total++;
+    const a = String(X.st.answers[q.n] || '').trim(); if (a) done++;
+    document.querySelectorAll(`#xn-${q.n}`).forEach(b => { b.classList.toggle('done', !!a); b.classList.toggle('flag', !!X.st.flags[q.n]); });
+  }));
+  const c = $('#xcount'); if (c) c.textContent = `${done}/${total} câu`;
+  X.done = done; X.total = total;
+}
+
+function onExamField(el) {
+  X.st.answers[el.dataset.xq] = el.value;
+  if (el.type === 'radio') el.closest('.opts').querySelectorAll('.opt').forEach(o => o.classList.toggle('on', o.querySelector('input').checked));
+  saveExamDraft(); updateExamGrid();
+}
+function examFlag(n) {
+  X.st.flags[n] = !X.st.flags[n]; if (!X.st.flags[n]) delete X.st.flags[n];
+  const b = document.querySelector(`#xq-${n} .flag`); if (b) b.classList.toggle('on', !!X.st.flags[n]);
+  saveExamDraft(); updateExamGrid();
+}
+function examJump(n) { closeModal(); const el = $('#xq-' + n); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('pulse'); setTimeout(() => el.classList.remove('pulse'), 900); } }
+function examGridModal() {
+  const grid = X.e.sections.map(s => s.questions.map(q => `<button class="xn" id="xn-${q.n}" data-act="xJump" data-n="${q.n}">${q.n}</button>`).join('')).join('');
+  openModal(`<div style="display:flex;justify-content:space-between;align-items:center"><h3>Danh sách câu hỏi</h3><span class="xclock">⏱</span></div>
+    <div class="xgrid" style="margin-top:12px">${grid}</div><div class="muted small" style="margin-top:10px">🟪 đã làm · 🟧 đánh dấu xem lại</div>
+    <div class="m-actions"><button class="btn" data-act="closeModal">Đóng</button></div>`);
+  updateExamGrid(); tickExam();
+}
+
+async function examSubmit(auto) {
+  if (X.submitting) return;
+  if (!auto) {
+    updateExamGrid();
+    const miss = X.total - X.done, fl = Object.keys(X.st.flags).length;
+    const msg = (miss ? `Bạn còn ${miss} câu chưa làm. ` : '') + (fl ? `Còn ${fl} câu đánh dấu xem lại. ` : '') + 'Nộp bài bây giờ?';
+    if (!(await confirmBox(msg, 'Nộp bài'))) return;
+  }
+  X.submitting = true;
+  stopExamTimers();
+  try {
+    const seconds = Math.min(X.e.duration * 60, Math.round((Date.now() - X.st.startedAt) / 1000));
+    const r = await call('examSubmit', { id: X.e.id, answers: X.st.answers, seconds });
+    store('exam_' + X.e.id, null);
+    X.submitting = false;
+    showExamResult(r);
+  } catch (e) {
+    X.submitting = false;
+    toast('Chưa nộp được: ' + e.message + ' Bài vẫn được lưu, hãy bấm Nộp bài lại.', 'err');
+    X.timer = setInterval(tickExam, 1000);
+  }
+}
+
+/* ---------- Máy đọc phần nghe ---------- */
+function pickVoices() {
+  const all = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(v => /^en(-|_|$)/i.test(v.lang));
+  const pref = v => (/GB|UK/i.test(v.lang + v.name) ? 0 : 1);
+  all.sort((a, b) => pref(a) - pref(b));
+  const fem = all.find(v => /female|samantha|zira|susan|karen|moira|tessa|serena|victoria|libby|sonia|hazel|aria|jenny/i.test(v.name));
+  const male = all.find(v => /(^|\W)(male|daniel|david|alex|fred|george|ryan|guy|mark|thomas|arthur|oliver)(\W|$)/i.test(v.name) && !/female/i.test(v.name));
+  return { list: all, fem: fem || all[0], male: male || all[1] || all[0] };
+}
+function ttsStop() {
+  try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+  if (X.tts && X.tts.si >= 0) { const b = $('#tts-' + X.tts.si); if (b) refreshTtsBtn(X.tts.si); }
+  X.tts = { si: -1 };
+}
+function refreshTtsBtn(si) {
+  const b = $('#tts-' + si); if (!b) return;
+  const plays = X.st.plays[si] || 0, lock = plays >= 2 && !X.e.preview;
+  b.disabled = lock; b.className = 'btn ' + (lock ? '' : 'primary');
+  b.textContent = lock ? '🔇 Đã nghe đủ 2 lần' : `🎧 Nghe bài (còn ${Math.max(0, 2 - plays)} lượt)`;
+  const i = $('#ttsInfo-' + si); if (i) i.textContent = '';
+}
+function ttsPlay(si) {
+  if (!window.speechSynthesis) return toast('Trình duyệt này không hỗ trợ đọc. Hãy dùng Chrome hoặc Safari.', 'err');
+  if (X.tts.si === si) return ttsStop();          // đang phát → bấm để dừng (vẫn tính 1 lượt)
+  ttsStop();
+  const sec = X.e.sections[si];
+  const plays = X.st.plays[si] || 0;
+  if (plays >= 2 && !X.e.preview) return;
+  X.st.plays[si] = plays + 1; saveExamDraft();
+  const V = pickVoices();
+  const order = []; sec.script.forEach(([w]) => { if (order.indexOf(w) < 0) order.push(w); });
+  const voiceOf = w => (order.indexOf(w) % 2 === 0 ? V.fem : V.male);
+  const pitchOf = w => (order.indexOf(w) % 2 === 0 ? 1.1 : 0.9);
+  X.tts = { si };
+  const b = $('#tts-' + si); if (b) { b.textContent = '⏹ Đang phát… (bấm để dừng)'; b.className = 'btn'; }
+  const info = $('#ttsInfo-' + si);
+  sec.script.forEach(([w, text], i) => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB'; u.rate = 0.88; u.pitch = pitchOf(w);
+    const v = voiceOf(w); if (v) { u.voice = v; u.lang = v.lang; }
+    u.onstart = () => { if (info) info.textContent = w ? `🗣 ${w}` : ''; };
+    if (i === sec.script.length - 1) u.onend = () => { if (X.tts.si === si) { X.tts = { si: -1 }; refreshTtsBtn(si); } };
+    speechSynthesis.speak(u);
+  });
+}
+if (window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};
+
+/* ---------- Kết quả ---------- */
+function examScoreCard(r) {
+  const color = r.score >= 8 ? '#059669' : r.score >= 5 ? '#7c3aed' : '#dc2626';
+  const cheer = r.score >= 9 ? '🎉 Xuất sắc!' : r.score >= 8 ? '👏 Giỏi lắm!' : r.score >= 6.5 ? '💪 Khá tốt!' : r.score >= 5 ? '🙂 Đạt yêu cầu, cố thêm nhé!' : '📚 Cần ôn thêm, đừng nản!';
+  return `<div class="card score-card">
+    <div class="ring" style="background:conic-gradient(${color} ${r.score * 36}deg,#efe9fa 0)"><div style="color:${color};font-size:24px">${fmtScore(r.score)}</div></div>
+    <div style="flex:1;min-width:240px"><h2>${cheer}</h2>
+      <p style="margin:6px 0 0">Điểm <b>${fmtScore(r.score)}/10</b> · đúng <b>${r.correct}/${r.total}</b> câu · ${fmtSec(r.seconds)}</p>
+      <p class="muted small" style="margin:4px 0 0">${esc(r.title)} · ${fmtDate(r.submittedAt)}</p></div></div>
+    <div class="card" style="margin-top:14px"><h3>Điểm từng phần</h3><table class="lb" style="margin-top:6px"><tbody>
+      ${r.parts.map(p => { const pc = p.total ? Math.round(p.correct / p.total * 100) : 0; return `<tr><td>${esc(p.part)}</td><td style="width:90px"><b>${p.correct}/${p.total}</b></td>
+        <td style="width:40%"><div class="bar"><i style="width:${pc}%;${pc < 50 ? 'background:#ef4444' : ''}"></i></div></td><td class="muted small" style="width:50px">${pc}%</td></tr>`; }).join('')}
+    </tbody></table></div>`;
+}
+function examReviewHTML(r) {
+  if (!r.canSee) return `<div class="card empty" style="margin-top:14px">🔒 Đáp án và giải thích sẽ hiện khi thầy cô mở. Hãy quay lại xem sau nhé!</div>`;
+  let lastPart = '';
+  return r.sections.map(s => {
+    let h = '';
+    if (s.part !== lastPart) { h += `<h2 class="xpart">${esc(s.part)}</h2>`; lastPart = s.part; }
+    const si = r.sections.indexOf(s);
+    const leftHTML = s.passage ? `<h4>📖 Bài đọc</h4>${passageHTML(s.passage)}` : s.script.length ? `<h4>🎧 Lời bài nghe (tapescript)</h4>${scriptHTML(s.script)}` : '';
+    if (leftHTML) READ['r' + si] = leftHTML;
+    const itemsHTML = s.items.map(it => {
+        const opts = it.options ? Object.keys(it.options).map(k => {
+          const right = k === it.answerText, chosen = k === String(it.given).toUpperCase();
+          return `<div class="opt-line ${right ? 'right' : chosen ? 'wrong' : ''}"><b>${k}.</b> ${fmt(it.options[k])}${right ? ' ✓' : ''}${chosen && !right ? ' (bạn chọn)' : ''}</div>`;
+        }).join('') : `<div><span class="k">Bạn trả lời:</span> <b>${esc(it.given) || '<i class="muted">(bỏ trống)</i>'}</b></div>${it.correct ? '' : `<div><span class="k">Đáp án:</span> <b style="color:var(--ok)">${esc(it.answerText)}</b></div>`}`;
+        return `<div class="xq rv ${it.correct ? 'ok' : 'bad'}" style="padding-left:12px"><div class="qhead"><span class="qnum">Câu ${it.n}</span>
+          ${it.correct ? '<span class="tag ok">✓ Đúng</span>' : it.given ? '<span class="tag bad">✗ Sai</span>' : '<span class="tag warn">Bỏ trống</span>'}</div>
+          ${it.question && !/^\(\d+\)$/.test(it.question.trim()) ? `<div class="qtext">${fmt(it.question)}</div>` : ''}
+          <div class="ans">${opts}</div>
+          <div class="solution"><b class="h">✔ Đáp án: ${esc(it.answerText)}</b>${it.explanation ? `<br>💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}` : ''}</div></div>`;
+      }).join('');
+    h += `<section class="card xsec">${s.title ? `<h3 style="margin-bottom:8px">${esc(s.title)}</h3>` : ''}
+      ${leftHTML ? `<div class="split"><div class="split-left">${leftHTML}</div><div class="split-right">${readBtn('r' + si, s.passage ? 'Xem bài đọc' : 'Xem lời bài nghe')}${itemsHTML}</div></div>` : itemsHTML}</section>`;
+    return h;
+  }).join('');
+}
+function showExamResult(r, from) {
+  renderTopbar(from === 'results' ? 'results' : 'exams');
+  window.scrollTo(0, 0);
+  app.innerHTML = `<div class="page" style="max-width:1400px">
+    <button class="back" data-act="${from === 'results' ? 'myResults' : 'exams'}">← ${from === 'results' ? 'Kết quả của tôi' : 'Luyện đề'}</button>
+    ${examScoreCard(r)}
+    <div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap"><button class="btn primary" data-act="xOpen" data-id="${esc(r.examId)}">↻ Làm lại đề này</button>
+      <button class="btn" data-act="exams">Chọn đề khác</button></div>
+    ${examReviewHTML(r)}</div>`;
+}
+
+/* ---------- Giáo viên: tab "Đề thi" ---------- */
+function aExams() {
+  const all = S.adm.exams || [];
+  const list = all.filter(e => !S.f.examGrade || e.grade === S.f.examGrade)
+    .sort((a, b) => a.grade.localeCompare(b.grade) || Object.keys(EXAM.types).indexOf(a.examType) - Object.keys(EXAM.types).indexOf(b.examType) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  return `<div class="chips"><button class="chip ${!S.f.examGrade ? 'on' : ''}" data-act="xaGrade" data-id="">Tất cả (${all.length})</button>
+      ${EXAM.grades.map(g => `<button class="chip ${S.f.examGrade === g ? 'on' : ''}" data-act="xaGrade" data-id="${g}">Khối ${g} (${all.filter(e => e.grade === g).length})</button>`).join('')}</div>
+    <div class="toolbar"><span class="muted small">Đề có công tắc <b>Đáp án</b>: “Ngay” = xem ngay sau khi nộp; “GV mở” = chỉ hiện khi bạn bấm mở.</span><span style="flex:1"></span>
+      <button class="btn primary" data-act="xaNew">+ Thêm đề</button></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Đề</th><th>Khối · Loại</th><th>Câu · Phút</th><th>Lượt làm · ĐTB</th><th>Mở</th><th>Đáp án</th><th></th></tr></thead><tbody>
+      ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${esc(e.createdBy || '')}</div></td>
+        <td>Khối ${esc(e.grade)}<div class="muted small">${esc(typeName(e.examType))}</div></td><td>${e.questionCount} câu<div class="muted small">${e.duration} phút</div></td>
+        <td>${e.attempts}<div class="muted small">${e.avg == null ? '—' : 'ĐTB ' + fmtScore(e.avg)}</div></td>
+        <td><button class="switch ${e.status === 'open' ? 'on' : ''}" data-act="xaToggle" data-id="${esc(e.id)}"></button></td>
+        <td>${e.answerMode === 'teacher' ? `<button class="btn sm ${e.released ? '' : 'primary'}" data-act="xaRelease" data-id="${esc(e.id)}">${e.released ? '🔓 Đã mở · Khoá lại' : '🔒 Mở đáp án'}</button>` : '<span class="tag ok">Xem ngay</span>'}</td>
+        <td><div class="actions"><button class="btn sm primary" data-act="assignExam" data-id="${esc(e.id)}">Giao</button>
+          <button class="btn sm" data-act="xaResults" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Kết quả</button>
+          <button class="btn sm" data-act="xaPreview" data-id="${esc(e.id)}">Làm thử</button>
+          <button class="btn sm" data-act="xaEdit" data-id="${esc(e.id)}">Sửa</button>
+          <button class="btn sm danger" data-act="xaDel" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button></div></td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Chưa có đề nào. Bấm “+ Thêm đề” rồi dán nội dung đề.</div>'}</div>`;
+}
+
+async function xaToggle(id) {
+  await run(async () => { const st = await call('examToggle', { id }); const e = S.adm.exams.find(x => x.id === id); if (e) e.status = st; toast(st === 'open' ? 'Đã mở đề' : 'Đã đóng đề', 'ok'); renderAdmin(); });
+}
+async function xaRelease(id) {
+  await run(async () => { const v = await call('examRelease', { id }); const e = S.adm.exams.find(x => x.id === id); if (e) e.released = v; toast(v ? 'Học sinh đã xem được đáp án' : 'Đã khoá đáp án', 'ok'); renderAdmin(); });
+}
+async function xaDel(id, title) {
+  if (!(await confirmBox(`Xoá đề "${title}"? Điểm cũ của học sinh vẫn được giữ trong Sheet.`, 'Xoá', true))) return;
+  await run(async () => { await call('examDelete', { id }); S.adm.exams = S.adm.exams.filter(x => x.id !== id); toast('Đã xoá đề', 'ok'); renderAdmin(); });
+}
+async function xaResults(id, title) {
+  await run(async () => {
+    const list = await call('examResults', { examId: id });
+    const classes = [...new Set(list.map(r => r.className).filter(Boolean))].sort();
+    const render = cls => {
+      const rows = list.filter(r => !cls || r.className === cls);
+      const avg = rows.length ? rows.reduce((s, r) => s + r.score, 0) / rows.length : 0;
+      const partNames = []; rows.forEach(r => r.parts.forEach(p => { if (partNames.indexOf(p.part) < 0) partNames.push(p.part); }));
+      const partAvg = partNames.map(n => { let c = 0, t = 0; rows.forEach(r => r.parts.forEach(p => { if (p.part === n) { c += p.correct; t += p.total; } })); return [n, t ? Math.round(c / t * 100) : 0]; });
+      $('#xrBody').innerHTML = rows.length ? `<p><b>${rows.length}</b> lượt làm · điểm TB <b>${fmtScore(avg)}</b></p>
+        <div class="chips" style="margin:0 0 10px">${partAvg.map(([n, pc]) => `<span class="tag ${pc < 50 ? 'bad' : pc < 70 ? 'warn' : 'ok'}">${esc(n)}: ${pc}%</span>`).join('')}</div>
+        <table class="lb"><thead><tr><th>Học sinh</th><th>Điểm</th><th>Từng phần</th><th>Thời gian</th><th></th></tr></thead><tbody>
+        ${rows.map(r => `<tr><td><b>${esc(r.fullName)}</b><div class="muted small">${r.className ? 'Lớp ' + esc(r.className) : '@' + esc(r.username)}</div></td>
+          <td><b>${fmtScore(r.score)}</b></td><td class="small">${r.parts.map(p => `${p.correct}/${p.total}`).join(' · ')}</td>
+          <td class="muted small">${fmtSec(r.seconds)}<br>${fmtDate(r.submittedAt)}</td><td><button class="btn sm" data-act="xaView" data-id="${esc(r.id)}">Xem bài</button></td></tr>`).join('')}
+        </tbody></table>` : '<div class="empty">Chưa có lượt làm nào.</div>';
+    };
+    openModal(`<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2>Kết quả: ${esc(title)}</h2></div><button class="btn sm" data-act="closeModal">✕ Đóng</button></div>
+      ${classes.length > 1 ? `<select class="inp" id="xrCls" style="max-width:200px;margin:10px 0"><option value="">Mọi lớp</option>${classes.map(c => `<option>${esc(c)}</option>`).join('')}</select>` : ''}
+      <div id="xrBody" style="margin-top:8px"></div>`, true);
+    render('');
+    const sel = $('#xrCls'); if (sel) sel.onchange = () => render(sel.value);
+  });
+}
+async function xaView(id) {
+  await run(async () => {
+    const r = await call('examResultDetail', { id });
+    openModal(`<div style="display:flex;justify-content:space-between;gap:10px"><div><h2>${esc(r.fullName)}</h2><div class="muted small">${r.className ? 'Lớp ' + esc(r.className) : ''}</div></div>
+      <button class="btn sm" data-act="closeModal">✕ Đóng</button></div><div style="margin-top:12px">${examScoreCard(r)}</div>${examReviewHTML(r)}`, true);
+  });
+}
+
+/* ---------- Trình nhập đề (dán một lần cả đề) ---------- */
+const EXAM_SAMPLE = `# ĐỀ KIỂM TRA CUỐI KÌ I – ĐỀ SỐ 1
+Khối: 12
+Loại: CK1
+Thời gian: 60
+Xem đáp án: ngay
+
+## PART A. LISTENING (1.5 points)
+### Section 1
+[HƯỚNG DẪN]
+Listen to a talk and decide whether the statements are True or False.
+[NGHE]
+Speaker: Good morning, everyone. Today I'd like to tell you about...
+[CÂU HỎI]
+1. The speaker is talking about a scientist.
+A. True
+B. False
+Đáp án: A
+Giải thích: ...
+
+## PART B. LANGUAGE IN USE (2.75 points)
+[HƯỚNG DẪN]
+Read the following advertisement and choose the best option for each blank.
+[BÀI ĐỌC]
+= **TITLE**
+Our club **(7)** _______ ...
+[CÂU HỎI]
+7.
+A. has organised
+B. organised
+C. organises
+D. is organising
+Đáp án: A`;
+
+function parseExamText(text) {
+  const meta = {}, sections = [], errors = [];
+  let part = '', sec = null, mode = null, buf = [];
+  const newSec = title => { sec = { part: part || 'Đề thi', title: title || '', instruction: '', passage: '', audioUrl: '', script: [], questions: [], _q: [] }; sections.push(sec); };
+  const flush = () => {
+    if (!sec || !mode) { buf = []; return; }
+    const txt = buf.join('\n').replace(/^\n+|\n+$/g, '');
+    if (mode === 'ins') sec.instruction = txt.trim();
+    else if (mode === 'pas') sec.passage = txt;
+    else if (mode === 'aud') buf.forEach(raw => {
+      const l = raw.trim(); if (!l) return; let m;
+      if ((m = l.match(/^(link|audio)\s*:\s*(https?:\/\/\S+)/i))) { sec.audioUrl = m[2]; return; }
+      if ((m = l.match(/^([^:]{1,28}):\s+(.+)$/)) && !/^https?$/i.test(m[1])) sec.script.push([m[1].trim(), m[2].trim()]);
+      else if (sec.script.length) sec.script[sec.script.length - 1][1] += ' ' + l; else sec.script.push(['', l]);
+    });
+    else if (mode === 'q') sec._q.push(txt);
+    buf = [];
+  };
+  String(text || '').replace(/\r/g, '').split('\n').forEach(raw => {
+    const l = raw.trim(); let m;
+    if (/^#\s+/.test(l) && !/^##/.test(l)) { flush(); mode = null; meta.title = l.replace(/^#\s+/, '').trim(); return; }
+    if (/^##\s+/.test(l) && !/^###/.test(l)) { flush(); mode = null; part = l.replace(/^##\s+/, '').trim(); sec = null; return; }
+    if (/^###\s+/.test(l)) { flush(); mode = null; newSec(l.replace(/^###\s+/, '').trim()); return; }
+    if ((m = l.match(/^\[(.+)\]$/))) {
+      const k = m[1].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+      const mm = /huong dan/.test(k) ? 'ins' : /nghe|listen|audio/.test(k) ? 'aud' : /bai doc|doc|passage|text/.test(k) ? 'pas' : /cau hoi|question/.test(k) ? 'q' : null;
+      if (mm) { flush(); if (!sec) newSec(''); mode = mm; return; }
+    }
+    if (!mode && !sections.length && (m = l.match(/^(khối|khoi|loại|loai|thời gian|thoi gian|xem đáp án|xem dap an)\s*:\s*(.+)$/i))) {
+      const k = m[1].toLowerCase(), v = m[2].trim();
+      if (/kh/.test(k)) meta.grade = (v.match(/\d+/) || [''])[0];
+      else if (/lo/.test(k)) { const t = Object.keys(EXAM.types).find(x => x.toLowerCase() === v.toLowerCase() || EXAM.types[x].toLowerCase() === v.toLowerCase()); if (t) meta.examType = t; else errors.push('Loại đề không rõ: ' + v); }
+      else if (/th/.test(k)) meta.duration = parseInt(v, 10) || 60;
+      else meta.answerMode = /gi[aá]o vi[eê]n|gv|teacher/i.test(v) ? 'teacher' : 'instant';
+      return;
+    }
+    if (mode) buf.push(raw.replace(/\s+$/, ''));
+  });
+  flush();
+  let n = 0;
+  sections.forEach(s => {
+    s._q.join('\n\n').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach(block => {
+      n++;
+      const q = { type: 'mcq', q: '', options: {}, answer: '', explanation: '' }, ql = [];
+      block.split('\n').map(x => x.trim()).filter(Boolean).forEach(l => {
+        let m;
+        if ((m = l.match(/^([A-E])\s*[.)]\s*(.*)$/))) q.options[m[1].toUpperCase()] = m[2];
+        else if ((m = l.match(/^(đáp án|dap an|answer|key)\s*[:：]\s*(.*)$/i))) q.answer = m[2].trim();
+        else if ((m = l.match(/^(giải thích|giai thich|explanation)\s*[:：]\s*(.*)$/i))) q.explanation = m[2].trim();
+        else ql.push(l);
+      });
+      q.q = ql.join('\n').replace(/^(câu|question)?\s*\d+\s*[.):]\s*/i, '').replace(/^(câu|question)\s*\d+\s*$/i, '');
+      if (!Object.keys(q.options).length) { q.type = 'fill'; delete q.options; if (!q.answer) errors.push(`Câu ${n}: thiếu “Đáp án:”`); }
+      else { q.answer = (q.answer.match(/^[A-E]/i) || [''])[0].toUpperCase(); if (!q.options[q.answer]) errors.push(`Câu ${n}: thiếu đáp án đúng (A–${Object.keys(q.options).pop()})`); }
+      s.questions.push(q);
+    });
+    delete s._q;
+    if (!s.questions.length) errors.push(`Phần “${s.part}${s.title ? ' – ' + s.title : ''}” chưa có câu hỏi nào.`);
+  });
+  return { meta, sections, errors, count: n };
+}
+
+function examToText(m, sections) {
+  const out = [`# ${m.title}`, `Khối: ${m.grade}`, `Loại: ${m.examType}`, `Thời gian: ${m.duration}`, `Xem đáp án: ${m.answerMode === 'teacher' ? 'giáo viên mở' : 'ngay'}`];
+  let part = null, n = 0;
+  sections.forEach(s => {
+    if (s.part !== part) { out.push('', `## ${s.part}`); part = s.part; }
+    out.push(`### ${s.title || 'Section'}`);
+    if (s.instruction) out.push('[HƯỚNG DẪN]', s.instruction);
+    if (s.audioUrl || (s.script || []).length) { out.push('[NGHE]'); if (s.audioUrl) out.push('Link: ' + s.audioUrl); (s.script || []).forEach(([w, t]) => out.push(w ? `${w}: ${t}` : t)); }
+    if (s.passage) out.push('[BÀI ĐỌC]', s.passage);
+    out.push('[CÂU HỎI]');
+    (s.questions || []).forEach(q => {
+      n++;
+      out.push(`${n}. ${q.q || ''}`.trim());
+      if (q.options) Object.keys(q.options).forEach(k => out.push(`${k}. ${q.options[k]}`));
+      out.push(`Đáp án: ${q.answer}`);
+      if (q.explanation) out.push(`Giải thích: ${q.explanation}`);
+      out.push('');
+    });
+  });
+  return out.join('\n');
+}
+
+async function showExamEditor(id) {
+  renderTopbar('admin');
+  window.scrollTo(0, 0);
+  if (!id) {
+    S.xEdit = { id: '', title: '', grade: S.f.examGrade || '12', examType: 'CK1', duration: 60, answerMode: 'instant', status: 'open', text: '' };
+    return renderExamEditor();
+  }
+  app.innerHTML = skeleton(2);
+  await run(async () => {
+    const m = await call('examFull', { id });
+    S.xEdit = { id: m.id, title: m.title, grade: m.grade, examType: m.examType, duration: m.duration, answerMode: m.answerMode, status: m.status, text: examToText(m, m.sections) };
+    renderExamEditor();
+  });
+}
+
+function renderExamEditor() {
+  const x = S.xEdit;
+  const opt = (v, cur, label) => `<option value="${esc(v)}" ${String(v) === String(cur) ? 'selected' : ''}>${esc(label || v)}</option>`;
+  app.innerHTML = `<div class="page" style="max-width:1000px">
+    <button class="back" data-act="admin" data-tab="exams">← Đề thi</button>
+    <h1>${x.id ? 'Sửa đề' : 'Thêm đề mới'}</h1>
+    <div class="card" style="margin-top:16px">
+      <label class="f" style="margin-top:0">Tên đề *</label><input class="inp" data-xe="title" value="${esc(x.title)}" placeholder="vd: Đề kiểm tra cuối kì I – Đề số 1">
+      <div class="row">
+        <div><label class="f">Khối</label><select class="inp" data-xe="grade">${EXAM.grades.map(g => opt(g, x.grade, 'Khối ' + g)).join('')}</select></div>
+        <div><label class="f">Loại đề</label><select class="inp" data-xe="examType">${Object.keys(EXAM.types).map(t => opt(t, x.examType, EXAM.types[t])).join('')}</select></div>
+        <div><label class="f">Thời gian (phút)</label><input class="inp" type="number" min="5" max="240" data-xe="duration" value="${esc(x.duration)}"></div>
+        <div><label class="f">Xem đáp án</label><select class="inp" data-xe="answerMode">${opt('instant', x.answerMode, 'Ngay sau khi nộp')}${opt('teacher', x.answerMode, 'Khi giáo viên mở')}</select></div>
+        <div><label class="f">Trạng thái</label><select class="inp" data-xe="status">${opt('open', x.status, 'Mở cho học sinh')}${opt('closed', x.status, 'Đóng (ẩn)')}</select></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="page-head" style="margin-bottom:6px"><h3>Nội dung đề</h3>
+        <div style="display:flex;gap:8px;align-items:center"><input type="file" id="xeFile" accept=".md,.txt,text/plain" style="max-width:230px"><button class="btn sm" data-act="xeSample">Xem mẫu</button></div></div>
+      <div class="hint">Dán cả đề theo mẫu: <b>## Phần</b>, <b>### Section</b>, rồi các khối <b>[HƯỚNG DẪN]</b>, <b>[NGHE]</b> (mỗi dòng “Tên người nói: lời”), <b>[BÀI ĐỌC]</b>, <b>[CÂU HỎI]</b>. Câu hỏi viết như “Dán nhanh”: A. B. C. D. + “Đáp án:”. Trong bài đọc: **đậm**, ~~gạch chân~~, //nghiêng//.</div>
+      <textarea class="inp mono" rows="20" data-xe="text" style="margin-top:10px">${esc(x.text)}</textarea>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>Xem trước</h3><div id="xePrev" style="margin-top:8px"></div></div>
+    <div class="sticky-save"><button class="btn" data-act="admin" data-tab="exams">Huỷ</button><button class="btn primary" id="xeSave" data-act="xeSave">💾 Lưu đề</button></div>
+  </div>`;
+  $('#xeFile').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader(); r.onload = () => { S.xEdit.text = r.result; applyExamMeta(); renderExamEditor(); }; r.readAsText(f, 'utf-8');
+  });
+  renderExamPreview();
+}
+function applyExamMeta() {
+  const p = parseExamText(S.xEdit.text);
+  ['title', 'grade', 'examType', 'duration', 'answerMode'].forEach(k => { if (p.meta[k] != null && p.meta[k] !== '') S.xEdit[k] = p.meta[k]; });
+}
+function renderExamPreview() {
+  const p = parseExamText(S.xEdit.text);
+  S.xEdit.parsed = p;
+  let lastPart = '';
+  $('#xePrev').innerHTML = p.sections.length ? `<table class="lb"><thead><tr><th>Phần</th><th>Section</th><th>Nghe</th><th>Bài đọc</th><th>Số câu</th></tr></thead><tbody>
+    ${p.sections.map(s => { const r = `<tr><td>${s.part !== lastPart ? `<b>${esc(s.part)}</b>` : ''}</td><td>${esc(s.title || '—')}</td>
+      <td>${s.audioUrl ? '🔗 file' : s.script.length ? `🗣 ${s.script.length} lượt lời` : '—'}</td><td>${s.passage ? s.passage.split(/\s+/).length + ' từ' : '—'}</td><td>${s.questions.length}</td></tr>`; lastPart = s.part; return r; }).join('')}
+    </tbody></table><p style="margin:10px 0 0"><b>Tổng: ${p.count} câu</b></p>
+    ${p.errors.length ? `<div class="msg err">⚠️ ${p.errors.map(esc).join('<br>⚠️ ')}</div>` : '<div class="msg ok">✓ Đề hợp lệ, có thể lưu.</div>'}`
+    : '<div class="muted">Chưa đọc được phần nào. Hãy dán nội dung đề (hoặc bấm “Xem mẫu”).</div>';
+  const b = $('#xeSave'); if (b) b.disabled = !p.count || p.errors.length > 0;
+}
+function onExamEditField(el, type) {
+  const k = el.dataset.xe;
+  S.xEdit[k] = el.value;
+  if (k === 'text') {
+    clearTimeout(onExamEditField._t);
+    onExamEditField._t = setTimeout(() => {
+      const before = JSON.stringify([S.xEdit.title, S.xEdit.grade, S.xEdit.examType, S.xEdit.duration, S.xEdit.answerMode]);
+      applyExamMeta();
+      if (JSON.stringify([S.xEdit.title, S.xEdit.grade, S.xEdit.examType, S.xEdit.duration, S.xEdit.answerMode]) !== before) {
+        const ta = document.querySelector('[data-xe="text"]'), pos = ta ? ta.selectionStart : 0, top = ta ? ta.scrollTop : 0;
+        renderExamEditor();
+        const t2 = document.querySelector('[data-xe="text"]'); if (t2) { t2.focus(); t2.setSelectionRange(pos, pos); t2.scrollTop = top; }
+      } else renderExamPreview();
+    }, 300);
+  }
+}
+async function saveExamEdit() {
+  const x = S.xEdit, p = parseExamText(x.text);
+  if (p.errors.length) return toast('Đề còn lỗi, xem phần “Xem trước”.', 'err');
+  await run(async () => {
+    const r = await call('examSave', { exam: { id: x.id, title: x.title, grade: x.grade, examType: x.examType, duration: x.duration, answerMode: x.answerMode, status: x.status }, sections: p.sections });
+    toast(`Đã lưu đề (${r.questions} câu) ✓`, 'ok');
+    S.xEdit = null; S.adm.exams = null;
+    showAdmin('exams');
+  });
+}
+
+/* =====================================================================
+   KHỞI ĐỘNG
+   ===================================================================== */
+/** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
+async function loadConfig() {
+  if (typeof API_URL === 'undefined') return;
+  try {
+    const c = await call('config');
+    APP_NAME = c.appName; SCHOOL_NAME = c.schoolName;
+    LEVELS.splice(0, LEVELS.length, ...c.levels);
+    SKILLS.splice(0, SKILLS.length, ...c.skills);
+    EXAM.grades = c.exam.grades; EXAM.types = c.exam.types;
+    document.title = APP_NAME;
+  } catch (e) {
+    // Không gọi được cổng API (Apps Script chưa cập nhật doPost, hoặc lỗi tạm thời): chuyển sang giao diện chạy trực tiếp trên Apps Script
+    { app.innerHTML = '<div class="page"><div class="card empty">Đang chuyển tới trang học…</div></div>'; location.replace(API_URL); await new Promise(() => {}); }
+  }
+}
+
+(async function boot() {
+  await loadConfig();
+  if (!S.token) return showAuth();
+  app.innerHTML = skeleton(6);
+  try { S.user = await call('me'); goHome(); }
+  catch (e) { showAuth(); }
+})();
+</script>
 </body>
 </html>

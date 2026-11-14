@@ -78,6 +78,30 @@ function doGet() {
 }
 
 
+/**
+ * Cổng API cho giao diện đặt trên GitHub Pages (hoặc trang web khác).
+ * Trang web gửi POST (Content-Type: text/plain) với nội dung JSON: { fn: 'api', args: [action, payload, token] }
+ */
+function doPost(e) {
+  let out;
+  try {
+    const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (body.fn !== 'api') throw new Error('Yêu cầu không hợp lệ.');
+    const a = body.args || [];
+    out = api(a[0], a[1], a[2]);
+  } catch (err) {
+    out = { ok: false, error: String((err && err.message) || err) };
+  }
+  return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
+function publicConfig_() {
+  return { appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
+           exam: { grades: EXAM_GRADES, types: EXAM_TYPES } };
+}
+
+
 // ===================== 4. CÀI ĐẶT LẦN ĐẦU =====================
 /** Chạy hàm này MỘT LẦN trong trình soạn Apps Script (nút ▶ Chạy). */
 function setup() {
@@ -138,6 +162,7 @@ function api(action, payload, token) {
 
 const ACTIONS = {
   // ---- Tài khoản ----
+  config: publicConfig_,
   publicInfo: publicInfo_,
   register: register_,
   login: login_,

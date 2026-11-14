@@ -344,10 +344,10 @@
 /* =====================================================================
    PHẦN GIAO DIỆN (chạy trên trình duyệt của học sinh/giáo viên)
    ===================================================================== */
-const APP_NAME = <?!= JSON.stringify(appName) ?>;
-const SCHOOL_NAME = <?!= JSON.stringify(schoolName) ?>;
-const LEVELS = <?!= levelsJson ?>;
-const SKILLS = <?!= skillsJson ?>;
+var APP_NAME = <?!= JSON.stringify(appName) ?>;
+var SCHOOL_NAME = <?!= JSON.stringify(schoolName) ?>;
+var LEVELS = <?!= levelsJson ?>;
+var SKILLS = <?!= skillsJson ?>;
 
 const TYPE_LABEL = { mcq: 'Trắc nghiệm', fill: 'Điền / viết lại', essay: 'Tự luận' };
 const SKILL_COLOR = {
@@ -2028,7 +2028,7 @@ async function doImport() {
 /* =====================================================================
    LUYỆN ĐỀ
    ===================================================================== */
-const EXAM = <?!= examJson ?>;
+var EXAM = <?!= examJson ?>;
 const X = { list: null, grade: '', type: '', e: null, st: null, timer: null, tts: { si: -1 } };
 const LET5 = ['A', 'B', 'C', 'D', 'E'];
 function typeName(t) { return EXAM.types[t] || t; }
@@ -2617,7 +2617,24 @@ async function saveExamEdit() {
 /* =====================================================================
    KHỞI ĐỘNG
    ===================================================================== */
+/** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
+async function loadConfig() {
+  if (typeof API_URL === 'undefined') return;
+  try {
+    const c = await call('config');
+    APP_NAME = c.appName; SCHOOL_NAME = c.schoolName;
+    LEVELS.splice(0, LEVELS.length, ...c.levels);
+    SKILLS.splice(0, SKILLS.length, ...c.skills);
+    EXAM.grades = c.exam.grades; EXAM.types = c.exam.types;
+    document.title = APP_NAME;
+  } catch (e) {
+    // Không gọi được cổng API (Apps Script chưa cập nhật doPost, hoặc lỗi tạm thời): chuyển sang giao diện chạy trực tiếp trên Apps Script
+    { app.innerHTML = '<div class="page"><div class="card empty">Đang chuyển tới trang học…</div></div>'; location.replace(API_URL); await new Promise(() => {}); }
+  }
+}
+
 (async function boot() {
+  await loadConfig();
   if (!S.token) return showAuth();
   app.innerHTML = skeleton(6);
   try { S.user = await call('me'); goHome(); }

@@ -39,6 +39,21 @@ Web app luyện Tiếng Anh online cho học sinh **Ba Chuc High School**, chạ
 
 Dữ liệu nằm trong Google Sheet, gồm các trang tính Users, Exercises, Questions, Results, WordSets, Words, GameScores, Classes, Assignments, Exams, ExamParts, ExamResults. Các trang tính này được tạo tự động khi chạy `setup`.
 
+## Cách app chạy
+
+```
+Học sinh mở  https://lhthu1981-prog.github.io/practice-makes-perfect/
+        │  (giao diện: docs/index.html trên GitHub Pages)
+        ▼
+Google Apps Script (Code.gs, hàm doPost)  ──►  Google Sheet (dữ liệu)
+```
+
+- **Giao diện** nằm trên GitHub Pages (`docs/`). Sửa giao diện chỉ cần cập nhật GitHub, không phải triển khai lại Apps Script.
+- **Máy chủ** là Apps Script (`Code.gs`). Chỉ khi `Code.gs` thay đổi mới cần dán lại vào Apps Script và tạo **phiên bản mới** cho đúng bản triển khai đang dùng.
+- `docs/index.html` được tạo tự động từ `Index.html` bằng lệnh:
+  `node tools/build_pages.js . docs <link /exec của Apps Script>`
+- Link Apps Script `/exec` vẫn mở được app như cũ (dự phòng). Nếu trang GitHub không gọi được máy chủ, nó tự chuyển sang link này.
+
 ## Cài đặt
 
 1. Tạo một Google Sheet mới → **Tiện ích mở rộng → Apps Script**.
