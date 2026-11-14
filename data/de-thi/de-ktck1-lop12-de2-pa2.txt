@@ -1,0 +1,362 @@
+# ĐỀ KIỂM TRA CUỐI KÌ I – ĐỀ SỐ 2 (Phương án 2)
+Khối: 12
+Loại: CK1
+Thời gian: 60
+Xem đáp án: ngay
+
+## PART A. LISTENING (1.5 points)
+
+### Section 1 – Conversation 1 (Question 1)
+[HƯỚNG DẪN]
+You will hear three short conversations. For each conversation, choose the best answer A, B, C or D. You can listen TWICE.
+[NGHE]
+Shop assistant: Hi. What can I do for you?
+Minh: I'd like to print thirty posters for our school's book exchange. In colour, size A3, please.
+Shop assistant: Colour A3 is eight thousand dong per page. But if you print more than twenty, we give you a discount of one thousand dong per page.
+Minh: Great. So that's seven thousand dong each. I'll pick them up this afternoon.
+[CÂU HỎI]
+1. How much will Minh pay for the posters?
+A. 210,000 dong
+B. 240,000 dong
+C. 270,000 dong
+D. 180,000 dong
+Đáp án: A
+Giải thích: Giá 8.000 đ/tờ, in trên 20 tờ được giảm 1.000 đ/tờ → 7.000 đ × 30 tờ = 210.000 đ. 240.000 đ là giá khi chưa giảm (8.000 × 30); 270.000 đ và 180.000 đ không khớp phép tính nào trong bài.
+
+### Section 1 – Conversation 2 (Question 2)
+[NGHE]
+Customer: Excuse me. I picked up this shirt from your shop yesterday, and look, it's now two sizes smaller.
+Assistant: Oh dear, let me see. It seems it was washed in hot water by mistake.
+Customer: Exactly. The label clearly says cold water only. I'm really not happy about this.
+Assistant: I'm very sorry. Of course, we'll pay for a new shirt.
+[CÂU HỎI]
+2. What is the customer doing in the conversation?
+A. Introducing a new member of staff
+B. Making a prediction about the weather
+C. Expressing anxiety about a test
+D. Complaining about a service
+Đáp án: D
+Giải thích: Chức năng giao tiếp "making complaints": khách phàn nàn áo bị co vì tiệm giặt sai cách ("I'm really not happy about this") và cửa hàng xin lỗi, bồi thường. Các phương án còn lại (giới thiệu, dự đoán, lo lắng) không xuất hiện trong hội thoại.
+
+### Section 1 – Conversation 3 (Question 3)
+[NGHE]
+Woman: Please sit down here. Would you like me to wash it first?
+Lan: Yes, please. And could you keep it long at the front but quite short at the back?
+Woman: No problem. It's a bit dry, so I'll use a special conditioner first.
+Lan: That sounds great. Could you show me the back in the mirror at the end?
+[CÂU HỎI]
+3. Where does this conversation most probably take place?
+A. At a clothes shop
+B. At a swimming pool
+C. At a hair salon
+D. At a pharmacy
+Đáp án: C
+Giải thích: Suy luận từ các manh mối gián tiếp: gội trước ("wash it first"), để dài phía trước – ngắn phía sau, dầu xả (conditioner), soi gương phía sau → tiệm làm tóc. Không có chi tiết nào về mua quần áo, bơi lội hay mua thuốc.
+
+### Section 2 (Questions 4 – 6)
+[HƯỚNG DẪN]
+You will hear a radio presenter talking about three mobile apps for city life. Match each app (Questions 4 – 6) with the correct information (A – E). There are TWO extra options. You can listen TWICE.
+[NGHE]
+Presenter: Hello and welcome to City Tech Corner. Living in a big city can be stressful, so today I'd like to introduce three free apps made by young Vietnamese developers. The first one is ParkEasy. Every morning, thousands of drivers waste time looking for a place to leave their motorbikes. ParkEasy shows you the nearest parking areas and how many spaces are still empty. The second app is called RainAlert. During the rainy season, some streets in our city can be under water in less than an hour. RainAlert collects reports from users and warns you which roads to avoid before you leave home. The last app, StreetBite, is my personal favourite. It doesn't tell you where the expensive restaurants are. Instead, it guides you to small food stalls in hidden alleys, where elderly cooks have been selling the same family recipes for decades. Many tourists say it helps them experience the real flavour of local life. Download them today and make your city life a little easier.
+[CÂU HỎI]
+4. ParkEasy
+A. It introduces visitors to the everyday culture of local people.
+B. It lets users book a table at popular restaurants.
+C. It shows how many places are still available.
+D. It sends drivers information about traffic fines.
+E. It helps people avoid streets that may be flooded.
+Đáp án: C
+Giải thích: Nối thông tin nói trực tiếp: ParkEasy "shows you … how many spaces are still empty" = cho biết còn bao nhiêu chỗ trống (places still available).
+
+5. RainAlert
+A. It introduces visitors to the everyday culture of local people.
+B. It lets users book a table at popular restaurants.
+C. It shows how many places are still available.
+D. It sends drivers information about traffic fines.
+E. It helps people avoid streets that may be flooded.
+Đáp án: E
+Giải thích: Nối qua diễn đạt lại: đường phố "under water" = bị ngập (flooded); app "warns you which roads to avoid" = giúp tránh các con đường có thể bị ngập.
+
+6. StreetBite
+A. It introduces visitors to the everyday culture of local people.
+B. It lets users book a table at popular restaurants.
+C. It shows how many places are still available.
+D. It sends drivers information about traffic fines.
+E. It helps people avoid streets that may be flooded.
+Đáp án: A
+Giải thích: Nối nhờ suy luận: app dẫn tới quán nhỏ trong hẻm, công thức gia truyền của người lớn tuổi, du khách "experience the real flavour of local life" → giúp du khách hiểu văn hóa đời thường của người dân địa phương. B sai vì app "doesn't tell you where the expensive restaurants are"; D không được nhắc tới.
+
+## PART B. LANGUAGE IN USE (2.75 points)
+
+### Advertisement (Questions 7 – 11)
+[HƯỚNG DẪN]
+Read the following advertisement and choose the option that best fits each of the numbered blanks from 7 to 11.
+[BÀI ĐỌC]
+= **RE:STYLE – RECYCLED FASHION SHOW 2026**
+= //Old clothes, new stories//
+Last year, our models **(7)** _______ down the catwalk when the lights suddenly went out – but the audience switched on their phone torches, and the show went on! This year, the Green Club of Ba Chuc High School invites you to an evening of style and sustainability.
+- See 40 outfits. Each outfit is **(8)** _______ unique piece made from old jeans, rice bags and plastic bottles.
+- Vote **(9)** _______ your favourite design and win eco-friendly prizes.
+- Our young designers have worked hard for months, so this year's show will be even more **(10)** _______.
+- Bring your unwanted clothes to the collection box: the more clothes you bring, **(11)** _______ points your class will get!
+= **Saturday, 12th December · 7 p.m. · School hall · Free entry**
+[CÂU HỎI]
+7.
+A. walked
+B. were walking
+C. have walked
+D. walk
+Đáp án: B
+Giải thích: Quá khứ tiếp diễn diễn tả hành động đang diễn ra (were walking) thì bị hành động khác xen vào "when the lights suddenly went out" (quá khứ đơn). "Last year" loại hiện tại hoàn thành và hiện tại đơn.
+
+8.
+A. an
+B. a
+C. the
+D. Ø (no article)
+Đáp án: B
+Giải thích: "unique" bắt đầu bằng âm /juː/ (phụ âm) nên dùng "a", không dùng "an"; danh từ đếm được số ít, nói chung (một món đồ bất kì trong 40 bộ) → không dùng "the" và không bỏ mạo từ.
+
+9.
+A. at
+B. to
+C. with
+D. for
+Đáp án: D
+Giải thích: Động từ + giới từ: vote for somebody/something = bỏ phiếu chọn ai/cái gì.
+
+10.
+A. creative
+B. create
+C. creation
+D. creatively
+Đáp án: A
+Giải thích: Sau "will be even more" cần tính từ (so sánh hơn của tính từ dài): more creative = sáng tạo hơn. create (động từ), creation (danh từ), creatively (trạng từ) không đứng sau "be … more" ở vị trí này.
+
+11.
+A. the fewer
+B. the more
+C. more
+D. the most
+Đáp án: B
+Giải thích: So sánh kép "the more …, the more …" (càng … càng …): càng mang nhiều quần áo, lớp càng được nhiều điểm. "the fewer" sai nghĩa; "more" thiếu "the"; "the most" là so sánh nhất.
+
+### Leaflet (Questions 12 – 17)
+[HƯỚNG DẪN]
+Read the following leaflet and choose the option that best fits each of the numbered blanks from 12 to 17.
+[BÀI ĐỌC]
+= **LIVING IN THE CITY ON A STUDENT BUDGET**
+Living costs in big cities **(12)** _______ sharply in recent years, so it is important to keep track **(13)** _______ every dong you spend. Here are some simple tips:
+- **Cook together:** Eating at home is much cheaper than eating out, and you can share the **(14)** _______ of ingredients with your roommates.
+- **Travel smart:** Many students now cycle to class, **(15)** _______ saves both money and parking fees.
+- **Buy used books:** Second-hand textbooks are a good choice **(16)** _______ new ones can cost twice as much.
+- **Think twice:** Avoid buying things on **(17)** _______ just because they are on sale.
+= //Small savings every day make a big difference at the end of the month!//
+[CÂU HỎI]
+12.
+A. rise
+B. rose
+C. are rising
+D. have risen
+Đáp án: D
+Giải thích: "in recent years" là dấu hiệu của hiện tại hoàn thành: have risen. Quá khứ đơn (rose) cần mốc thời gian đã kết thúc.
+
+13.
+A. on
+B. with
+C. at
+D. of
+Đáp án: D
+Giải thích: Cụm cố định: keep track of something = theo dõi, ghi lại (chi tiêu).
+
+14.
+A. salary
+B. fee
+C. cost
+D. income
+Đáp án: C
+Giải thích: share the cost of something = chia nhau tiền mua (nguyên liệu). salary (lương), income (thu nhập) sai nghĩa; fee là phí cho dịch vụ (học phí, lệ phí), không dùng cho nguyên liệu nấu ăn.
+
+15.
+A. which
+B. that
+C. who
+D. what
+Đáp án: A
+Giải thích: ", which" thay cho cả mệnh đề phía trước (việc đạp xe đến lớp) – việc đó giúp tiết kiệm tiền. "that" không đứng sau dấu phẩy; "who" chỉ người; "what" không dùng làm đại từ quan hệ.
+
+16.
+A. although
+B. because
+C. unless
+D. so
+Đáp án: B
+Giải thích: Câu phức chỉ nguyên nhân: sách cũ là lựa chọn tốt VÌ sách mới có thể đắt gấp đôi → because. although (mặc dù) và unless (trừ khi) sai nghĩa; so chỉ kết quả, đảo ngược quan hệ.
+
+17.
+A. desire
+B. instinct
+C. impulse
+D. emotion
+Đáp án: C
+Giải thích: Collocation: buy (something) on impulse = mua theo cảm hứng nhất thời, không suy tính. Các từ gần nghĩa desire, instinct, emotion không đi với "buy … on".
+
+## PART C. READING (2.5 points)
+
+### Reading passage (Questions 18 – 27)
+[HƯỚNG DẪN]
+Read the following passage and choose the best answer to each of the questions from 18 to 27.
+[BÀI ĐỌC]
+Imagine buying lettuce that was picked only a few hours ago, not from a field in the countryside but from a tall building around the corner. This is the idea behind vertical farming, a method of growing crops in stacked layers inside buildings. Farms like this already operate in cities such as Singapore, Tokyo and Dubai. As cities continue to expand and farmland disappears, more and more people believe that vertical farms could help feed urban populations in the future. **[I]**
+Unlike traditional farms, vertical farms do not depend on the weather. Plants grow under special LED lights that can be switched on for as many hours as ##they## need, and their roots sit in water mixed with nutrients instead of soil. Sensors check the temperature and humidity every few minutes, so farmers can create ideal conditions all year round. In many systems, the water is collected and used again, which means these farms need far less water than ordinary fields. **[II]**
+Supporters point out several other ##benefits##. Because the food is grown close to where people live, it does not need to travel long distances by truck, which reduces pollution. Vertical farms also do not need chemical pesticides, since insects can hardly get inside. Some of them even sell their vegetables in a shop on the ground floor of the same building. ~~The closer the farm is to the market, the fresher the vegetables are when they reach customers.~~ **[III]**
+However, vertical farming is far from ##perfect##. Building a vertical farm is extremely expensive, and the lights and air-conditioning use a great deal of electricity. For this reason, most vertical farms today grow only leafy greens and herbs, which grow quickly and sell at good prices. Crops such as rice or wheat are still much cheaper to grow in open fields. In fact, several vertical farming companies in Europe and the United States have closed in recent years because their energy bills became too high.
+Despite these problems, many experts remain optimistic. If farms can switch to solar power and cheaper technology, vertical farming may become an important part of how cities feed themselves. **[IV]** Researchers are also testing new varieties of plants that need less light and grow even faster. It is unlikely to replace traditional agriculture completely, but it could become a valuable partner to it.
+[CÂU HỎI]
+18. The word "they" in paragraph 2 refers to ___.
+A. LED lights
+B. hours
+C. farmers
+D. plants
+Đáp án: D
+Giải thích: "LED lights that can be switched on for as many hours as they need" – đèn được bật bao nhiêu giờ tùy theo nhu cầu của cây (plants), chủ ngữ của câu. Đèn và giờ không "cần" ánh sáng; nông dân không được nhắc trong câu.
+
+19. According to paragraph 2, how do plants in vertical farms get nutrients?
+A. From water that contains nutrients
+B. From rich soil brought from the countryside
+C. From the special LED lights
+D. From chemical pesticides
+Đáp án: A
+Giải thích: Đoạn 2: "their roots sit in water mixed with nutrients instead of soil" → rễ nằm trong nước có pha chất dinh dưỡng, không dùng đất.
+
+20. According to paragraph 4, why do most vertical farms grow leafy greens and herbs?
+A. They need more electricity than other crops.
+B. People in cities do not like rice or wheat.
+C. They grow quickly and can be sold at good prices.
+D. They cannot be grown in open fields.
+Đáp án: C
+Giải thích: Đoạn 4: "leafy greens and herbs, which grow quickly and sell at good prices". B ngược ý; C và D không có trong bài.
+
+21. The word "benefits" in paragraph 3 is closest in meaning to ___.
+A. advantages
+B. problems
+C. costs
+D. methods
+Đáp án: A
+Giải thích: benefits (lợi ích) = advantages (ưu điểm); đoạn 3 liệt kê các điểm có lợi: giảm ô nhiễm, không cần thuốc trừ sâu, rau tươi hơn.
+
+22. The word "perfect" in paragraph 4 is OPPOSITE in meaning to ___.
+A. ideal
+B. modern
+C. flawed
+D. expensive
+Đáp án: C
+Giải thích: perfect (hoàn hảo) >< flawed (có khiếm khuyết). "ideal" là từ đồng nghĩa nên sai; modern, expensive không liên quan.
+
+23. Which of the following is NOT mentioned as an advantage of vertical farms?
+A. They do not depend on the weather.
+B. They need less water than ordinary fields.
+C. They do not need chemical pesticides.
+D. They create many jobs for local people.
+Đáp án: D
+Giải thích: A (đoạn 2), B (đoạn 2), C (đoạn 3) đều được nêu; bài không nhắc tới việc tạo việc làm.
+
+24. Which of the following best paraphrases the underlined sentence in paragraph 3?
+A. Customers prefer to buy vegetables from markets near their homes.
+B. Vegetables are fresher when they are grown nearer to where they are sold.
+C. Farms near markets grow more vegetables than other farms.
+D. Vegetables stay fresh longer if customers keep them at the market.
+Đáp án: B
+Giải thích: So sánh kép "The closer … the fresher …" = nông trại càng gần chợ, rau đến tay khách càng tươi → rau tươi hơn khi được trồng gần nơi bán.
+
+25. The writer's attitude towards vertical farming can best be described as ___.
+A. cautiously optimistic
+B. completely negative
+C. strongly enthusiastic
+D. totally uninterested
+Đáp án: A
+Giải thích: Tác giả nêu cả lợi ích (đoạn 2–3) lẫn hạn chế (đoạn 4), rồi kết luận "many experts remain optimistic" nhưng "unlikely to replace traditional agriculture completely" → lạc quan có dè dặt.
+
+26. Where in the passage does the following sentence best fit?
+"Such a change would also make the energy problem mentioned earlier much less serious."
+A. [I]
+B. [II]
+C. [III]
+D. [IV]
+Đáp án: D
+Giải thích: "Such a change" chỉ việc chuyển sang năng lượng mặt trời và công nghệ rẻ hơn (câu ngay trước [IV]); "the energy problem mentioned earlier" là hóa đơn tiền điện cao ở đoạn 4 → chỉ vị trí [IV] hợp lí.
+
+27. Which of the following is the best title for the passage?
+A. Why Rice Is Cheaper Than Lettuce
+B. Vertical Farms: A Promising but Imperfect Way to Feed Cities
+C. How to Build a Farm in Your Bedroom
+D. The End of Traditional Agriculture
+Đáp án: B
+Giải thích: Bài giới thiệu nông trại thẳng đứng, nêu lợi ích, hạn chế và triển vọng → "hứa hẹn nhưng chưa hoàn hảo". B chỉ là một chi tiết; C không có trong bài; D trái với câu cuối bài.
+
+## PART D. WRITING (1.25 points)
+
+### Arrangement (Questions 28 – 32)
+[HƯỚNG DẪN]
+Choose the best arrangement of utterances or sentences to make a meaningful exchange or text in each of the following questions from 28 to 32.
+[CÂU HỎI]
+28. a. Nam: Thanks a lot! I'm really glad you like it. I spent the whole weekend on it.
+b. Hoa: Maybe next time we can work on a project together.
+c. Hoa: Your science fair poster is amazing, Nam! The diagrams are so clear.
+A. c – a – b
+B. a – c – b
+C. c – b – a
+D. b – a – c
+Đáp án: A
+Giải thích: Lời khen (c) → Nam cảm ơn, bày tỏ niềm vui (a) → Hoa đề nghị lần sau làm chung (b). Câu a là lời đáp nên không thể đứng đầu.
+
+29. a. Linh: I'm not so sure. I think Bao will win because his voice is really powerful.
+b. Linh: Have you heard? The final of the class singing contest is on Friday.
+c. Linh: You're probably right. Let's wait and see!
+d. Quan: Really? I bet Thu will win. She sang beautifully in the first round.
+e. Quan: Maybe, but Thu has practised every day. I'm sure she'll be even better this time.
+A. b – a – d – e – c
+B. d – b – a – e – c
+C. b – d – a – e – c
+D. b – d – e – a – c
+Đáp án: C
+Giải thích: Báo tin (b) → Quân dự đoán Thu thắng (d) → Linh không đồng ý, dự đoán Bảo (a) → Quân đáp "Maybe, but…" bảo vệ ý mình (e) → Linh kết thúc (c). "I'm not so sure" (a) phải đáp lại một dự đoán; "Maybe, but" (e) phải đáp lại ý của Linh ở (a).
+
+30. Dear Lucy,
+a. Since then, I have spent every Sunday morning there, reading stories to the children who live nearby.
+b. Last month, my friends and I started volunteering at a small street library near the market.
+c. Write back soon and tell me about your volunteer work in Melbourne!
+d. Some of them couldn't read at first, but now they can read short books by themselves.
+e. I'm writing to tell you about my new weekend activity.
+Best wishes,
+Mai
+A. b – e – a – d – c
+B. e – a – b – d – c
+C. e – b – a – d – c
+D. e – b – d – a – c
+Đáp án: C
+Giải thích: Mục đích thư (e) → bắt đầu tình nguyện tháng trước (b) → "Since then" mỗi Chủ nhật đọc truyện cho trẻ em (a) → "Some of them" chỉ các em nhỏ vừa nhắc (d) → lời kết (c).
+
+31. a. Two years later, he won a gold medal at the Olympic Games in Rio de Janeiro – the first Olympic gold medal in Viet Nam's history.
+b. In 2014, he broke a world record at an ISSF World Cup event in the United States.
+c. At the 2012 Olympic Games in London, he came close to a medal but finished fourth in the 50-metre pistol event.
+d. Hoang Xuan Vinh was born in 1974 in Son Tay, which is now part of Ha Noi.
+e. He joined Viet Nam's national shooting team in 2000.
+A. d – e – b – c – a
+B. d – e – c – b – a
+C. e – d – c – b – a
+D. d – c – e – b – a
+Đáp án: B
+Giải thích: Trình tự thời gian: 1974 (d) → 2000 (e) → 2012 (c) → 2014 (b) → "Two years later" = 2016 (a). Nếu (a) đứng sau mốc 2012 thì "Two years later" thành 2014, sai sự thật.
+
+32. a. Firstly, internships show students what a job is really like every day.
+b. I believe students should do short internships before choosing their university major.
+c. However, a few weeks of real experience can save students from spending four years on the wrong subject.
+d. For example, a student who wants to study medicine could spend a summer helping at a local clinic.
+e. Some people argue that internships waste time that students should spend preparing for exams.
+A. b – d – a – e – c
+B. b – a – d – c – e
+C. a – b – d – e – c
+D. b – a – d – e – c
+Đáp án: D
+Giải thích: Quan điểm (b) → luận điểm "Firstly" (a) → ví dụ "For example" (d) → ý kiến phản biện "Some people argue" (e) → bác bỏ "However" (c).

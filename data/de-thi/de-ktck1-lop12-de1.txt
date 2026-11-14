@@ -36,7 +36,7 @@ You will hear a phone conversation between Minh, a Grade 12 student, and a recep
 [NGHE]
 Receptionist: Good afternoon, Green Bean Coffee Academy. How can I help you?
 Minh: Hi. I saw your poster about the weekend barista course. Could you tell me when it starts?
-Receptionist: Sure. The next course starts on Saturday, the sixth of December. Classes run from eight to eleven a.m. every Saturday and Sunday for four weeks.
+Receptionist: Sure. The next course starts on Saturday, the fifth of December. Classes run from eight to eleven a.m. every Saturday and Sunday for four weeks.
 Minh: That's perfect. I'm still at school, so I can only study at weekends. Do I need any experience?
 Receptionist: Not at all. The course is for beginners. You'll learn how to make different kinds of coffee and how to serve customers politely.
 Minh: Great. Actually, I'm hoping to find a part-time job at a café next summer, so I think this course will really help my CV.
@@ -44,12 +44,12 @@ Receptionist: I'm sure it will. Many of our students find jobs right after the c
 Minh: Thank you so much! I'll talk to my parents tonight, and then I'll fill in the form on your website.
 [CÂU HỎI]
 4. When does the next barista course start?
-A. On Sunday, 6th December
-B. On Saturday, 6th December
-C. On Saturday, 16th December
-D. On Saturday, 7th December
+A. On Sunday, 5th December
+B. On Saturday, 5th December
+C. On Saturday, 15th December
+D. On Saturday, 6th December
 Đáp án: B
-Giải thích: "The next course starts on Saturday, the sixth of December."
+Giải thích: "The next course starts on Saturday, the fifth of December."
 
 5. Why is Minh interested in the course?
 A. He plans to open his own coffee shop.
