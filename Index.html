@@ -250,8 +250,22 @@
     .xbtn{border:0;background:none;color:var(--bad);cursor:pointer;font-size:12px;margin-left:4px;padding:0 2px}
     label.chip input{margin:0 4px 0 0;vertical-align:middle}
     /* ================= LUYỆN ĐỀ ================= */
-    .xwrap{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;max-width:1240px;margin:0 auto;padding:24px clamp(12px,3vw,32px) 120px}
-    .xside{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 110px);overflow:auto}
+    .xwrap{max-width:1400px;margin:0 auto;padding:0 clamp(12px,2.5vw,32px) 120px}
+    .xtop{position:sticky;top:62px;z-index:12;display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
+      border:1px solid var(--line);border-top:0;border-radius:0 0 16px 16px;padding:10px 16px;margin-bottom:16px;box-shadow:0 6px 18px rgba(91,33,182,.08)}
+    .xtop .xclock{font-size:22px;color:var(--violet-d);min-width:92px}
+    .xtop .xgrid{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+    .xtop .xn{width:32px;padding:4px 0;font-size:12px}
+    .xtop .xgridbtn{display:none}
+    /* ---- 2 cột: bài đọc | câu hỏi ---- */
+    .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+    .split-left{position:sticky;top:var(--stick,84px);max-height:calc(100vh - var(--stick,84px) - 16px);overflow:auto;margin:0!important;
+      border:1.5px solid #ddd6fe;background:#fdfcff;border-radius:14px;padding:16px 20px;line-height:1.75;font-size:15.5px}
+    .split-left h4{margin:0 0 10px;font-size:13px;letter-spacing:.5px;text-transform:uppercase;color:var(--violet-d)}
+    .split-right{min-width:0}
+    .mread{display:none}
+    .solution{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:8px}
+    .solution b.h{color:var(--ok)}
     .xclock{font-weight:800;font-variant-numeric:tabular-nums}
     .xclock.big{font-size:30px;text-align:center;color:var(--violet-d)}
     .xclock.low{color:var(--bad)!important}
@@ -271,12 +285,18 @@
     .flag{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;opacity:.45;padding:2px 8px}
     .flag.on{opacity:1;background:#ffedd5;border-color:#fdba74}
     .xbar{display:none}
+    @media (max-width:1100px){
+      .xtop .xgrid{display:none}
+      .xtop .xgridbtn{display:inline-flex;margin-left:auto}
+    }
     @media (max-width:900px){
-      .xwrap{grid-template-columns:1fr}
-      .xside{display:none}
-      .xbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:15;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);
-        border-top:1px solid var(--line);padding:10px 14px;gap:10px;align-items:center;justify-content:space-between}
-      .xbar .xclock{font-size:20px;color:var(--violet-d)}
+      .split{grid-template-columns:1fr}
+      .split-left{position:static;max-height:340px}
+      .mread{display:inline-flex;position:sticky;top:var(--stick,70px);z-index:5;margin-bottom:8px;box-shadow:0 4px 12px rgba(91,33,182,.15)}
+      .xtop{top:62px;gap:8px;padding:8px 10px}
+      .xtop .btn{white-space:nowrap;padding:7px 10px}
+      .xtop .xclock{font-size:18px;min-width:0}
+      .xsec .split{--stick:122px!important}
     }
     /* ================= HỘP THOẠI & THÔNG BÁO ================= */
     .modal{position:fixed;inset:0;background:rgba(31,18,53,.45);z-index:40;display:flex;align-items:flex-start;justify-content:center;padding:5vh 12px;overflow:auto}
@@ -525,7 +545,8 @@ const ACTS = {
   xaView: d => xaView(d.id),
   xeSample: () => openModal(`<h3>Mẫu nội dung đề</h3><textarea class="inp mono" rows="22" readonly>${esc(EXAM_SAMPLE)}</textarea><div class="m-actions"><button class="btn" data-act="closeModal">Đóng</button></div>`, true),
   xeSave: () => saveExamEdit(),
-  assignExam: d => openAssign({ kind: 'exam', refId: d.id })
+  assignExam: d => openAssign({ kind: 'exam', refId: d.id }),
+  readOpen: d => readOpen(d.id)
 };
 
 /** Gõ phím / chọn đáp án */
@@ -734,14 +755,14 @@ function renderExercise() {
   const side = [];
   if (e.audioUrl) side.push(`<section class="card"><h3>🎧 Bài nghe</h3><audio controls preload="none" src="${esc(e.audioUrl)}"></audio>
     <a class="small" href="${esc(e.audioOriginal || e.audioUrl)}" target="_blank" rel="noopener">Không nghe được? Mở file nghe ở tab mới</a></section>`);
-  if (e.passage) side.push(`<section class="card"><h3>📖 Bài đọc</h3><div class="ptext">${esc(e.passage)}</div></section>`);
+  if (e.passage) { side.push(`<section class="card"><h3>📖 Bài đọc</h3><div class="ptext">${esc(e.passage)}</div></section>`); READ.e = `<div class="ptext">${esc(e.passage)}</div>`; }
   app.innerHTML = `<div class="page">
     <button class="back" data-act="${e.preview ? 'admin' : 'practice'}" ${e.preview ? 'data-tab="bank"' : ''}>← Quay lại</button>
     <div class="crumbs">${esc(levelName(e.level))} · ${esc(e.subLevel)} · ${esc(e.skill)}${e.preview ? ' · <b>Chế độ xem trước của GV</b>' : ''}</div>
     <h1>${esc(e.title)}</h1>
     <div class="ex-layout ${e.passage ? 'two' : ''}">
       ${side.length ? `<aside class="ex-side">${side.join('')}</aside>` : ''}
-      <div class="ex-main">${e.questions.map(questionHTML).join('')}</div>
+      <div class="ex-main">${e.passage ? readBtn('e') : ''}${e.questions.map(questionHTML).join('')}</div>
     </div>
   </div>
   <div class="submitbar"><div class="progress"><div class="bar"><i id="pbar"></i></div><span id="ptext"></span></div>
@@ -826,21 +847,21 @@ function reviewItems(r) {
     }
     return `<div class="card rv ${cls}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span>${status}<span class="qpts">${fmtNum(it.points)} điểm</span></div>
       <div class="qtext">${esc(it.question)}</div>${body}
-      ${it.explanation ? `<div class="explain">💡 ${esc(it.explanation)}</div>` : ''}</div>`;
+      ${it.explanation ? `<div class="solution">💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}</div>` : ''}</div>`;
   }).join('');
 }
 
 function showResult(r, fromList) {
   renderTopbar(fromList ? 'results' : 'practice');
   window.scrollTo(0, 0);
-  app.innerHTML = `<div class="page">
+  app.innerHTML = `<div class="page" style="max-width:${r.passage ? 1400 : 1240}px">
     <button class="back" data-act="${fromList ? 'myResults' : 'practice'}">← ${fromList ? 'Kết quả của tôi' : 'Về danh sách bài'}</button>
     ${scoreSummary(r)}
     <div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap">
       <button class="btn primary" data-act="retry" data-id="${esc(r.exerciseId)}">↻ Làm lại</button>
       <button class="btn" data-act="practice">Chọn bài khác</button></div>
-    ${r.passage ? `<details class="card" style="margin-bottom:14px"><summary style="cursor:pointer;font-weight:700">📖 Xem lại bài đọc</summary><div class="ptext">${esc(r.passage)}</div></details>` : ''}
-    <div class="ex-main">${reviewItems(r)}</div></div>`;
+    ${r.passage ? (READ.er = `<div class="ptext">${esc(r.passage)}</div>`, `<div class="split"><div class="split-left"><h4>📖 Bài đọc</h4>${READ.er}</div>
+      <div class="split-right ex-main">${readBtn('er')}${reviewItems(r)}</div></div>`) : `<div class="ex-main">${reviewItems(r)}</div>`}</div>`;
 }
 
 async function showMyResults() {
@@ -2032,6 +2053,13 @@ function passageHTML(t) {
   }).join('');
 }
 
+/* ---------- Xem bài đọc (dùng trên điện thoại) ---------- */
+const READ = {};
+function readBtn(key, label) { return `<button class="btn sm mread" data-act="readOpen" data-id="${key}">📖 ${label || 'Xem bài đọc'}</button>`; }
+function readOpen(key) { openModal(`<div style="display:flex;justify-content:space-between;align-items:center"><h3>📖 Bài đọc</h3><button class="btn sm" data-act="closeModal">✕ Đóng</button></div>
+  <div class="xpassage">${READ[key] || ''}</div>`, true); }
+function scriptHTML(script) { return script.map(([w, t]) => `<p style="margin:0 0 8px">${w ? `<b>${esc(w)}:</b> ` : ''}${esc(t)}</p>`).join(''); }
+
 /* ---------- Danh sách đề ---------- */
 async function showExams() {
   S.ex = null; S.edit = null;
@@ -2125,23 +2153,23 @@ function renderExam() {
         : s.script.length ? `<div class="xaudio"><button class="btn ${plays >= 2 && !e.preview ? '' : 'primary'}" id="tts-${si}" data-act="xListen" data-si="${si}" ${plays >= 2 && !e.preview ? 'disabled' : ''}>
             ${plays >= 2 && !e.preview ? '🔇 Đã nghe đủ 2 lần' : `🎧 Nghe bài (còn ${Math.max(0, 2 - plays)} lượt)`}</button>
             <span class="muted small" id="ttsInfo-${si}"></span></div>` : ''}
-      ${s.passage ? `<div class="xpassage">${passageHTML(s.passage)}</div>` : ''}
-      ${s.questions.map(q => examQHTML(q)).join('')}
+      ${s.passage ? (READ['x' + si] = passageHTML(s.passage), `<div class="split" style="--stick:132px"><div class="split-left"><h4>📖 Bài đọc</h4>${READ['x' + si]}</div>
+        <div class="split-right">${readBtn('x' + si)}${s.questions.map(q => examQHTML(q)).join('')}</div></div>`)
+        : s.questions.map(q => examQHTML(q)).join('')}
     </section>`;
     return h;
   }).join('');
   const grid = e.sections.map(s => s.questions.map(q => `<button class="xn" id="xn-${q.n}" data-act="xJump" data-n="${q.n}">${q.n}</button>`).join('')).join('');
   app.innerHTML = `<div class="xwrap">
-    <div class="xmain"><div class="crumbs">${esc(typeName(e.examType))} · Khối ${esc(e.grade)}${e.preview ? ' · <b>Giáo viên làm thử</b>' : ''}</div>
-      <h1 style="margin-bottom:10px">${esc(e.title)}</h1>${body}
-      <div class="card" style="text-align:center;margin-top:20px"><p>Bạn đã làm xong? Kiểm tra lại các câu được đánh dấu 🚩 rồi nộp bài.</p>
-        <button class="btn primary" data-act="xSubmit">📤 Nộp bài</button></div></div>
-    <aside class="xside card"><div class="xclock big">⏱ --:--</div>
-      <div class="muted small" id="xcount" style="margin:6px 0 10px"></div>
+    <div class="xtop"><span class="xclock">⏱ --:--</span>
       <div class="xgrid">${grid}</div>
-      <div class="muted small" style="margin:10px 0">🟪 đã làm · 🟧 đánh dấu xem lại</div>
-      <button class="btn primary" style="width:100%" data-act="xSubmit">📤 Nộp bài</button></aside>
-    <div class="xbar"><span class="xclock">⏱ --:--</span><button class="btn sm" data-act="xGridOpen">📋 Câu hỏi</button><button class="btn sm primary" data-act="xSubmit">Nộp bài</button></div>
+      <span class="muted small" id="xcount" style="white-space:nowrap"></span>
+      <button class="btn sm xgridbtn" data-act="xGridOpen">📋 Câu hỏi</button>
+      <button class="btn sm primary" data-act="xSubmit">📤 Nộp bài</button></div>
+    <div class="crumbs">${esc(typeName(e.examType))} · Khối ${esc(e.grade)}${e.preview ? ' · <b>Giáo viên làm thử</b>' : ''} · <span class="muted">🟪 đã làm · 🟧 đánh dấu xem lại</span></div>
+    <h1 style="margin-bottom:10px">${esc(e.title)}</h1>${body}
+    <div class="card" style="text-align:center;margin-top:20px"><p>Bạn đã làm xong? Kiểm tra lại các câu được đánh dấu 🚩 rồi nộp bài.</p>
+      <button class="btn primary" data-act="xSubmit">📤 Nộp bài</button></div>
   </div>`;
   updateExamGrid();
 }
@@ -2171,7 +2199,7 @@ function updateExamGrid() {
     const a = String(X.st.answers[q.n] || '').trim(); if (a) done++;
     document.querySelectorAll(`#xn-${q.n}`).forEach(b => { b.classList.toggle('done', !!a); b.classList.toggle('flag', !!X.st.flags[q.n]); });
   }));
-  const c = $('#xcount'); if (c) c.textContent = `Đã làm ${done}/${total} câu`;
+  const c = $('#xcount'); if (c) c.textContent = `${done}/${total} câu`;
   X.done = done; X.total = total;
 }
 
@@ -2284,10 +2312,10 @@ function examReviewHTML(r) {
   return r.sections.map(s => {
     let h = '';
     if (s.part !== lastPart) { h += `<h2 class="xpart">${esc(s.part)}</h2>`; lastPart = s.part; }
-    h += `<section class="card xsec">${s.title ? `<h3>${esc(s.title)}</h3>` : ''}
-      ${s.passage ? `<details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600">📖 Xem lại bài đọc</summary><div class="xpassage">${passageHTML(s.passage)}</div></details>` : ''}
-      ${s.script.length ? `<details style="margin:8px 0"><summary style="cursor:pointer;font-weight:600">🎧 Xem lời bài nghe (tapescript)</summary><div class="xpassage">${s.script.map(([w, t]) => `<p style="margin:0 0 6px">${w ? `<b>${esc(w)}:</b> ` : ''}${esc(t)}</p>`).join('')}</div></details>` : ''}
-      ${s.items.map(it => {
+    const si = r.sections.indexOf(s);
+    const leftHTML = s.passage ? `<h4>📖 Bài đọc</h4>${passageHTML(s.passage)}` : s.script.length ? `<h4>🎧 Lời bài nghe (tapescript)</h4>${scriptHTML(s.script)}` : '';
+    if (leftHTML) READ['r' + si] = leftHTML;
+    const itemsHTML = s.items.map(it => {
         const opts = it.options ? Object.keys(it.options).map(k => {
           const right = k === it.answerText, chosen = k === String(it.given).toUpperCase();
           return `<div class="opt-line ${right ? 'right' : chosen ? 'wrong' : ''}"><b>${k}.</b> ${fmt(it.options[k])}${right ? ' ✓' : ''}${chosen && !right ? ' (bạn chọn)' : ''}</div>`;
@@ -2295,15 +2323,18 @@ function examReviewHTML(r) {
         return `<div class="xq rv ${it.correct ? 'ok' : 'bad'}" style="padding-left:12px"><div class="qhead"><span class="qnum">Câu ${it.n}</span>
           ${it.correct ? '<span class="tag ok">✓ Đúng</span>' : it.given ? '<span class="tag bad">✗ Sai</span>' : '<span class="tag warn">Bỏ trống</span>'}</div>
           ${it.question && !/^\(\d+\)$/.test(it.question.trim()) ? `<div class="qtext">${fmt(it.question)}</div>` : ''}
-          <div class="ans">${opts}</div>${it.explanation ? `<div class="explain">💡 ${esc(it.explanation)}</div>` : ''}</div>`;
-      }).join('')}</section>`;
+          <div class="ans">${opts}</div>
+          <div class="solution"><b class="h">✔ Đáp án: ${esc(it.answerText)}</b>${it.explanation ? `<br>💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}` : ''}</div></div>`;
+      }).join('');
+    h += `<section class="card xsec">${s.title ? `<h3 style="margin-bottom:8px">${esc(s.title)}</h3>` : ''}
+      ${leftHTML ? `<div class="split"><div class="split-left">${leftHTML}</div><div class="split-right">${readBtn('r' + si, s.passage ? 'Xem bài đọc' : 'Xem lời bài nghe')}${itemsHTML}</div></div>` : itemsHTML}</section>`;
     return h;
   }).join('');
 }
 function showExamResult(r, from) {
   renderTopbar(from === 'results' ? 'results' : 'exams');
   window.scrollTo(0, 0);
-  app.innerHTML = `<div class="page" style="max-width:900px">
+  app.innerHTML = `<div class="page" style="max-width:1400px">
     <button class="back" data-act="${from === 'results' ? 'myResults' : 'exams'}">← ${from === 'results' ? 'Kết quả của tôi' : 'Luyện đề'}</button>
     ${examScoreCard(r)}
     <div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap"><button class="btn primary" data-act="xOpen" data-id="${esc(r.examId)}">↻ Làm lại đề này</button>
