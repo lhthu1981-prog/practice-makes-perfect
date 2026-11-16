@@ -857,7 +857,8 @@ function questionHTML(q, i) {
   const v = S.answers[q.order] || '';
   let body = '';
   if (q.type === 'mcq') {
-    body = `<div class="opts">${Object.keys(q.options).map(k => `<label class="opt ${v === k ? 'on' : ''}">
+    const short = Object.keys(q.options).every(k => String(q.options[k]).length <= 22);
+    body = `<div class="opts ${short ? 'xshort' : ''}">${Object.keys(q.options).map(k => `<label class="opt ${v === k ? 'on' : ''}">
       <input type="radio" name="q${esc(q.order)}" value="${k}" data-q="${esc(q.order)}" ${v === k ? 'checked' : ''}><b>${k}</b><span>${esc(q.options[k])}</span></label>`).join('')}</div>`;
   } else if (q.type === 'fill') {
     body = `<input class="inp" data-q="${esc(q.order)}" value="${esc(v)}" placeholder="Nhập câu trả lời..." autocomplete="off" autocapitalize="off" spellcheck="false">`;
@@ -1635,7 +1636,7 @@ Water ___ (boil) at 100°C.
 
 function openQuickImport() {
   openModal(`<h3>⚡ Dán nhanh nhiều câu hỏi</h3>
-    <p class="small muted">Mỗi câu cách nhau <b>một dòng trống</b>. Câu có A. B. C. D. là trắc nghiệm; câu chỉ có “Đáp án:” là điền từ; câu bắt đầu bằng <b>[Tự luận]</b> là tự luận.</p>
+    <p class="small muted">Mỗi câu cách nhau <b>một dòng trống</b>. Câu có A. B. C. D. (viết HOA, mỗi dòng một phương án hoặc cùng một dòng) là trắc nghiệm; dòng a. b. c. viết thường được giữ trong nội dung câu (dạng sắp xếp); câu chỉ có “Đáp án:” là điền từ; câu bắt đầu bằng <b>[Tự luận]</b> là tự luận.</p>
     <textarea class="inp" id="quickText" rows="14" style="font-family:ui-monospace,Consolas,monospace;font-size:13px" placeholder="${esc(QUICK_SAMPLE)}"></textarea>
     <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" data-act="quickDo">Thêm vào bài</button></div>`, true);
 }
@@ -1646,7 +1647,9 @@ function parseQuick(text) {
     const qLines = [];
     block.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
       let m;
-      if ((m = l.match(/^([A-Da-d])\s*[.)]\s*(.*)$/))) q[m[1].toUpperCase()] = m[2];
+      const inl = splitInlineOpts(l);
+      if (inl) Object.assign(q, inl);
+      else if ((m = l.match(/^([A-D])\s*[.)]\s*(.*)$/))) q[m[1]] = m[2];
       else if ((m = l.match(/^(đáp án|dap an|answer|key|đ\/a)\s*[:：]\s*(.*)$/i))) q.answer = m[2].trim();
       else if ((m = l.match(/^(giải thích|giai thich|explanation|tiêu chí)\s*[:：]\s*(.*)$/i))) q.explanation = m[2].trim();
       else qLines.push(l);
