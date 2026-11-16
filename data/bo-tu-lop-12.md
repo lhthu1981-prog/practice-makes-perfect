@@ -110,18 +110,32 @@ Ngữ pháp: Hiện tại hoàn thành · So sánh kép (the more … the more; 
 
 Từ vựng
 ```
-urbanisation | đô thị hóa | Urbanisation has changed the countryside.
+urbanisation | đô thị hóa | Urbanisation has changed the countryside. | lop12/unit4/urbanisation.jpg
 migrate | di cư | Many young people migrate to cities for work.
-rural | thuộc nông thôn | Rural life is quieter than city life.
+rural | thuộc nông thôn | Rural life is quieter than city life. | lop12/unit4/rural.jpg
 urban sprawl | sự mở rộng đô thị tràn lan | Urban sprawl is eating up farmland.
 slum | khu ổ chuột | Some workers live in slums on the edge of the city.
-overpopulation | sự quá tải dân số | Overpopulation puts pressure on schools and hospitals.
-traffic congestion | ùn tắc giao thông | Traffic congestion is worse during rush hour.
-housing | nhà ở | Housing prices in big cities are very high.
-job opportunity | cơ hội việc làm | Cities offer more job opportunities.
+overpopulation | sự quá tải dân số | Overpopulation puts pressure on schools and hospitals. | lop12/unit4/overpopulation.jpg
+traffic congestion | ùn tắc giao thông | Traffic congestion is worse during rush hour. | lop12/unit4/traffic-congestion.jpg
+housing | nhà ở | Housing prices in big cities are very high. | lop12/unit4/housing.jpg
+job opportunity | cơ hội việc làm | Cities offer more job opportunities. | lop12/unit4/job-opportunity.jpg
 living standard | mức sống | Living standards have improved in many areas.
 expand | mở rộng | The city has expanded rapidly.
-industrialisation | công nghiệp hóa | Industrialisation brought factories to the area.
+industrialisation | công nghiệp hóa | Industrialisation brought factories to the area. | lop12/unit4/industrialisation.jpg
+infrastructure | cơ sở hạ tầng | The city is investing in new infrastructure such as bridges and metro lines. | lop12/unit4/infrastructure.jpg
+healthcare | dịch vụ chăm sóc sức khỏe | Cities usually offer better healthcare than rural areas. | lop12/unit4/healthcare.jpg
+economic growth | tăng trưởng kinh tế | Urbanisation often goes with rapid economic growth. | lop12/unit4/economic-growth.jpg
+smart city | thành phố thông minh | A smart city uses technology to manage traffic and energy. | lop12/unit4/smart-city.jpg
+recycle | tái chế | We should recycle plastic bottles to reduce waste. | lop12/unit4/recycle.jpg
+high-speed train | tàu cao tốc | A high-speed train would cut travel time between big cities. | lop12/unit4/high-speed-train.jpg
+plant trees | trồng cây | Volunteers plant trees to make the city greener. | lop12/unit4/plant-trees.jpg
+cost of living | chi phí sinh hoạt | The cost of living in big cities keeps rising. | lop12/unit4/cost-of-living.jpg
+convenience store | cửa hàng tiện lợi | There is a convenience store on almost every street corner. | lop12/unit4/convenience-store.jpg
+green space | không gian xanh | Parks provide green space for city residents. | lop12/unit4/green-space.jpg
+cycling | việc đạp xe | Cycling to work helps reduce air pollution. | lop12/unit4/cycling.jpg
+rush hour | giờ cao điểm | The roads are packed with motorbikes during rush hour. | lop12/unit4/rush-hour.jpg
+neighbourhood | khu phố, khu dân cư | Old men often play chess on the pavement in my neighbourhood. | lop12/unit4/neighbourhood.jpg
+countryside | vùng quê, miền quê | My grandparents still live in the countryside. | lop12/unit4/countryside.jpg
 ```
 Câu
 ```
