@@ -1295,7 +1295,39 @@ function wordFrom(p) {
   if (p.length >= 3 && isImgRef(p[p.length - 1])) image = p.pop();
   return { word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim(), image };
 }
-function withPics(set) { set.pictures = set.words.filter(w => w.image); return set; }
+/* Kho ảnh: docs/img/kho.json liệt kê ảnh theo thư mục, vd { "lop7/unit4": ["orchestra.jpg", …] }.
+   Từ nào chưa ghi ảnh thì tự tìm ảnh trùng tên trong kho: ưu tiên thư mục đúng lớp + Unit của bộ từ,
+   rồi đến các thư mục cùng lớp, cuối cùng là cả kho. */
+const KHO = { data: {}, p: null };
+function loadKho() {
+  if (!KHO.p) KHO.p = fetch(IMG_BASE + 'kho.json', { cache: 'no-cache' })
+    .then(r => (r.ok ? r.json() : {})).catch(() => ({})).then(d => (KHO.data = d && typeof d === 'object' ? d : {}));
+  return KHO.p;
+}
+const slugify = v => String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd')
+  .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+function khoTiers(set) {
+  const g = (String(set.subLevel || '').match(/\d+/) || [])[0], u = (String(set.title || '').match(/unit\s*(\d+)/i) || [])[1];
+  const all = Object.keys(KHO.data), unit = g && u ? all.filter(f => f === `lop${g}/unit${u}`) : [];
+  const grade = g ? all.filter(f => f.indexOf(`lop${g}/`) === 0 && unit.indexOf(f) < 0) : [];
+  return [unit, grade, all.filter(f => unit.indexOf(f) < 0 && grade.indexOf(f) < 0)];
+}
+function khoFind(set, word) {
+  const s = slugify(word); if (!s) return '';
+  const names = [s, s + 's', s + 'es', s.replace(/e?s$/, '')];
+  for (const tier of khoTiers(set)) for (const f of tier) {
+    const files = KHO.data[f] || [];
+    for (const n of names) { const hit = files.find(x => x.replace(/\.\w+$/, '') === n); if (hit) return f + '/' + hit; }
+  }
+  return '';
+}
+function khoUnitCount(set) { const t = khoTiers(set)[0]; return t.length ? (KHO.data[t[0]] || []).length : 0; }
+function withPics(set) {
+  set.words.forEach(w => { if (!w.image) { const k = khoFind(set, w.word); if (k) { w.image = k; w.fromKho = true; } } });
+  set.pictures = set.words.filter(w => w.image);
+  return set;
+}
+async function loadSet(id) { const r = await Promise.all([call('wordSet', { id }), loadKho()]); return withPics(r[0]); }
 const G = { sets: null, level: '', set: null, game: '', st: null, t0: 0, tick: null, tmo: null, lbGame: 'speed' };
 
 function stopGame() { clearInterval(G.tick); clearTimeout(G.tmo); G.tick = G.tmo = null; }
@@ -1313,7 +1345,7 @@ async function showGames() {
   renderTopbar('games');
   app.innerHTML = skeleton(6);
   await run(async () => {
-    G.sets = await call('wordSets');
+    G.sets = (await Promise.all([call('wordSets'), loadKho()]))[0];
     if (!G.level) G.level = S.user.level || LEVELS[0].id;
     renderGames();
   });
@@ -1337,7 +1369,7 @@ function setCard(s) {
     <h3>${esc(s.title)}</h3>
     <div class="muted small">${s.words} từ vựng · ${s.sentences} câu${s.pictures ? ' · ' + s.pictures + ' ảnh' : ''}</div>
     <div class="game-btns">${Object.keys(GAMES).map(g => {
-      const ok = countOf(s, GAMES[g].need) >= GAMES[g].min;
+      const ok = countOf(s, GAMES[g].need) >= GAMES[g].min || (g === 'picture' && s.words >= 4 && khoUnitCount(s) >= 4);
       const best = s.best && s.best[g] != null ? ' ' + s.best[g] : '';
       return `<button class="gbtn" ${ok ? '' : 'disabled'} data-act="play" data-game="${g}" data-id="${esc(s.id)}" title="${GAMES[g].name}">${GAMES[g].icon}${best}</button>`;
     }).join('')}</div>
@@ -1348,7 +1380,7 @@ function setCard(s) {
 async function openSet(id) {
   renderTopbar('games');
   app.innerHTML = skeleton(3);
-  await run(async () => { G.set = withPics(await call('wordSet', { id })); renderSetHome(); });
+  await run(async () => { G.set = await loadSet(id); renderSetHome(); });
 }
 
 function renderSetHome() {
@@ -1394,7 +1426,7 @@ function lbHTML(r) {
 async function play(d) {
   if (!G.set || G.set.id !== d.id) {
     app.innerHTML = skeleton(2);
-    try { G.set = withPics(await call('wordSet', { id: d.id })); } catch (e) { return toast(e.message, 'err'); }
+    try { G.set = await loadSet(d.id); } catch (e) { return toast(e.message, 'err'); }
   }
   renderTopbar('games');
   window.scrollTo(0, 0);

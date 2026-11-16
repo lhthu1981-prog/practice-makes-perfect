@@ -49,4 +49,16 @@ const b = fs.readFileSync(path.join(src, 'Banner.html'), 'utf8').trim();
 const m = b.match(/^data:image\/(\w+);base64,(.+)$/s);
 if (m) fs.writeFileSync(path.join(out, 'banner.jpg'), Buffer.from(m[2], 'base64'));
 fs.writeFileSync(path.join(out, '.nojekyll'), '');
+// Kho ảnh: liệt kê mọi ảnh trong docs/img theo thư mục → docs/img/kho.json (trang web dùng để tự tìm ảnh theo tên từ)
+const imgDir = path.join(out, 'img'), kho = {};
+(function walk(dir, rel) {
+  if (!fs.existsSync(dir)) return;
+  fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).forEach(e => {
+    const r = rel ? rel + '/' + e.name : e.name;
+    if (e.isDirectory()) walk(path.join(dir, e.name), r);
+    else if (/\.(jpe?g|png|webp|gif)$/i.test(e.name) && rel) (kho[rel] = kho[rel] || []).push(e.name);
+  });
+})(imgDir, '');
+if (fs.existsSync(imgDir)) fs.writeFileSync(path.join(imgDir, 'kho.json'), JSON.stringify(kho, null, 1));
+console.log('Kho ảnh:', Object.keys(kho).map(k => k + ' (' + kho[k].length + ')').join(', ') || 'trống');
 console.log('OK', path.join(out, 'index.html'), (html.length / 1024).toFixed(0) + ' KB');
