@@ -131,6 +131,8 @@
     .cz-text{line-height:2.15;font-size:15.5px}
     .cz-title{text-align:center;margin:4px 0 10px;font-size:17px}
     .cz-p{margin:0 0 10px;text-indent:24px}
+    .cz-center{text-align:center;font-weight:600;margin:-4px 0 10px}
+    .cz-ul{margin:0 0 10px;padding-left:22px}.cz-ul li{margin-bottom:4px}
     .cz-bank{display:flex;flex-wrap:wrap;gap:6px;border:2px dashed #c4b5fd;border-radius:12px;padding:10px;margin-bottom:12px;justify-content:center}
     .cz-bank span{background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:2px 10px;font-weight:600;line-height:1.6}
     .gap{display:inline-flex;align-items:center;gap:6px;min-width:96px;border:0;border-bottom:2px solid #a78bfa;background:#f5f3ff;border-radius:8px 8px 2px 2px;padding:0 8px;font:inherit;line-height:1.65;cursor:pointer;color:#4c1d95;text-indent:0;vertical-align:baseline}
@@ -1353,8 +1355,12 @@ function clozeHTML(t, gap) {
   let i = 0;
   return String(t || '').replace(/\r/g, '').split(/\n\s*\n/).map(par => {
     par = par.trim(); if (!par) return '';
-    if (/^#\s+/.test(par)) return `<h3 class="cz-title">${fmt(par.replace(/^#\s+/, ''))}</h3>`;
-    return '<p class="cz-p">' + fmt(par).replace(/\n/g, '<br>').replace(/\{\{\s*(\d+)\s*\}\}/g, (m, n) => gap(n, i++)) + '</p>';
+    const g = h => h.replace(/\{\{\s*(\d+)\s*\}\}/g, (m, n) => gap(n, i++));
+    const lines = par.split('\n');
+    if (lines.every(l => /^#\s+/.test(l) || /^=\s+/.test(l)))
+      return lines.map(l => /^#\s+/.test(l) ? `<h3 class="cz-title">${g(fmt(l.replace(/^#\s+/, '')))}</h3>` : `<div class="cz-center">${g(fmt(l.replace(/^=\s+/, '')))}</div>`).join('');
+    if (lines.every(l => /^-\s+/.test(l))) return '<ul class="cz-ul">' + lines.map(l => `<li>${g(fmt(l.replace(/^-\s+/, '')))}</li>`).join('') + '</ul>';
+    return '<p class="cz-p">' + g(fmt(par).replace(/\n/g, '<br>')) + '</p>';
   }).join('');
 }
 function wordBankHTML(wb) {
@@ -1450,7 +1456,7 @@ function renderClozeEditor() {
           <textarea class="inp" rows="2" data-ef="instruction" placeholder="VD: Read the text and decide which answer (A, B, C or D) best fits each gap.">${esc(x.instruction || '')}</textarea>
         </div>
         <div class="card" style="margin-top:14px">
-          <label class="f" style="margin-top:0">Ngữ liệu (bài đọc) * <span class="muted small" style="font-weight:400"># tiêu đề · {{1}} chỗ trống · **đậm** · dòng trống = đoạn mới</span></label>
+          <label class="f" style="margin-top:0">Ngữ liệu (bài đọc) * <span class="muted small" style="font-weight:400"># tiêu đề · = dòng căn giữa · - gạch đầu dòng · {{1}} chỗ trống · **đậm** · dòng trống = đoạn mới</span></label>
           <textarea class="inp mono" rows="10" data-ef="passage" placeholder="# Tiêu đề&#10;&#10;Đoạn văn… chỗ trống ghi {{1}}, {{2}}…">${esc(x.passage)}</textarea>
           ${showBank ? `<label class="f">Danh sách lựa chọn <span class="muted small" style="font-weight:400">hiện trong khung phía trên bài đọc; ngăn bằng dấu phẩy</span></label>
             <div style="display:flex;gap:8px"><input class="inp" data-ef="wordBank" value="${esc(x.wordBank || '')}" placeholder="VD: although, because, so, but, unless">
