@@ -58,7 +58,7 @@ const EXAM_GRADES = ['6', '7', '8', '9', '10', '11', '12'];
 const EXAM_TYPES = { UNIT: 'Kiểm tra theo Unit', GK1: 'Giữa kì 1', CK1: 'Cuối kì 1', GK2: 'Giữa kì 2', CK2: 'Cuối kì 2', TN: 'Luyện thi tốt nghiệp' };
 
 // Các trò chơi ôn tập
-const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ', picture: 'Nhìn tranh đoán từ' };
+const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ', picture: 'Nhìn tranh đoán từ', spelling: 'Spelling – Đánh vần' };
 
 
 // ===================== 3. MỞ TRANG WEB =====================
@@ -97,7 +97,7 @@ function doPost(e) {
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
 /** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
-const SERVER_VERSION = 3;
+const SERVER_VERSION = 4;
 
 function publicConfig_() {
   return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
@@ -644,7 +644,7 @@ function saveScore_(p, token) {
     append_('GameScores', {
       id: newId_('G'), userId: u.id, username: u.username, fullName: u.fullName, className: u.className,
       setId: s.id, setTitle: s.title, level: s.level, game: p.game,
-      score: clampInt_(p.score, 0, total * ({ flashcard: 1, match: 100, scramble: 100, speed: 150, picture: 150 })[p.game]), correct: clampInt_(p.correct, 0, total), total: total,
+      score: clampInt_(p.score, 0, total * ({ flashcard: 1, match: 100, scramble: 100, speed: 150, picture: 150, spelling: 100 })[p.game]), correct: clampInt_(p.correct, 0, total), total: total,
       seconds: clampInt_(p.seconds, 0, 36000), playedAt: now_()
     });
   });

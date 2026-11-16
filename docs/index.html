@@ -228,6 +228,16 @@
     .fc-img{display:block;max-width:100%;max-height:210px;border-radius:14px;margin:0 auto 12px;background:#fff;object-fit:contain;box-shadow:0 4px 14px rgba(0,0,0,.18)}
     .fc.pic .fc-front .w{font-size:32px}
     .pc-pic{display:block;width:100%;max-height:340px;object-fit:contain;border-radius:16px;background:#f6f3fc;margin:4px auto 16px}
+    .sl-mean{text-align:center;font-size:24px;font-weight:800;color:var(--violet-d);margin:4px 0 6px}
+    .sl-slots{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:14px 0 18px}
+    .sl-slot{width:38px;height:46px;border:0;border-bottom:3px solid var(--violet);background:#f6f3fc;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:var(--ink,#1f1640);cursor:pointer;font-family:inherit}
+    .sl-slot.hint{color:#16a34a} .sl-slot.bad{background:#fee2e2;border-color:#dc2626;color:#b91c1c} .sl-slot.ok{background:#dcfce7;border-color:#16a34a;color:#15803d}
+    .sl-sep{width:16px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800}
+    .sl-tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:16px}
+    .sl-tile{width:48px;height:48px;border-radius:12px;border:2px solid var(--line);background:#fff;font-size:22px;font-weight:700;cursor:pointer;box-shadow:0 2px 0 var(--line);font-family:inherit}
+    .sl-tile:active{transform:translateY(2px);box-shadow:none} .sl-tile.used{visibility:hidden}
+    .sl-shake{animation:slShake .35s} @keyframes slShake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    .sl-pic{max-height:220px}
     .pc-fb{text-align:center;min-height:26px;margin:-4px 0 12px;font-weight:600;color:var(--violet-d)}
     img.broken{min-height:80px;border:2px dashed #d8cdee}
     .sp-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -243,6 +253,7 @@
     .medal{font-size:18px;width:44px}
     textarea.mono{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;line-height:1.6}
     @media (max-width:600px){
+      .sl-slot{width:30px;height:40px;font-size:20px} .sl-tile{width:42px;height:42px;font-size:20px} .sl-mean{font-size:20px} .sl-pic{max-height:170px}
       .fc{height:260px} .fc-front .w{font-size:30px} .fc.pic{height:360px} .fc-img{max-height:170px} .fc.pic .fc-front .w{font-size:26px} .pc-pic{max-height:240px}
       .sp-opts{grid-template-columns:1fr} .sp-q{font-size:24px}
       .match{gap:8px} .mt{padding:10px;font-size:14px}
@@ -525,6 +536,10 @@ const ACTS = {
   scNext: () => scNext(),
   spAns: d => spAnswer(+d.k),
   pcAns: d => pcAnswer(+d.k),
+  slPick: d => slPick(+d.j),
+  slRemove: d => slRemove(+d.k),
+  slHint: () => slHint(),
+  slSkip: () => slSkip(),
   setLevel: d => { S.f.setLevel = d.id; renderAdmin(); },
   newSet: () => showSetEditor(null),
   editSet: d => showSetEditor(d.id),
@@ -1295,7 +1310,8 @@ const GAMES = {
   match: { name: 'Ghép từ – nghĩa', icon: '🧩', desc: 'Nối từ với nghĩa đúng, càng nhanh càng nhiều điểm', need: 'words', min: 3 },
   scramble: { name: 'Sắp xếp câu', icon: '🔀', desc: 'Xếp các từ thành câu đúng ngữ pháp', need: 'sentences', min: 1 },
   speed: { name: 'Đua tốc độ', icon: '⚡', desc: '10 giây mỗi câu, trả lời nhanh được thưởng điểm', need: 'words', min: 4 },
-  picture: { name: 'Nhìn tranh đoán từ', icon: '🖼️', desc: 'Nhìn bức tranh, chọn đúng từ tiếng Anh', need: 'pictures', min: 4 }
+  picture: { name: 'Nhìn tranh đoán từ', icon: '🖼️', desc: 'Nhìn bức tranh, chọn đúng từ tiếng Anh', need: 'pictures', min: 4 },
+  spelling: { name: 'Spelling – Đánh vần', icon: '🔤', desc: 'Nghe, nhìn tranh, xếp các chữ cái cho sẵn thành từ đúng', need: 'words', min: 4 }
 };
 const SP_TIME = 10;  // số giây mỗi câu ở trò Đua tốc độ
 const PC_TIME = 15;  // số giây mỗi câu ở trò Nhìn tranh đoán từ
@@ -1419,7 +1435,7 @@ function renderSetHome() {
     }).join('')}</div>
     <div class="card" style="margin-top:20px">
       <div class="page-head" style="margin-bottom:6px"><h3>🏆 Bảng xếp hạng</h3>
-        <div class="chips" style="margin:0">${['match', 'scramble', 'speed', 'picture'].map(g => `<button class="chip ${G.lbGame === g ? 'on' : ''}" data-act="lbGame" data-game="${g}">${GAMES[g].name}</button>`).join('')}</div></div>
+        <div class="chips" style="margin:0">${['match', 'scramble', 'speed', 'picture', 'spelling'].map(g => `<button class="chip ${G.lbGame === g ? 'on' : ''}" data-act="lbGame" data-game="${g}">${GAMES[g].name}</button>`).join('')}</div></div>
       <div id="lb" class="muted">Đang tải…</div></div>
   </div>`;
   loadLb();
@@ -1456,6 +1472,7 @@ async function play(d) {
   else if (d.game === 'match') mStart();
   else if (d.game === 'scramble') scStart();
   else if (d.game === 'picture') pcStart();
+  else if (d.game === 'spelling') slStart();
   else spStart();
 }
 
@@ -1486,7 +1503,11 @@ async function gameEnd(r) {
   try {
     const lb = await call('saveScore', { setId: G.set.id, game: G.game, score: r.score, correct: r.correct, total: r.total, seconds: r.seconds });
     const el = $('#lb'); if (el) el.innerHTML = lbHTML(lb);
-  } catch (e) { toast('Không lưu được điểm: ' + e.message, 'err'); }
+  } catch (e) {
+    const el = $('#lb');
+    if (/không hợp lệ/i.test(e.message)) { if (el) el.innerHTML = '⚠️ Máy chủ Apps Script chưa cập nhật bản mới nên chưa lưu được điểm trò này. Giáo viên dán Code.gs mới và tạo Phiên bản mới là lưu được.'; }
+    else toast('Không lưu được điểm: ' + e.message, 'err');
+  }
 }
 
 /* ---------- 1. Flashcard ---------- */
@@ -1741,6 +1762,117 @@ function pcAnswer(k) {
     else pcNext();
   }, ok ? 1300 : 2200);
 }
+
+/* ---------- 6. Spelling – xếp chữ cái cho sẵn thành từ ---------- */
+function slStart() {
+  const qs = shuffle(G.set.words).slice(0, Math.min(10, G.set.words.length)).map(w => {
+    const chars = [...String(w.word).toLowerCase()];
+    const pos = chars.map((c, i) => (/[a-z]/.test(c) ? i : -1)).filter(i => i >= 0);   // vị trí cần điền (chỉ chữ cái)
+    let tiles = shuffle(pos.map(i => chars[i]));
+    for (let t = 0; t < 5 && pos.length > 2 && tiles.join('') === pos.map(i => chars[i]).join(''); t++) tiles = shuffle(tiles);
+    return { w, chars, pos, tiles };
+  });
+  qs.forEach(q => preload(q.w.image));
+  G.st = { qs, i: 0, score: 0, correct: 0 };
+  G.t0 = Date.now();
+  slNext();
+}
+function slNext() {
+  const st = G.st, q = st.qs[st.i];
+  Object.assign(st, { fill: q.pos.map(() => null), used: q.tiles.map(() => false), hints: 0, wrong: 0, done: false, hinted: {} });
+  slRender();
+  setTimeout(() => speak(q.w.word), 300);
+}
+function slRender() {
+  const st = G.st, q = st.qs[st.i];
+  let k = -1;
+  const slots = q.chars.map((c, i) => {
+    if (!/[a-z]/.test(c)) return `<span class="sl-sep">${c === ' ' ? '' : esc(c)}</span>`;
+    k++; const j = st.fill[k];
+    return `<button class="sl-slot ${st.hinted[k] ? 'hint' : ''}" data-act="slRemove" data-k="${k}">${j == null ? '' : esc(q.tiles[j])}</button>`;
+  }).join('');
+  app.innerHTML = `<div class="page" style="max-width:780px">
+    ${gameHead(`<span class="gstat">Từ ${st.i + 1}/${st.qs.length}</span><span class="gstat">⭐ ${st.score}</span>`)}
+    <div class="card" style="margin-top:16px">
+      ${q.w.image ? imgTag(q.w.image, 'pc-pic sl-pic') : ''}
+      <div class="sl-mean">${esc(q.w.meaning)}</div>
+      <div style="text-align:center"><button class="speak" style="background:#f3f0fa;color:var(--violet-d)" data-act="speak" data-text="${esc(q.w.word)}">🔊 Nghe từ</button>
+        <span class="muted small" style="margin-left:8px">${q.pos.length} chữ cái</span></div>
+      <div class="sl-slots" id="slSlots">${slots}</div>
+      <div class="sl-tiles">${q.tiles.map((c, j) => `<button class="sl-tile ${st.used[j] ? 'used' : ''}" data-act="slPick" data-j="${j}">${esc(c)}</button>`).join('')}</div>
+      <div class="pc-fb" id="slFb"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn" data-act="slHint">💡 Gợi ý (−25 điểm)</button>
+        <button class="btn" data-act="slSkip">⏭️ Bỏ qua</button></div>
+      <p class="muted small" style="text-align:center;margin:12px 0 0">Bấm chữ cái theo đúng thứ tự (hoặc gõ bàn phím). Bấm vào ô đã điền để gỡ chữ ra.</p>
+    </div></div>`;
+}
+function slPick(j) {
+  const st = G.st; if (!st || st.done || st.used[j]) return;
+  const k = st.fill.indexOf(null); if (k < 0) return;
+  st.fill[k] = j; st.used[j] = true;
+  slRender(); slCheck();
+}
+function slRemove(k) {
+  const st = G.st; if (!st || st.done || st.fill[k] == null || st.hinted[k]) return;
+  st.used[st.fill[k]] = false; st.fill[k] = null; slRender();
+}
+function slHint() {
+  const st = G.st, q = st.qs[st.i]; if (st.done) return;
+  // ô đầu tiên chưa đúng → đặt chữ đúng vào (gỡ chữ sai nếu có)
+  const k = q.pos.findIndex((p, n) => st.fill[n] == null || q.tiles[st.fill[n]] !== q.chars[p]);
+  if (k < 0) return;
+  if (st.fill[k] != null) { st.used[st.fill[k]] = false; st.fill[k] = null; }
+  const need = q.chars[q.pos[k]];
+  let j = q.tiles.findIndex((c, x) => c === need && !st.used[x]);
+  if (j < 0) { const n = st.fill.findIndex((x, n2) => x != null && !st.hinted[n2] && q.tiles[x] === need); j = st.fill[n]; st.fill[n] = null; }
+  st.fill[k] = j; st.used[j] = true; st.hinted[k] = true; st.hints++;
+  slRender(); slCheck();
+}
+function slCheck() {
+  const st = G.st, q = st.qs[st.i];
+  if (st.fill.indexOf(null) >= 0) return;
+  const ok = q.pos.every((p, n) => q.tiles[st.fill[n]] === q.chars[p]);
+  const slots = document.querySelectorAll('.sl-slot');
+  if (ok) {
+    st.done = true; st.correct++;
+    const pts = Math.max(20, 100 - 25 * st.hints - 15 * st.wrong); st.score += pts;
+    slots.forEach(b => b.classList.add('ok'));
+    const fb = $('#slFb'); if (fb) fb.textContent = '✅ ' + q.w.word + '  (+' + pts + ' điểm)';
+    speak(q.w.word);
+    G.tmo = setTimeout(slAdvance, 1400);
+  } else {
+    st.wrong++;
+    slots.forEach((b, n) => { if (q.tiles[st.fill[n]] !== q.chars[q.pos[n]]) b.classList.add('bad'); });
+    const box = $('#slSlots'); if (box) box.classList.add('sl-shake');
+    const fb = $('#slFb'); if (fb) fb.textContent = '❌ Chưa đúng — bấm vào ô đỏ để gỡ chữ và thử lại';
+  }
+}
+function slSkip() {
+  const st = G.st, q = st.qs[st.i]; if (st.done) return;
+  st.done = true;
+  const fb = $('#slFb'); if (fb) fb.innerHTML = '⏭️ Đáp án: <b>' + esc(q.w.word) + '</b>';
+  speak(q.w.word);
+  G.tmo = setTimeout(slAdvance, 2200);
+}
+function slAdvance() {
+  const st = G.st; st.i++;
+  if (st.i >= st.qs.length) gameEnd({ score: st.score, correct: st.correct, total: st.qs.length, seconds: elapsed(),
+    note: '<p class="muted small" style="margin:4px 0 0">Mỗi từ đúng: 100 điểm, trừ 25 điểm mỗi lần gợi ý và 15 điểm mỗi lần xếp sai (tối thiểu 20)</p>' });
+  else slNext();
+}
+document.addEventListener('keydown', e => {
+  if (!G.st || G.game !== 'spelling' || G.st.done == null || !$('#slSlots') || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName)) return;
+  const st = G.st, q = st.qs[st.i];
+  if (e.key === 'Backspace') {
+    e.preventDefault();
+    for (let k = st.fill.length - 1; k >= 0; k--) if (st.fill[k] != null && !st.hinted[k]) return slRemove(k);
+  } else if (/^[a-zA-Z]$/.test(e.key)) {
+    const j = q.tiles.findIndex((c, x) => c === e.key.toLowerCase() && !st.used[x]);
+    if (j >= 0) slPick(j);
+  }
+});
 
 /* ---------- Quản trị: tab Trò chơi ---------- */
 const GAME_NAME = g => (GAMES[g] ? GAMES[g].icon + ' ' + GAMES[g].name : g);
@@ -2753,7 +2885,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
-const NEED_SERVER = 3; let SERVER_OLD = false;
+const NEED_SERVER = 4; let SERVER_OLD = false;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {
