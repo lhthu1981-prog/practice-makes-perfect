@@ -2160,7 +2160,7 @@ async function doImport() {
 /* =====================================================================
    LUYỆN ĐỀ
    ===================================================================== */
-var EXAM = {"grades":["10","11","12"],"types":{"GK1":"Giữa kì 1","CK1":"Cuối kì 1","GK2":"Giữa kì 2","CK2":"Cuối kì 2","TN":"Luyện thi tốt nghiệp"}};
+var EXAM = {"grades":["6","7","8","9","10","11","12"],"types":{"UNIT":"Kiểm tra theo Unit","GK1":"Giữa kì 1","CK1":"Cuối kì 1","GK2":"Giữa kì 2","CK2":"Cuối kì 2","TN":"Luyện thi tốt nghiệp"}};
 const X = { list: null, grade: '', type: '', e: null, st: null, timer: null, tts: { si: -1 } };
 const LET5 = ['A', 'B', 'C', 'D', 'E'];
 function typeName(t) { return EXAM.types[t] || t; }
@@ -2199,7 +2199,7 @@ async function showExams() {
   app.innerHTML = skeleton(6);
   await run(async () => {
     X.list = await call('examsList');
-    if (!X.grade) { const m = String(S.user.className || '').match(/^(10|11|12)/); X.grade = m ? m[1] : EXAM.grades[EXAM.grades.length - 1]; }
+    if (!X.grade) { const m = String(S.user.className || '').match(/^(1[0-2]|[6-9])(?!\d)/); X.grade = m ? m[1] : EXAM.grades[EXAM.grades.length - 1]; }
     renderExams();
   });
 }
@@ -2478,7 +2478,7 @@ function showExamResult(r, from) {
 function aExams() {
   const all = S.adm.exams || [];
   const list = all.filter(e => !S.f.examGrade || e.grade === S.f.examGrade)
-    .sort((a, b) => a.grade.localeCompare(b.grade) || Object.keys(EXAM.types).indexOf(a.examType) - Object.keys(EXAM.types).indexOf(b.examType) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
+    .sort((a, b) => (+a.grade) - (+b.grade) || Object.keys(EXAM.types).indexOf(a.examType) - Object.keys(EXAM.types).indexOf(b.examType) || String(b.updatedAt).localeCompare(String(a.updatedAt)));
   return `<div class="chips"><button class="chip ${!S.f.examGrade ? 'on' : ''}" data-act="xaGrade" data-id="">Tất cả (${all.length})</button>
       ${EXAM.grades.map(g => `<button class="chip ${S.f.examGrade === g ? 'on' : ''}" data-act="xaGrade" data-id="${g}">Khối ${g} (${all.filter(e => e.grade === g).length})</button>`).join('')}</div>
     <div class="toolbar"><span class="muted small">Đề có công tắc <b>Đáp án</b>: “Ngay” = xem ngay sau khi nộp; “GV mở” = chỉ hiện khi bạn bấm mở.</span><span style="flex:1"></span>

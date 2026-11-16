@@ -54,8 +54,8 @@ const SCHEMA = {
 };
 
 // Luyện đề: các khối và loại đề
-const EXAM_GRADES = ['10', '11', '12'];
-const EXAM_TYPES = { GK1: 'Giữa kì 1', CK1: 'Cuối kì 1', GK2: 'Giữa kì 2', CK2: 'Cuối kì 2', TN: 'Luyện thi tốt nghiệp' };
+const EXAM_GRADES = ['6', '7', '8', '9', '10', '11', '12'];
+const EXAM_TYPES = { UNIT: 'Kiểm tra theo Unit', GK1: 'Giữa kì 1', CK1: 'Cuối kì 1', GK2: 'Giữa kì 2', CK2: 'Cuối kì 2', TN: 'Luyện thi tốt nghiệp' };
 
 // Các trò chơi ôn tập
 const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ', picture: 'Nhìn tranh đoán từ' };
