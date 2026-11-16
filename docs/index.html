@@ -224,6 +224,12 @@
     .fb{margin-top:16px;padding:12px 14px;border-radius:12px;font-weight:600}
     .fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.bad{background:var(--bad-bg);color:var(--bad)}
     .sp-q{text-align:center;font-size:30px;font-weight:800;margin:8px 0 22px;line-height:1.3}
+    .fc.pic{height:400px}
+    .fc-img{display:block;max-width:100%;max-height:210px;border-radius:14px;margin:0 auto 12px;background:#fff;object-fit:contain;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+    .fc.pic .fc-front .w{font-size:32px}
+    .pc-pic{display:block;width:100%;max-height:340px;object-fit:contain;border-radius:16px;background:#f6f3fc;margin:4px auto 16px}
+    .pc-fb{text-align:center;min-height:26px;margin:-4px 0 12px;font-weight:600;color:var(--violet-d)}
+    img.broken{min-height:80px;border:2px dashed #d8cdee}
     .sp-opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .sp-o{border:2px solid var(--line);background:#fff;border-radius:14px;padding:16px;font-weight:600;cursor:pointer;font-size:16px}
     .sp-o:hover:not(:disabled){border-color:#c4b5fd;background:#faf7ff}
@@ -237,7 +243,7 @@
     .medal{font-size:18px;width:44px}
     textarea.mono{font-family:ui-monospace,Consolas,monospace;font-size:13.5px;line-height:1.6}
     @media (max-width:600px){
-      .fc{height:260px} .fc-front .w{font-size:30px}
+      .fc{height:260px} .fc-front .w{font-size:30px} .fc.pic{height:360px} .fc-img{max-height:170px} .fc.pic .fc-front .w{font-size:26px} .pc-pic{max-height:240px}
       .sp-opts{grid-template-columns:1fr} .sp-q{font-size:24px}
       .match{gap:8px} .mt{padding:10px;font-size:14px}
     }
@@ -518,6 +524,7 @@ const ACTS = {
   scSkip: () => scSkip(),
   scNext: () => scNext(),
   spAns: d => spAnswer(+d.k),
+  pcAns: d => pcAnswer(+d.k),
   setLevel: d => { S.f.setLevel = d.id; renderAdmin(); },
   newSet: () => showSetEditor(null),
   editSet: d => showSetEditor(d.id),
@@ -1284,9 +1291,28 @@ const GAMES = {
   flashcard: { name: 'Flashcard', icon: '🃏', desc: 'Lật thẻ để học nghĩa và cách dùng từ', need: 'words', min: 1 },
   match: { name: 'Ghép từ – nghĩa', icon: '🧩', desc: 'Nối từ với nghĩa đúng, càng nhanh càng nhiều điểm', need: 'words', min: 3 },
   scramble: { name: 'Sắp xếp câu', icon: '🔀', desc: 'Xếp các từ thành câu đúng ngữ pháp', need: 'sentences', min: 1 },
-  speed: { name: 'Đua tốc độ', icon: '⚡', desc: '10 giây mỗi câu, trả lời nhanh được thưởng điểm', need: 'words', min: 4 }
+  speed: { name: 'Đua tốc độ', icon: '⚡', desc: '10 giây mỗi câu, trả lời nhanh được thưởng điểm', need: 'words', min: 4 },
+  picture: { name: 'Nhìn tranh đoán từ', icon: '🖼️', desc: 'Nhìn bức tranh, chọn đúng từ tiếng Anh', need: 'pictures', min: 4 }
 };
 const SP_TIME = 10;  // số giây mỗi câu ở trò Đua tốc độ
+const PC_TIME = 15;  // số giây mỗi câu ở trò Nhìn tranh đoán từ
+// Ảnh của bộ từ: ghi đường dẫn ngắn (vd lop7/unit4/orchestra.jpg) → lấy trong thư mục img của trang GitHub
+const IMG_BASE = 'https://lhthu1981-prog.github.io/practice-makes-perfect/img/';
+const isImgRef = v => /^https?:\/\/\S+$/i.test(v || '') || /^[\w\-./]+\.(jpe?g|png|webp|gif)$/i.test(v || '');
+function imgSrc(v) {
+  v = String(v || '').trim(); if (!v) return '';
+  const m = v.match(/drive\.google\.com\/.*(?:\/d\/|[?&]id=)([\w-]{20,})/);
+  if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w800';
+  return /^https?:/i.test(v) ? v : IMG_BASE + v.replace(/^\/+/, '');
+}
+const imgTag = (v, cls) => `<img class="${cls}" src="${esc(imgSrc(v))}" alt="🖼️ Không tải được ảnh" onerror="this.classList.add('broken')">`;
+/** Một dòng bộ từ đã tách theo dấu |  → { word, meaning, example, image } (ảnh là cột cuối nếu có) */
+function wordFrom(p) {
+  p = p.slice(); let image = '';
+  if (p.length >= 3 && isImgRef(p[p.length - 1])) image = p.pop();
+  return { word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim(), image };
+}
+function withPics(set) { set.pictures = set.words.filter(w => w.image); return set; }
 const G = { sets: null, level: '', set: null, game: '', st: null, t0: 0, tick: null, tmo: null, lbGame: 'speed' };
 
 function stopGame() { clearInterval(G.tick); clearTimeout(G.tmo); G.tick = G.tmo = null; }
@@ -1326,7 +1352,7 @@ function setCard(s) {
   return `<div class="card ex-card" data-act="openSet" data-id="${esc(s.id)}">
     <div class="meta"><span class="tag">${esc(s.subLevel)}</span></div>
     <h3>${esc(s.title)}</h3>
-    <div class="muted small">${s.words} từ vựng · ${s.sentences} câu</div>
+    <div class="muted small">${s.words} từ vựng · ${s.sentences} câu${s.pictures ? ' · ' + s.pictures + ' ảnh' : ''}</div>
     <div class="game-btns">${Object.keys(GAMES).map(g => {
       const ok = countOf(s, GAMES[g].need) >= GAMES[g].min;
       const best = s.best && s.best[g] != null ? ' ' + s.best[g] : '';
@@ -1339,7 +1365,7 @@ function setCard(s) {
 async function openSet(id) {
   renderTopbar('games');
   app.innerHTML = skeleton(3);
-  await run(async () => { G.set = await call('wordSet', { id }); renderSetHome(); });
+  await run(async () => { G.set = withPics(await call('wordSet', { id })); renderSetHome(); });
 }
 
 function renderSetHome() {
@@ -1349,16 +1375,16 @@ function renderSetHome() {
   app.innerHTML = `<div class="page">
     <button class="back" data-act="games">← Tất cả bộ từ</button>
     <div class="crumbs">${esc(levelName(s.level))} · ${esc(s.subLevel)}</div><h1>${esc(s.title)}</h1>
-    <p class="muted" style="margin:4px 0 0">${s.words.length} từ vựng · ${s.sentences.length} câu</p>
+    <p class="muted" style="margin:4px 0 0">${s.words.length} từ vựng · ${s.sentences.length} câu${s.pictures.length ? ' · ' + s.pictures.length + ' ảnh' : ''}</p>
     <div class="game-tiles">${Object.keys(GAMES).map(g => {
       const x = GAMES[g], ok = s[x.need].length >= x.min;
       return `<div class="card game-tile ${ok ? '' : 'off'}" ${ok ? `data-act="play" data-game="${g}" data-id="${esc(s.id)}"` : ''}>
         <div class="gi">${x.icon}</div><h3>${x.name}</h3>
-        <div class="muted small">${ok ? x.desc : (x.need === 'words' ? `Cần ít nhất ${x.min} từ vựng` : 'Bộ này chưa có câu để sắp xếp')}</div></div>`;
+        <div class="muted small">${ok ? x.desc : (x.need === 'words' ? `Cần ít nhất ${x.min} từ vựng` : x.need === 'pictures' ? `Cần ít nhất ${x.min} từ có ảnh` : 'Bộ này chưa có câu để sắp xếp')}</div></div>`;
     }).join('')}</div>
     <div class="card" style="margin-top:20px">
       <div class="page-head" style="margin-bottom:6px"><h3>🏆 Bảng xếp hạng</h3>
-        <div class="chips" style="margin:0">${['match', 'scramble', 'speed'].map(g => `<button class="chip ${G.lbGame === g ? 'on' : ''}" data-act="lbGame" data-game="${g}">${GAMES[g].name}</button>`).join('')}</div></div>
+        <div class="chips" style="margin:0">${['match', 'scramble', 'speed', 'picture'].map(g => `<button class="chip ${G.lbGame === g ? 'on' : ''}" data-act="lbGame" data-game="${g}">${GAMES[g].name}</button>`).join('')}</div></div>
       <div id="lb" class="muted">Đang tải…</div></div>
   </div>`;
   loadLb();
@@ -1385,7 +1411,7 @@ function lbHTML(r) {
 async function play(d) {
   if (!G.set || G.set.id !== d.id) {
     app.innerHTML = skeleton(2);
-    try { G.set = await call('wordSet', { id: d.id }); } catch (e) { return toast(e.message, 'err'); }
+    try { G.set = withPics(await call('wordSet', { id: d.id })); } catch (e) { return toast(e.message, 'err'); }
   }
   renderTopbar('games');
   window.scrollTo(0, 0);
@@ -1394,6 +1420,7 @@ async function play(d) {
   if (d.game === 'flashcard') fcStart(shuffle(G.set.words), false);
   else if (d.game === 'match') mStart();
   else if (d.game === 'scramble') scStart();
+  else if (d.game === 'picture') pcStart();
   else spStart();
 }
 
@@ -1430,6 +1457,7 @@ async function gameEnd(r) {
 /* ---------- 1. Flashcard ---------- */
 function fcStart(deck, review) {
   G.st = { deck, i: 0, known: 0, unknown: [], review };
+  deck.forEach(w => preload(w.image));
   if (!review) G.t0 = Date.now();
   fcRender();
 }
@@ -1437,16 +1465,17 @@ function fcRender() {
   const st = G.st, w = st.deck[st.i];
   app.innerHTML = `<div class="page" style="max-width:780px">
     ${gameHead(`<span class="gstat">Thẻ ${st.i + 1}/${st.deck.length}</span><span class="gstat">😊 Đã thuộc: ${st.known}</span>${st.review ? '<span class="gstat">🔁 Ôn lại</span>' : ''}`)}
-    <div class="fc" id="fc" data-act="fcFlip"><div class="fc-in">
-      <div class="fc-face fc-front"><div class="w">${esc(w.word)}</div>
+    <div class="fc ${w.image ? 'pic' : ''}" id="fc" data-act="fcFlip"><div class="fc-in">
+      <div class="fc-face fc-front">${w.image ? imgTag(w.image, 'fc-img') : ''}<div class="w">${esc(w.word)}</div>
         <button class="speak" data-act="speak" data-text="${esc(w.word)}">🔊 Nghe</button>
         <div class="small" style="opacity:.85;margin-top:14px">Chạm vào thẻ để lật</div></div>
-      <div class="fc-face fc-back"><div class="m">${esc(w.meaning)}</div>
+      <div class="fc-face fc-back">${w.image ? imgTag(w.image, 'fc-img') : ''}<div class="m">${esc(w.meaning)}</div>
         ${w.example ? `<div class="ex">“${esc(w.example)}”</div><button class="speak" style="background:#f3f0fa;color:var(--violet-d)" data-act="speak" data-text="${esc(w.example)}">🔊 Nghe câu ví dụ</button>` : ''}</div>
     </div></div>
     <div class="fc-actions"><button class="btn" data-act="fcAns" data-k="0">😕 Chưa thuộc</button><button class="btn primary" data-act="fcAns" data-k="1">😊 Đã thuộc</button></div>
   </div>`;
 }
+function preload(v) { if (v) { const im = new Image(); im.src = imgSrc(v); } }
 function fcAns(k) {
   const st = G.st;
   if (k) st.known++; else st.unknown.push(st.deck[st.i]);
@@ -1624,6 +1653,60 @@ function spAnswer(k) {
   }, ok ? 700 : 1500);
 }
 
+/* ---------- 5. Nhìn tranh đoán từ ---------- */
+function pcStart() {
+  const pool = G.set.words.map(w => w.word).filter((v, i, a) => a.indexOf(v) === i);
+  const qs = shuffle(G.set.pictures).slice(0, 10).map(w => ({ w, opts: shuffle([w.word].concat(shuffle(pool.filter(x => x !== w.word)).slice(0, 3))) }));
+  qs.forEach(q => preload(q.w.image));
+  G.st = { qs, i: 0, score: 0, correct: 0 };
+  G.t0 = Date.now();
+  pcNext();
+}
+function pcNext() {
+  const st = G.st;
+  Object.assign(st, { left: PC_TIME, answered: false, qStart: Date.now() });
+  pcRender();
+  clearInterval(G.tick);
+  G.tick = setInterval(() => {
+    st.left = Math.max(0, PC_TIME - (Date.now() - st.qStart) / 1000);
+    const b = $('#tb'); if (b) b.style.width = (st.left / PC_TIME * 100) + '%';
+    const t = $('#tleft'); if (t) t.textContent = '⏳ ' + Math.ceil(st.left) + 's';
+    if (st.left <= 0) pcAnswer(null);
+  }, 100);
+}
+function pcRender() {
+  const st = G.st, q = st.qs[st.i];
+  app.innerHTML = `<div class="page" style="max-width:780px">
+    ${gameHead(`<span class="gstat">Câu ${st.i + 1}/${st.qs.length}</span><span class="gstat">⭐ ${st.score}</span><span class="gstat" id="tleft">⏳ ${PC_TIME}s</span>`)}
+    <div class="tbar"><i id="tb" style="width:100%"></i></div>
+    <div class="card" style="margin-top:16px">
+      <div class="muted small" style="text-align:center;margin-bottom:8px">What is this? Chọn từ đúng với bức tranh</div>
+      ${imgTag(q.w.image, 'pc-pic')}
+      <div class="pc-fb" id="pcFb"></div>
+      <div class="sp-opts">${q.opts.map((o, k) => `<button class="sp-o" data-act="pcAns" data-k="${k}">${esc(o)}</button>`).join('')}</div>
+    </div></div>`;
+}
+function pcAnswer(k) {
+  const st = G.st;
+  if (st.answered) return;
+  st.answered = true;
+  clearInterval(G.tick);
+  const q = st.qs[st.i], ok = k != null && q.opts[k] === q.w.word;
+  if (ok) { st.correct++; st.score += 50 + Math.round(st.left * 5); }
+  document.querySelectorAll('.sp-o').forEach((b, j) => {
+    b.disabled = true;
+    if (q.opts[j] === q.w.word) b.classList.add('right'); else if (j === k) b.classList.add('wrong');
+  });
+  const fb = $('#pcFb'); if (fb) fb.textContent = (ok ? '✅ ' : k == null ? '⏰ Hết giờ! ' : '❌ ') + q.w.word + ' = ' + q.w.meaning;
+  speak(q.w.word);
+  G.tmo = setTimeout(() => {
+    st.i++;
+    if (st.i >= st.qs.length) gameEnd({ score: st.score, correct: st.correct, total: st.qs.length, seconds: elapsed(),
+      note: '<p class="muted small" style="margin:4px 0 0">Mỗi câu đúng: 50 điểm + 5 điểm cho mỗi giây còn lại</p>' });
+    else pcNext();
+  }, ok ? 1300 : 2200);
+}
+
 /* ---------- Quản trị: tab Trò chơi ---------- */
 const GAME_NAME = g => (GAMES[g] ? GAMES[g].icon + ' ' + GAMES[g].name : g);
 
@@ -1667,7 +1750,7 @@ function parseWords(text) {
   String(text || '').split('\n').forEach((l, i) => {
     l = l.trim(); if (!l) return;
     const p = l.split(/\s*\|\s*|\t/).map(x => x.trim());
-    if (p[0] && p[1]) ok.push({ word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim() }); else bad.push(i + 1);
+    if (p[0] && p[1]) ok.push(wordFrom(p)); else bad.push(i + 1);
   });
   return { ok, bad };
 }
@@ -1696,7 +1779,7 @@ async function showSetEditor(id) {
     const s = await call('wordSet', { id });
     S.setEdit = {
       id: s.id, title: s.title, level: s.level, subLevel: s.subLevel, status: s.status,
-      wordsText: s.words.map(w => [w.word, w.meaning].concat(w.example ? [w.example] : []).join(' | ')).join('\n'),
+      wordsText: s.words.map(w => [w.word, w.meaning].concat(w.example || w.image ? [w.example || ''] : [], w.image ? [w.image] : []).join(' | ')).join('\n'),
       sentencesText: s.sentences.map(c => c.meaning ? c.text + ' | ' + c.meaning : c.text).join('\n')
     };
     renderSetEditor();
@@ -1719,9 +1802,9 @@ function renderSetEditor() {
       </div>
     </div>
     <div class="card" style="margin-top:16px">
-      <h3>📚 Từ vựng <span class="muted small" style="font-weight:400">(dùng cho Flashcard, Ghép từ – nghĩa, Đua tốc độ)</span></h3>
-      <div class="hint">Mỗi dòng một từ: <b>từ | nghĩa | câu ví dụ</b> (câu ví dụ có thể bỏ). Có thể copy thẳng 2–3 cột từ Excel/Google Sheets.</div>
-      <textarea class="inp mono" rows="12" data-sf="wordsText" style="margin-top:10px" placeholder="volunteer | tình nguyện viên | She works as a volunteer.&#10;donate | quyên góp&#10;remote | xa xôi, hẻo lánh | The village is in a remote area.">${esc(x.wordsText)}</textarea>
+      <h3>📚 Từ vựng <span class="muted small" style="font-weight:400">(dùng cho Flashcard, Ghép từ – nghĩa, Đua tốc độ, Nhìn tranh đoán từ)</span></h3>
+      <div class="hint">Mỗi dòng một từ: <b>từ | nghĩa | câu ví dụ | ảnh</b> (câu ví dụ và ảnh có thể bỏ). Ảnh ghi đường dẫn trong thư mục img của GitHub (vd <code>lop7/unit4/orchestra.jpg</code>) hoặc link ảnh / link Google Drive. Có thể copy thẳng các cột từ Excel/Google Sheets.</div>
+      <textarea class="inp mono" rows="12" data-sf="wordsText" style="margin-top:10px" placeholder="orchestra | dàn nhạc | The orchestra played beautifully. | lop7/unit4/orchestra.jpg&#10;volunteer | tình nguyện viên | She works as a volunteer.&#10;donate | quyên góp&#10;remote | xa xôi, hẻo lánh | The village is in a remote area.">${esc(x.wordsText)}</textarea>
       <div class="hint" id="wInfo">${parseInfo(parseWords(x.wordsText), 'từ')}</div>
     </div>
     <div class="card" style="margin-top:16px">
@@ -1956,7 +2039,7 @@ function parseMulti(text, defLevel, defSub) {
     }
     if (mode === 'w') {
       const p = l.split(/\s*\|\s*|\t/).map(x => x.trim());
-      if (p[0] && p[1]) cur.words.push({ word: p[0], meaning: p[1], example: p.slice(2).join(' ').trim() }); else cur.bad.push('Dòng từ vựng lỗi: ' + l);
+      if (p[0] && p[1]) cur.words.push(wordFrom(p)); else cur.bad.push('Dòng từ vựng lỗi: ' + l);
     } else if (mode === 's') {
       const p = l.split(/\s*\|\s*|\t/), t = (p[0] || '').trim().replace(/\s+/g, ' ');
       if (t.split(' ').length >= 2) cur.sentences.push({ text: t, meaning: (p[1] || '').trim() }); else cur.bad.push('Câu lỗi: ' + l);

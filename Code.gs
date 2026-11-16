@@ -42,7 +42,7 @@ const SCHEMA = {
               'autoScore', 'autoTotal', 'essayScore', 'essayTotal', 'percent', 'needsReview',
               'teacherComment', 'reviewedBy', 'answersJson', 'submittedAt'],
   WordSets:   ['id', 'title', 'level', 'subLevel', 'status', 'createdBy', 'createdAt', 'updatedAt'],
-  Words:      ['setId', 'order', 'kind', 'text', 'meaning', 'example'],
+  Words:      ['setId', 'order', 'kind', 'text', 'meaning', 'example', 'image'],
   GameScores: ['id', 'userId', 'username', 'fullName', 'className', 'setId', 'setTitle', 'level', 'game',
                'score', 'correct', 'total', 'seconds', 'playedAt'],
   Classes:     ['id', 'name', 'level', 'createdBy', 'createdAt'],
@@ -58,7 +58,7 @@ const EXAM_GRADES = ['10', '11', '12'];
 const EXAM_TYPES = { GK1: 'Giữa kì 1', CK1: 'Cuối kì 1', GK2: 'Giữa kì 2', CK2: 'Cuối kì 2', TN: 'Luyện thi tốt nghiệp' };
 
 // Các trò chơi ôn tập
-const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ' };
+const GAMES = { flashcard: 'Flashcard', match: 'Ghép từ – nghĩa', scramble: 'Sắp xếp câu', speed: 'Đua tốc độ', picture: 'Nhìn tranh đoán từ' };
 
 
 // ===================== 3. MỞ TRANG WEB =====================
@@ -589,7 +589,7 @@ function itemsOf_(setId) {
     .sort(function (a, b) { return num_(a.order) - num_(b.order); })
     .forEach(function (w) {
       if (w.kind === 'sentence') sentences.push({ text: w.text, meaning: w.meaning });
-      else words.push({ word: w.text, meaning: w.meaning, example: w.example });
+      else words.push({ word: w.text, meaning: w.meaning, example: w.example, image: w.image || '' });
     });
   return { words: words, sentences: sentences };
 }
@@ -605,8 +605,8 @@ function wordSets_(p, token) {
   const u = currentUser_(token);
   const cnt = {};
   rows_('Words').forEach(function (w) {
-    const c = cnt[w.setId] || (cnt[w.setId] = { words: 0, sentences: 0 });
-    if (w.kind === 'sentence') c.sentences++; else c.words++;
+    const c = cnt[w.setId] || (cnt[w.setId] = { words: 0, sentences: 0, pictures: 0 });
+    if (w.kind === 'sentence') c.sentences++; else { c.words++; if (w.image) c.pictures++; }
   });
   const best = {};
   rows_('GameScores').forEach(function (g) {
@@ -617,8 +617,8 @@ function wordSets_(p, token) {
   return rows_('WordSets')
     .filter(function (s) { return s.status === 'open'; })
     .map(function (s) {
-      const c = cnt[s.id] || { words: 0, sentences: 0 };
-      return { id: s.id, title: s.title, level: s.level, subLevel: s.subLevel, words: c.words, sentences: c.sentences, best: best[s.id] || {} };
+      const c = cnt[s.id] || { words: 0, sentences: 0, pictures: 0 };
+      return { id: s.id, title: s.title, level: s.level, subLevel: s.subLevel, words: c.words, sentences: c.sentences, pictures: c.pictures, best: best[s.id] || {} };
     });
 }
 
@@ -641,7 +641,7 @@ function saveScore_(p, token) {
     append_('GameScores', {
       id: newId_('G'), userId: u.id, username: u.username, fullName: u.fullName, className: u.className,
       setId: s.id, setTitle: s.title, level: s.level, game: p.game,
-      score: clampInt_(p.score, 0, total * ({ flashcard: 1, match: 100, scramble: 100, speed: 150 })[p.game]), correct: clampInt_(p.correct, 0, total), total: total,
+      score: clampInt_(p.score, 0, total * ({ flashcard: 1, match: 100, scramble: 100, speed: 150, picture: 150 })[p.game]), correct: clampInt_(p.correct, 0, total), total: total,
       seconds: clampInt_(p.seconds, 0, 36000), playedAt: now_()
     });
   });
@@ -696,12 +696,12 @@ function prepSet_(x, words, sentences, label) {
   (words || []).forEach(function (w, i) {
     const t = clean_(w.word, 200), m = clean_(w.meaning, 300);
     if (!t || !m) throw new Error(pre + 'Từ vựng dòng ' + (i + 1) + ' cần có cả từ và nghĩa.');
-    items.push({ kind: 'word', text: t, meaning: m, example: clean_(w.example, 500) });
+    items.push({ kind: 'word', text: t, meaning: m, example: clean_(w.example, 500), image: clean_(w.image, 500) });
   });
   (sentences || []).forEach(function (c, i) {
     const t = clean_(c.text, 400).replace(/\s+/g, ' ');
     if (t.split(' ').length < 2) throw new Error(pre + 'Câu dòng ' + (i + 1) + ' cần ít nhất 2 từ.');
-    items.push({ kind: 'sentence', text: t, meaning: clean_(c.meaning, 400), example: '' });
+    items.push({ kind: 'sentence', text: t, meaning: clean_(c.meaning, 400), example: '', image: '' });
   });
   if (!items.length) throw new Error(pre + 'Bộ từ cần ít nhất 1 từ vựng hoặc 1 câu.');
   return { data: { title: title, level: lv.id, subLevel: x.subLevel, status: x.status === 'closed' ? 'closed' : 'open', updatedAt: now_() }, items: items };
@@ -1217,6 +1217,7 @@ function db_() {
   return id ? SpreadsheetApp.openById(id) : SpreadsheetApp.getActiveSpreadsheet();
 }
 
+const SHEET_OK_ = {};  // trang tính đã kiểm tra tiêu đề trong lần chạy này
 function sh_(name) {
   const ss = db_();
   let s = ss.getSheetByName(name);
@@ -1224,7 +1225,19 @@ function sh_(name) {
     s = ss.insertSheet(name);
     s.getRange(1, 1, 1, SCHEMA[name].length).setValues([SCHEMA[name]]).setFontWeight('bold').setBackground('#ede9fe');
     s.setFrozenRows(1);
+  } else if (!SHEET_OK_[name]) {
+    // Bản cập nhật có thêm cột mới (vd cột image của Words): tự thêm vào cuối, không đụng dữ liệu cũ
+    const last = Math.max(s.getLastColumn(), 1);
+    const head = s.getRange(1, 1, 1, last).getValues()[0].map(String);
+    const missing = SCHEMA[name].filter(function (h) { return head.indexOf(h) < 0; });
+    if (missing.length && head.some(String)) {
+      const need = last + missing.length - s.getMaxColumns();
+      if (need > 0) s.insertColumnsAfter(s.getMaxColumns(), need);
+      s.getRange(1, last + 1, 1, missing.length).setValues([missing]).setFontWeight('bold').setBackground('#ede9fe');
+      s.getRange(1, last + 1, s.getMaxRows(), missing.length).setNumberFormat('@');
+    }
   }
+  SHEET_OK_[name] = true;
   return s;
 }
 
