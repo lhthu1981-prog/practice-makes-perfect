@@ -147,8 +147,6 @@
     .cz-qlist .ok{color:#047857;font-weight:700}
     .czq{padding:14px 16px;transition:box-shadow .3s}.czq .qhead{margin-bottom:8px;gap:10px}
     .czq.flash{box-shadow:0 0 0 3px #c4b5fd}
-    .czq .opts.xshort{grid-template-columns:repeat(4,minmax(0,1fr))}
-    @media(max-width:600px){.czq .opts.xshort{grid-template-columns:repeat(2,minmax(0,1fr))}}
     .exclock{font-weight:700;color:#6d28d9;white-space:nowrap}.exclock.low{color:#dc2626}
     @media(max-width:900px){.cz-ed{grid-template-columns:1fr}.cz-prev{position:static;max-height:none}}
     .ptext{white-space:pre-wrap;line-height:1.75;margin-top:10px;font-size:15.5px}
@@ -339,7 +337,10 @@
     .xq{padding:14px 0;border-top:1px dashed var(--line)}
     .xq.pulse{animation:pulse .9s}
     @keyframes pulse{0%{background:#f5f0ff}100%{background:transparent}}
-    .opts.xshort{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+    .opts.xshort{display:flex;flex-wrap:wrap}
+    .opts.xshort .opt{flex:1 1 0;min-width:max-content;align-items:center}
+    .opts.xshort .opt span{white-space:nowrap}
+    @media(max-width:600px){.opts.xshort{gap:6px}.opts.xshort .opt{padding:9px 10px;gap:8px}}
     .flag{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:8px;cursor:pointer;opacity:.45;padding:2px 8px}
     .flag.on{opacity:1;background:#ffedd5;border-color:#fdba74}
     .xbar{display:none}
