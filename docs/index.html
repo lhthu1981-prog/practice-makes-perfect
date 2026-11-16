@@ -942,6 +942,9 @@ function adminFrame(inner) {
     <div class="page-head"><h1>Quản trị</h1><button class="btn" data-act="admin" data-tab="${S.adminTab}">↻ Làm mới</button></div>
     <div class="pills">${ADMIN_TABS.map(([k, l]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" data-act="admin" data-tab="${k}">${l}
       ${k === 'pending' && pending ? `<span class="badge">${pending}</span>` : ''}</button>`).join('')}</div>
+    ${SERVER_OLD ? `<div class="card" style="border:2px solid #f59e0b;background:#fffbeb;margin-bottom:14px">
+      <b>⚠️ Máy chủ Apps Script đang chạy bản cũ.</b> Trang này đã có tính năng mới (ví dụ Luyện đề khối 6–9) nhưng máy chủ chưa cập nhật.
+      <div class="small" style="margin-top:6px">Mở Apps Script → dán Code.gs mới → Lưu → <b>Triển khai → Quản lý các bản triển khai → ✏️ → Phiên bản: Phiên bản mới → Triển khai</b>. Xong thì tải lại trang (Ctrl + F5).</div></div>` : ''}
     <div id="adminBody">${inner}</div></div>`;
 }
 
@@ -2750,6 +2753,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
+const NEED_SERVER = 3; let SERVER_OLD = false;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {
@@ -2758,6 +2762,7 @@ async function loadConfig() {
     LEVELS.splice(0, LEVELS.length, ...c.levels);
     SKILLS.splice(0, SKILLS.length, ...c.skills);
     EXAM.grades = c.exam.grades; EXAM.types = c.exam.types;
+    SERVER_OLD = (c.version || 0) < NEED_SERVER;
     document.title = APP_NAME;
   } catch (e) {
     // Không gọi được cổng API (Apps Script chưa cập nhật doPost, hoặc lỗi tạm thời): chuyển sang giao diện chạy trực tiếp trên Apps Script

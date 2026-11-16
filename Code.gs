@@ -96,8 +96,11 @@ function doPost(e) {
 }
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
+/** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
+const SERVER_VERSION = 3;
+
 function publicConfig_() {
-  return { appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
+  return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
            exam: { grades: EXAM_GRADES, types: EXAM_TYPES } };
 }
 
