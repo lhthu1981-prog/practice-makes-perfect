@@ -121,6 +121,36 @@
     .ex-layout.two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
     .ex-side{display:flex;flex-direction:column;gap:16px}
     .ex-layout.two .ex-side{position:sticky;top:84px;align-self:start;max-height:calc(100vh - 170px);overflow:auto}
+    .cz-ed{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px;align-items:start;margin-top:14px}
+    .cz-prev{position:sticky;top:84px;max-height:calc(100vh - 100px);overflow:auto}
+    .cz-hint{background:#ede9fe;color:#5b21b6;border-radius:12px;padding:10px 12px;margin-top:12px;font-size:13.5px}
+    .cz-foot{display:flex;align-items:center;gap:10px;margin:16px 0 30px;flex-wrap:wrap}
+    .cz-switch{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer}
+    .mono{font-family:ui-monospace,Consolas,monospace;font-size:13px}
+    .cz-err{background:#fef2f2;color:#b91c1c;border-radius:10px;padding:7px 10px;margin:6px 0;font-size:13.5px}
+    .cz-warn{background:#fffbeb;color:#92400e;border-radius:10px;padding:7px 10px;margin:6px 0;font-size:13.5px}
+    .cz-ins{background:#f5f3ff;border-left:4px solid #7c3aed;border-radius:10px;padding:10px 14px;margin:12px 0;font-style:italic}
+    .cz-text{line-height:2.15;font-size:15.5px}
+    .cz-title{text-align:center;margin:4px 0 10px;font-size:17px}
+    .cz-p{margin:0 0 10px;text-indent:24px}
+    .cz-bank{display:flex;flex-wrap:wrap;gap:6px;border:2px dashed #c4b5fd;border-radius:12px;padding:10px;margin-bottom:12px;justify-content:center}
+    .cz-bank span{background:#fff;border:1px solid #ddd6fe;border-radius:8px;padding:2px 10px;font-weight:600;line-height:1.6}
+    .gap{display:inline-flex;align-items:center;gap:6px;min-width:96px;border:0;border-bottom:2px solid #a78bfa;background:#f5f3ff;border-radius:8px 8px 2px 2px;padding:0 8px;font:inherit;line-height:1.65;cursor:pointer;color:#4c1d95;text-indent:0;vertical-align:baseline}
+    .gap b{background:#7c3aed;color:#fff;border-radius:99px;font-size:11.5px;padding:0 7px;line-height:1.6}
+    .gap.filled{background:#ede9fe;font-weight:600}
+    span.gap{cursor:default}
+    .gap.ok{background:#ecfdf5;border-color:#10b981;color:#065f46}.gap.ok b{background:#059669}
+    .gap.bad{background:#fef2f2;border-color:#ef4444;color:#991b1b}.gap.bad b{background:#dc2626}
+    .gap.bad s{opacity:.7}.gap .fix{color:#047857;font-weight:700}
+    .gap.none{border-color:#f59e0b;background:#fffbeb;color:#92400e}.gap.none b{background:#d97706}
+    .cz-qlist{margin-top:14px;border-top:1px dashed #ddd6fe;padding-top:10px;font-size:13.5px;display:grid;gap:6px}
+    .cz-qlist .ok{color:#047857;font-weight:700}
+    .czq{padding:14px 16px;transition:box-shadow .3s}.czq .qhead{margin-bottom:8px;gap:10px}
+    .czq.flash{box-shadow:0 0 0 3px #c4b5fd}
+    .czq .opts.xshort{grid-template-columns:repeat(4,minmax(0,1fr))}
+    @media(max-width:600px){.czq .opts.xshort{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .exclock{font-weight:700;color:#6d28d9;white-space:nowrap}.exclock.low{color:#dc2626}
+    @media(max-width:900px){.cz-ed{grid-template-columns:1fr}.cz-prev{position:static;max-height:none}}
     .ptext{white-space:pre-wrap;line-height:1.75;margin-top:10px;font-size:15.5px}
     audio{width:100%;margin:10px 0 6px}
     .ex-main{display:flex;flex-direction:column;gap:14px}
@@ -502,6 +532,11 @@ const ACTS = {
   gradeOpen: d => openGrade(d.id),
   gradeSave: d => saveGrade(d.id),
   newEx: () => showEditor(null),
+  newCloze: () => showEditor(null, 'cloze'),
+  czBank: d => { S.edit.showBank = d.id === 'on'; if (d.id === 'off') S.edit.exercise.wordBank = ''; renderEditor(); },
+  czSample: () => czSample(),
+  czStatus: () => { S.edit.exercise.status = S.edit.exercise.status === 'closed' ? 'open' : 'closed'; renderEditor(); },
+  czGo: d => czGo(d.id),
   editEx: d => showEditor(d.id),
   previewEx: d => openExercise(d.id, true),
   toggleEx: d => toggleEx(d.id),
@@ -598,12 +633,16 @@ function onField(e) {
     const wc = document.querySelector(`[data-wc="${el.dataset.q}"]`);
     if (wc) wc.textContent = wordCount(el.value) + ' từ';
     store('draft_' + S.ex.id, S.answers);
-    updateProgress();
+    updateProgress(); czSync();
   }
   // --- đang soạn bài ---
   if (S.edit && el.dataset.ef) {
-    S.edit.exercise[el.dataset.ef] = el.value;
-    if (el.dataset.ef === 'level' && e.type === 'change') { S.edit.exercise.subLevel = ''; renderEditor(); }
+    const k = el.dataset.ef;
+    if (k === 'format') { if (e.type === 'change') setFormat(el.value); }
+    else if (k === 'czText') S.edit.text = el.value;
+    else S.edit.exercise[k] = el.value;
+    if (k === 'level' && e.type === 'change') { S.edit.exercise.subLevel = ''; renderEditor(); }
+    if (k !== 'format' && isCloze(S.edit.exercise.format)) czPreview();
   }
   if (S.edit && el.dataset.qf) {
     const q = S.edit.questions[+el.dataset.qi];
@@ -629,6 +668,7 @@ function onField(e) {
    ===================================================================== */
 function renderTopbar(active) {
   stopGame();
+  clearInterval(S.exTimer); S.exTimer = null;
   stopExamTimers();
   const u = S.user;
   $('#topbar').hidden = !u;
@@ -768,7 +808,7 @@ function renderPractice() {
 
 function exCard(e) {
   return `<div class="card ex-card" data-act="openEx" data-id="${esc(e.id)}">
-    <div class="meta">${skillTag(e.skill)}<span class="tag">${esc(e.subLevel)}</span>${e.hasAudio ? '<span class="tag">🎧 Nghe</span>' : ''}${e.hasPassage ? '<span class="tag">📖 Bài đọc</span>' : ''}</div>
+    <div class="meta">${skillTag(e.skill)}<span class="tag">${esc(e.subLevel)}</span>${e.hasAudio ? '<span class="tag">🎧 Nghe</span>' : ''}${e.hasPassage && !e.format ? '<span class="tag">📖 Bài đọc</span>' : ''}${e.format === 'cloze' ? '<span class="tag">🧩 Guided cloze</span>' : e.format === 'open' ? '<span class="tag">✏️ Open cloze</span>' : ''}${e.timeLimit ? `<span class="tag">⏱ ${e.timeLimit} phút</span>` : ''}</div>
     <h3>${esc(e.title)}</h3>
     <div class="foot"><span class="muted small">${e.questionCount} câu${e.tries ? ' · đã làm ' + e.tries + ' lần' : ''}</span>
       ${e.best != null ? `<span class="tag ${e.best >= 80 ? 'ok' : e.best >= 50 ? '' : 'bad'}">Cao nhất ${e.best}%</span>` : e.tries ? '<span class="tag warn">Chờ chấm</span>' : '<span class="btn sm primary">Làm bài</span>'}</div>
@@ -791,6 +831,7 @@ async function openExercise(id, preview) {
 
 function renderExercise() {
   const e = S.ex;
+  if (isCloze(e.format)) return renderClozeExercise();
   const side = [];
   if (e.audioUrl) side.push(`<section class="card"><h3>🎧 Bài nghe</h3><audio controls preload="none" src="${esc(e.audioUrl)}"></audio>
     <a class="small" href="${esc(e.audioOriginal || e.audioUrl)}" target="_blank" rel="noopener">Không nghe được? Mở file nghe ở tab mới</a></section>`);
@@ -799,14 +840,15 @@ function renderExercise() {
     <button class="back" data-act="${e.preview ? 'admin' : 'practice'}" ${e.preview ? 'data-tab="bank"' : ''}>← Quay lại</button>
     <div class="crumbs">${esc(levelName(e.level))} · ${esc(e.subLevel)} · ${esc(e.skill)}${e.preview ? ' · <b>Chế độ xem trước của GV</b>' : ''}</div>
     <h1>${esc(e.title)}</h1>
+    ${e.instruction ? `<div class="cz-ins">${fmt(e.instruction)}</div>` : ''}
     <div class="ex-layout ${e.passage ? 'two' : ''}">
       ${side.length ? `<aside class="ex-side">${side.join('')}</aside>` : ''}
       <div class="ex-main">${e.passage ? readBtn('e') : ''}${e.questions.map(questionHTML).join('')}</div>
     </div>
   </div>
-  <div class="submitbar"><div class="progress"><div class="bar"><i id="pbar"></i></div><span id="ptext"></span></div>
+  <div class="submitbar">${exClockHTML()}<div class="progress"><div class="bar"><i id="pbar"></i></div><span id="ptext"></span></div>
     <button class="btn primary" data-act="submit">Nộp bài</button></div>`;
-  updateProgress();
+  updateProgress(); exTimerStart();
 }
 
 function questionHTML(q, i) {
@@ -832,13 +874,14 @@ function updateProgress() {
   $('#ptext').textContent = `Đã làm ${done}/${total} câu`;
 }
 
-async function submitExercise() {
-  const e = S.ex;
+async function submitExercise(force) {
+  const e = S.ex; if (!e) return;
   const missing = e.questions.filter(q => !String(S.answers[q.order] || '').trim()).length;
-  if (missing && !(await confirmBox(`Bạn còn ${missing} câu chưa làm. Vẫn nộp bài chứ?`, 'Nộp bài'))) return;
+  if (!force && missing && !(await confirmBox(`Bạn còn ${missing} câu chưa làm. Vẫn nộp bài chứ?`, 'Nộp bài'))) return;
   await run(async () => {
     const r = await call('submit', { id: e.id, answers: S.answers });
-    store('draft_' + e.id, null);
+    store('draft_' + e.id, null); store('start_' + e.id, null);
+    clearInterval(S.exTimer); S.exTimer = null;
     S.ex = null;
     showResult(r);
   });
@@ -869,6 +912,7 @@ function scoreSummary(r) {
 }
 
 function reviewItems(r) {
+  const gaps = isCloze(r.format) ? gapNums(r.passage) : [];
   return r.items.map((it, i) => {
     let cls = it.type === 'essay' ? 'essay' : it.correct ? 'ok' : 'bad';
     let status = it.type === 'essay' ? '<span class="tag warn">Tự luận</span>' : it.correct ? '<span class="tag ok">✓ Đúng</span>' : '<span class="tag bad">✗ Sai</span>';
@@ -884,8 +928,8 @@ function reviewItems(r) {
     } else {
       body = `<div class="essay-box">${it.given ? esc(it.given) : '<i class="muted">(bỏ trống)</i>'}</div><div class="wc">${wordCount(it.given)} từ</div>`;
     }
-    return `<div class="card rv ${cls}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span>${status}<span class="qpts">${fmtNum(it.points)} điểm</span></div>
-      <div class="qtext">${esc(it.question)}</div>${body}
+    return `<div class="card rv ${cls}"><div class="qhead"><span class="qnum">Câu ${esc(gaps[i] || i + 1)}</span>${status}<span class="qpts">${fmtNum(it.points)} điểm</span></div>
+      ${isGapStem(it.question) ? '' : `<div class="qtext">${esc(it.question)}</div>`}${body}
       ${it.explanation ? `<div class="solution">💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}</div>` : ''}</div>`;
   }).join('');
 }
@@ -899,7 +943,7 @@ function showResult(r, fromList) {
     <div style="display:flex;gap:10px;margin:16px 0;flex-wrap:wrap">
       <button class="btn primary" data-act="retry" data-id="${esc(r.exerciseId)}">↻ Làm lại</button>
       <button class="btn" data-act="practice">Chọn bài khác</button></div>
-    ${r.passage ? (READ.er = `<div class="ptext">${esc(r.passage)}</div>`, `<div class="split"><div class="split-left"><h4>📖 Bài đọc</h4>${READ.er}</div>
+    ${r.passage ? (READ.er = isCloze(r.format) ? `<div class="cz-text">${czReviewLeft(r)}</div>` : `<div class="ptext">${esc(r.passage)}</div>`, `<div class="split"><div class="split-left"><h4>📖 Bài đọc</h4>${READ.er}</div>
       <div class="split-right ex-main">${readBtn('er')}${reviewItems(r)}</div></div>`) : `<div class="ex-main">${reviewItems(r)}</div>`}</div>`;
 }
 
@@ -1133,9 +1177,9 @@ function aBank() {
       <input class="inp" placeholder="🔍 Tìm tên bài..." data-filter="bankQ" value="${esc(S.f.bankQ)}">
       ${lv ? `<select class="inp" style="max-width:200px" data-filter="bankSub"><option value="">Mọi lớp/cấp</option>
         ${lv.subs.map(s => `<option ${S.f.bankSub === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select>` : ''}
-      <span style="flex:1"></span><button class="btn primary" data-act="newEx">+ Thêm bài tập</button></div>
+      <span style="flex:1"></span><button class="btn" data-act="newCloze">🧩 + Guided cloze</button><button class="btn primary" data-act="newEx">+ Thêm bài tập</button></div>
     <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Bài tập</th><th>Cấp độ</th><th>Kỹ năng</th><th>Số câu</th><th>Lượt làm</th><th>Mở</th><th></th></tr></thead><tbody>
-    ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${e.hasAudio ? '🎧 ' : ''}${e.hasPassage ? '📖 ' : ''}${esc(e.createdBy || '')}</div></td>
+    ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${e.format ? '🧩 ' + esc(FORMATS[e.format] || '') + ' · ' : ''}${e.timeLimit ? '⏱ ' + e.timeLimit + "' · " : ''}${e.hasAudio ? '🎧 ' : ''}${e.hasPassage ? '📖 ' : ''}${esc(e.createdBy || '')}</div></td>
       <td>${esc(levelName(e.level))}<div class="muted small">${esc(e.subLevel)}</div></td><td>${skillTag(e.skill)}</td><td>${e.questionCount}</td><td>${e.attempts}</td>
       <td><button class="switch ${e.status === 'open' ? 'on' : ''}" title="${e.status === 'open' ? 'Đang mở – bấm để đóng' : 'Đang đóng – bấm để mở'}" data-act="toggleEx" data-id="${esc(e.id)}"></button></td>
       <td><div class="actions"><button class="btn sm primary" data-act="assignEx" data-id="${esc(e.id)}">Giao</button><button class="btn sm" data-act="previewEx" data-id="${esc(e.id)}">Xem thử</button><button class="btn sm" data-act="editEx" data-id="${esc(e.id)}">Sửa</button>
@@ -1160,19 +1204,27 @@ async function deleteEx(id, title) {
    ===================================================================== */
 function blankQ(type) { return { type: type || 'mcq', question: '', A: '', B: '', C: '', D: '', answer: type === 'mcq' || !type ? 'A' : '', explanation: '', points: type === 'essay' ? 5 : 1 }; }
 
-async function showEditor(id) {
+async function showEditor(id, format) {
   renderTopbar('admin');
   window.scrollTo(0, 0);
   if (!id) {
     const lv = LEVELS.find(l => l.id === S.f.bankLevel) || LEVELS[0];
-    S.edit = { exercise: { id: '', title: '', level: lv.id, subLevel: S.f.bankSub || lv.subs[0], skill: SKILLS[0], passage: '', audioUrl: '', status: 'open' }, questions: [blankQ('mcq')] };
+    S.edit = { exercise: { id: '', title: '', level: lv.id, subLevel: S.f.bankSub || lv.subs[0], skill: SKILLS[0], passage: '', audioUrl: '', status: 'open',
+      format: format || '', instruction: '', timeLimit: 0, wordBank: '' }, questions: [blankQ('mcq')], text: '' };
     return renderEditor();
   }
   app.innerHTML = skeleton(2);
-  await run(async () => { S.edit = await call('exerciseFull', { id }); renderEditor(); });
+  await run(async () => {
+    S.edit = await call('exerciseFull', { id });
+    const x = S.edit.exercise;
+    x.format = x.format || ''; x.instruction = x.instruction || ''; x.timeLimit = x.timeLimit || 0; x.wordBank = x.wordBank || '';
+    S.edit.text = isCloze(x.format) ? clozeQText(S.edit.questions, x.passage) : '';
+    renderEditor();
+  });
 }
 
 function renderEditor() {
+  if (isCloze(S.edit.exercise.format)) return renderClozeEditor();
   const x = S.edit.exercise, qs = S.edit.questions;
   const lv = LEVELS.find(l => l.id === x.level) || LEVELS[0];
   const opt = (v, cur, label) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label || v)}</option>`;
@@ -1187,6 +1239,12 @@ function renderEditor() {
         <div><label class="f">Kỹ năng</label><select class="inp" data-ef="skill">${SKILLS.map(s => opt(s, x.skill)).join('')}</select></div>
         <div><label class="f">Trạng thái</label><select class="inp" data-ef="status">${opt('open', x.status, 'Mở cho học sinh')}${opt('closed', x.status, 'Đóng (ẩn)')}</select></div>
       </div>
+      <div class="row">
+        <div><label class="f">Dạng bài</label><select class="inp" data-ef="format">${Object.keys(FORMATS).map(k => opt(k, x.format || '', FORMATS[k])).join('')}</select></div>
+        <div><label class="f">Thời gian (phút, 0 = không giới hạn)</label><input class="inp" type="number" min="0" max="300" data-ef="timeLimit" value="${esc(x.timeLimit || 0)}"></div>
+      </div>
+      <label class="f">Hướng dẫn làm bài (nếu có)</label>
+      <textarea class="inp" rows="2" data-ef="instruction" placeholder="VD: Choose the correct answer A, B, C or D.">${esc(x.instruction || '')}</textarea>
       <label class="f">Bài đọc (nếu có)</label>
       <textarea class="inp" data-ef="passage" rows="6" placeholder="Dán đoạn văn bài đọc hiểu vào đây. Các câu hỏi bên dưới sẽ dùng chung bài đọc này.">${esc(x.passage)}</textarea>
       <label class="f">Link file nghe (nếu có)</label>
@@ -1242,6 +1300,13 @@ function moveQ(i, d) {
 function scrollToQ(i) { const el = document.getElementById('qe-' + i); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 
 async function saveExercise() {
+  const x = S.edit.exercise;
+  if (isCloze(x.format)) {
+    const r = parseCloze(S.edit.text, x.passage, x.format);
+    if (r.errors.length) return toast(r.errors[0], 'err');
+    if (!r.qs.length) return toast('Bài chưa có câu hỏi nào.', 'err');
+    S.edit.questions = r.qs.map(q => { const o = Object.assign({}, q); delete o.__gap; return o; });
+  }
   await run(async () => {
     const r = await call('saveExercise', S.edit);
     S.edit.exercise.id = r.id;
@@ -1249,6 +1314,302 @@ async function saveExercise() {
     S.adm.overview = null;
     S.edit = null;
     showAdmin('bank');
+  });
+}
+
+
+/* =====================================================================
+   DẠNG BÀI GUIDED CLOZE (A, B, C, D) / OPEN CLOZE (điền từ)
+   Bài đọc ghi chỗ trống {{26}}, {{27}}…; câu hỏi chỉ cần số + phương án + đáp án.
+   ===================================================================== */
+const FORMATS = { '': 'Thông thường (nhiều dạng câu)', cloze: 'Guided cloze (A, B, C, D)', open: 'Open cloze (điền từ)' };
+const isCloze = f => f === 'cloze' || f === 'open';
+const gapNums = t => [...String(t || '').matchAll(/\{\{\s*(\d+)\s*\}\}/g)].map(m => m[1]);
+const isGapStem = s => /^\(\d+\)$/.test(String(s || '').trim());
+const CZ_HINT = {
+  cloze: 'Đoạn văn có <b>{{26}}</b>, <b>{{27}}</b>…; mỗi câu chỉ cần 4 phương án A–D (không cần ghi câu hỏi).',
+  open: 'Đoạn văn có <b>{{1}}</b>, <b>{{2}}</b>…; mỗi câu chỉ cần ghi <b>Đáp án:</b> (nhiều đáp án đúng ngăn bằng dấu <b>|</b>).'
+};
+const CZ_SAMPLE = {
+  cloze: { passage: `# The School Music Club
+
+Our school music club {{1}} in 2015. Every Friday afternoon, students {{2}} love music meet in Room 12 to practise together. Last month, the club gave a concert to {{3}} money for a local library.`,
+    text: `1.
+A. starts
+B. started
+C. has started
+D. starting
+Đáp án: B
+Giải thích: "in 2015" là mốc thời gian trong quá khứ → quá khứ đơn.
+
+2. A. who  B. which  C. whose  D. where
+Đáp án: A
+Giải thích: Đại từ quan hệ thay cho người (students) làm chủ ngữ → who.
+
+3.
+A. rise
+B. raise
+C. grow
+D. lift
+Đáp án: B
+Giải thích: Cụm cố định: raise money = gây quỹ.` },
+  open: { passage: `# A Trip to the Floating Market
+
+Last weekend, my family got up {{1}} five o'clock to visit the floating market. There were hundreds {{2}} boats on the river, and each boat sold a different kind of fruit.`,
+    text: `1.
+Đáp án: at
+Giải thích: at + giờ.
+
+2.
+Đáp án: of
+Giải thích: hundreds of + danh từ số nhiều.` }
+};
+
+/** Bài đọc có chỗ trống → HTML. gap(n, i) trả về HTML của chỗ trống thứ i (số n). */
+function clozeHTML(t, gap) {
+  let i = 0;
+  return String(t || '').replace(/\r/g, '').split(/\n\s*\n/).map(par => {
+    par = par.trim(); if (!par) return '';
+    if (/^#\s+/.test(par)) return `<h3 class="cz-title">${fmt(par.replace(/^#\s+/, ''))}</h3>`;
+    return '<p class="cz-p">' + fmt(par).replace(/\n/g, '<br>').replace(/\{\{\s*(\d+)\s*\}\}/g, (m, n) => gap(n, i++)) + '</p>';
+  }).join('');
+}
+function wordBankHTML(wb) {
+  const w = String(wb || '').split(/\s*[,;|\n]\s*/).map(x => x.trim()).filter(Boolean);
+  return w.length ? `<div class="cz-bank">${w.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : '';
+}
+
+/** Tách một dòng "A. go B. goes C. going D. went" thành các phương án */
+function splitInlineOpts(line) {
+  if (!/^A\s*[.)]\s*\S/.test(line) || !/\sB\s*[.)]\s*\S/.test(line)) return null;
+  const parts = line.split(/(?:^|\s+)([A-E])\s*[.)]\s+/).slice(1), o = {};
+  for (let k = 0; k < parts.length; k += 2) o[parts[k]] = (parts[k + 1] || '').trim();
+  return o.A && o.B ? o : null;
+}
+
+/** Đọc ô "Câu hỏi và đáp án" của bài cloze → { qs, errors, warns } (qs theo thứ tự chỗ trống trong bài) */
+function parseCloze(text, passage, format) {
+  const gaps = gapNums(passage), errors = [], warns = [], got = [];
+  String(text || '').replace(/\r/g, '').split(/\n\s*\n/).map(b => b.trim()).filter(Boolean).forEach((block, bi) => {
+    const q = { type: format === 'open' ? 'fill' : 'mcq', question: '', A: '', B: '', C: '', D: '', answer: '', explanation: '', points: 1 };
+    let n = '', stem = [];
+    block.split('\n').map(l => l.trim()).filter(Boolean).forEach((l, li) => {
+      let m;
+      if (li === 0 && (m = l.match(/^(?:câu|question)?\s*\(?(\d+)\)?\s*[.):]?\s*(.*)$/i))) { n = m[1]; l = m[2]; if (!l) return; }
+      const inl = splitInlineOpts(l);
+      if (inl) { Object.assign(q, inl); return; }
+      if ((m = l.match(/^([A-D])\s*[.)]\s*(.*)$/))) q[m[1]] = m[2].trim();
+      else if ((m = l.match(/^(đáp án|dap an|answer|key)\s*[:：]\s*(.*)$/i))) q.answer = m[2].trim();
+      else if ((m = l.match(/^(giải thích|giai thich|explanation)\s*[:：]\s*(.*)$/i))) q.explanation = m[2].trim();
+      else stem.push(l);
+    });
+    const label = n ? `Câu ${n}` : `Khối câu thứ ${bi + 1}`;
+    q.question = stem.join('\n');
+    if (q.type === 'mcq') {
+      q.answer = (q.answer.match(/^[A-D]/i) || [''])[0].toUpperCase();
+      if (!q.A || !q.B) errors.push(`${label}: cần ít nhất 2 phương án A và B.`);
+      else if (!q.answer || !q[q.answer]) errors.push(`${label}: thiếu hoặc sai dòng “Đáp án: A/B/C/D”.`);
+    } else if (!q.answer) errors.push(`${label}: thiếu dòng “Đáp án: …”.`);
+    got.push({ n, q });
+  });
+  // ghép câu với chỗ trống: theo số; câu không ghi số thì lấp chỗ trống còn thiếu theo thứ tự
+  const byGap = {};
+  got.filter(g => g.n).forEach(g => {
+    if (gaps.indexOf(g.n) < 0) errors.push(`Câu ${g.n}: bài đọc không có chỗ trống {{${g.n}}}.`);
+    else if (byGap[g.n]) errors.push(`Câu ${g.n} bị ghi hai lần.`);
+    else byGap[g.n] = g.q;
+  });
+  got.filter(g => !g.n).forEach(g => { const free = gaps.find(x => !byGap[x]); if (free) byGap[free] = g.q; else errors.push('Có câu không ghi số và không còn chỗ trống để ghép.'); });
+  if (!gaps.length) errors.push('Bài đọc chưa có chỗ trống nào. Ghi {{1}}, {{2}}… vào chỗ cần điền.');
+  gaps.forEach((g, i) => { if (gaps.indexOf(g) !== i) errors.push(`Chỗ trống {{${g}}} xuất hiện hai lần trong bài đọc.`); });
+  const missing = gaps.filter(g => !byGap[g]);
+  if (missing.length && got.length) warns.push('Chỗ trống chưa có câu hỏi: ' + missing.map(g => `{{${g}}}`).join(', ') + '.');
+  const qs = gaps.filter((g, i) => byGap[g] && gaps.indexOf(g) === i).map(g => { const q = byGap[g]; if (!q.question) q.question = `(${g})`; q.__gap = g; return q; });
+  return { qs, errors, warns, gaps };
+}
+
+/** Câu hỏi đã lưu → chữ trong ô "Câu hỏi và đáp án" */
+function clozeQText(qs, passage) {
+  const gaps = gapNums(passage);
+  return qs.map((q, i) => {
+    const n = gaps[i] || (String(q.question).match(/^\((\d+)\)$/) || [])[1] || String(i + 1);
+    const out = [`${n}.` + (q.question && !isGapStem(q.question) ? ' ' + q.question : '')];
+    if (q.type === 'mcq') ['A', 'B', 'C', 'D'].forEach(k => { if (q[k]) out.push(`${k}. ${q[k]}`); });
+    out.push(`Đáp án: ${q.answer || ''}`);
+    if (q.explanation) out.push(`Giải thích: ${q.explanation}`);
+    return out.join('\n');
+  }).join('\n\n');
+}
+
+/* ---------- Soạn bài cloze ---------- */
+function renderClozeEditor() {
+  const x = S.edit.exercise, f = x.format;
+  const lv = LEVELS.find(l => l.id === x.level) || LEVELS[0];
+  const opt = (v, cur, label) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label || v)}</option>`;
+  const showBank = S.edit.showBank || x.wordBank;
+  app.innerHTML = `<div class="page" style="max-width:1320px">
+    <button class="back" data-act="cancelEdit">← Kho bài tập</button>
+    <h1>${x.id ? 'Sửa bài tập' : 'Thêm bài tập mới'}</h1><div class="muted small">${x.id ? 'Mã bài: ' + esc(x.id) : 'Mã bài sẽ được tạo tự động'}</div>
+    <div class="cz-ed">
+      <div>
+        <div class="card">
+          <div class="row">
+            <div><label class="f" style="margin-top:0">Phần / kỹ năng</label><select class="inp" data-ef="skill">${SKILLS.map(s => opt(s, x.skill)).join('')}</select></div>
+            <div><label class="f" style="margin-top:0">Dạng bài</label><select class="inp" data-ef="format">${Object.keys(FORMATS).map(k => opt(k, f, FORMATS[k])).join('')}</select></div>
+            <div><label class="f" style="margin-top:0">Cấp độ</label><select class="inp" data-ef="level">${LEVELS.map(l => opt(l.id, x.level, l.name)).join('')}</select></div>
+            <div><label class="f" style="margin-top:0">Lớp / cấp nhỏ</label><select class="inp" data-ef="subLevel"><option value="">— Chọn —</option>${lv.subs.map(s => opt(s, x.subLevel)).join('')}</select></div>
+          </div>
+          <div class="cz-hint">${CZ_HINT[f]}</div>
+          <label class="f">Tiêu đề *</label><input class="inp" data-ef="title" value="${esc(x.title)}" placeholder="VD: Guided cloze – Dong Ho paintings">
+          <label class="f">Thời gian (phút) <span class="muted small" style="font-weight:400">0 = không giới hạn</span></label>
+          <input class="inp" type="number" min="0" max="300" style="max-width:160px" data-ef="timeLimit" value="${esc(x.timeLimit || 0)}">
+          <label class="f">Hướng dẫn làm bài <span class="muted small" style="font-weight:400">hiện ở đầu bài cho học sinh</span></label>
+          <textarea class="inp" rows="2" data-ef="instruction" placeholder="VD: Read the text and decide which answer (A, B, C or D) best fits each gap.">${esc(x.instruction || '')}</textarea>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <label class="f" style="margin-top:0">Ngữ liệu (bài đọc) * <span class="muted small" style="font-weight:400"># tiêu đề · {{1}} chỗ trống · **đậm** · dòng trống = đoạn mới</span></label>
+          <textarea class="inp mono" rows="10" data-ef="passage" placeholder="# Tiêu đề&#10;&#10;Đoạn văn… chỗ trống ghi {{1}}, {{2}}…">${esc(x.passage)}</textarea>
+          ${showBank ? `<label class="f">Danh sách lựa chọn <span class="muted small" style="font-weight:400">hiện trong khung phía trên bài đọc; ngăn bằng dấu phẩy</span></label>
+            <div style="display:flex;gap:8px"><input class="inp" data-ef="wordBank" value="${esc(x.wordBank || '')}" placeholder="VD: although, because, so, but, unless">
+            <button class="btn sm" data-act="czBank" data-id="off">Bỏ</button></div>`
+            : `<button class="btn sm" style="margin-top:10px" data-act="czBank" data-id="on">+ Thêm danh sách lựa chọn</button>`}
+          <div style="display:flex;justify-content:space-between;align-items:end;margin-top:14px"><label class="f" style="margin:0">Câu hỏi và đáp án *</label>
+            <button class="btn sm" data-act="czSample">Chèn mẫu</button></div>
+          <textarea class="inp mono" rows="14" data-ef="czText" placeholder="${f === 'open' ? '1.&#10;Đáp án: at&#10;Giải thích: …' : '1.&#10;A. …&#10;B. …&#10;C. …&#10;D. …&#10;Đáp án: B&#10;Giải thích: …'}&#10;&#10;(mỗi câu cách nhau một dòng trống)">${esc(S.edit.text || '')}</textarea>
+          <div class="hint">Mỗi câu bắt đầu bằng số của chỗ trống (26. 27. …), cách nhau <b>một dòng trống</b>. ${f === 'open' ? 'Chỉ cần dòng <b>Đáp án:</b>; nhiều đáp án đúng ngăn bằng dấu <b>|</b>.' : 'Phương án viết <b>A. B. C. D.</b> mỗi dòng một phương án hoặc cùng một dòng; dòng <b>Đáp án:</b> ghi một chữ cái.'} Dòng <b>Giải thích:</b> hiện sau khi nộp bài. Có thể dán thẳng từ Word.</div>
+          <label class="f">Link file nghe (nếu có)</label><input class="inp" data-ef="audioUrl" value="${esc(x.audioUrl || '')}" placeholder="Link chia sẻ Google Drive hoặc link .mp3">
+        </div>
+        <div class="cz-foot">
+          <label class="cz-switch"><button class="switch ${x.status !== 'closed' ? 'on' : ''}" data-act="czStatus"></button> Hiển thị cho học sinh</label>
+          <span style="flex:1"></span><button class="btn" data-act="cancelEdit">Huỷ</button><button class="btn primary" data-act="saveEx">✓ Lưu bài tập</button>
+        </div>
+      </div>
+      <div class="card cz-prev" id="czPrev"></div>
+    </div></div>`;
+  czPreview();
+}
+
+function czPreview() {
+  const box = $('#czPrev'); if (!box || !S.edit) return;
+  const x = S.edit.exercise, r = parseCloze(S.edit.text, x.passage, x.format);
+  const hasQ = String(S.edit.text || '').trim();
+  const ans = q => q.type === 'mcq' ? q[q.answer] : String(q.answer).split('|')[0];
+  box.innerHTML = `<h3 style="margin:0 0 4px">Xem trước: ${r.qs.length} câu</h3>
+    ${!hasQ && !x.passage ? '<div class="muted small">Chưa có câu hỏi. Bấm “Chèn mẫu” để xem cách ghi.</div>' : ''}
+    ${r.errors.map(e => `<div class="cz-err">⚠️ ${esc(e)}</div>`).join('')}${r.warns.map(e => `<div class="cz-warn">ℹ️ ${esc(e)}</div>`).join('')}
+    ${x.instruction ? `<div class="cz-ins">${fmt(x.instruction)}</div>` : ''}
+    ${x.passage ? `<div class="cz-text">${wordBankHTML(x.wordBank)}${clozeHTML(x.passage, n => {
+      const q = r.qs.find(qq => qq.__gap === n);
+      return `<span class="gap ${q ? 'ok' : 'none'}"><b>${esc(n)}</b>${q ? esc(ans(q) || '') : '?'}</span>`;
+    })}</div>` : ''}
+    ${r.qs.length ? `<div class="cz-qlist">${r.qs.map(q => `<div><b>(${esc(q.__gap)})</b> ${!isGapStem(q.question) ? esc(q.question) + ' ' : ''}${q.type === 'mcq'
+        ? ['A', 'B', 'C', 'D'].filter(k => q[k]).map(k => `<span class="${k === q.answer ? 'ok' : ''}">${k}. ${esc(q[k])}</span>`).join(' ')
+        : `<span class="ok">${esc(String(q.answer).split('|').join(' / '))}</span>`}</div>`).join('')}</div>` : ''}`;
+}
+
+function czSample() {
+  const x = S.edit.exercise, smp = CZ_SAMPLE[x.format] || CZ_SAMPLE.cloze;
+  if (String(S.edit.text || '').trim() || String(x.passage || '').trim()) {
+    if (!String(S.edit.text || '').trim() && x.passage) { S.edit.text = smp.text; renderEditor(); return toast('Đã chèn câu hỏi mẫu – sửa lại cho khớp với chỗ trống trong bài.', 'ok'); }
+    return toast('Ô bài đọc / câu hỏi đã có nội dung. Xoá trống cả hai ô nếu muốn chèn mẫu.', 'err');
+  }
+  x.passage = smp.passage; S.edit.text = smp.text;
+  if (!x.instruction) x.instruction = x.format === 'open' ? 'Read the text and write ONE word in each gap.' : 'Read the text and decide which answer (A, B, C or D) best fits each gap.';
+  renderEditor(); toast('Đã chèn mẫu. Xem khung “Xem trước” bên phải.', 'ok');
+}
+
+function setFormat(f) {
+  const x = S.edit.exercise, old = x.format || '';
+  x.format = f;
+  if (isCloze(f) && !isCloze(old)) {
+    S.edit.text = clozeQText(S.edit.questions.filter(q => String(q.question).trim() || q.A), x.passage);
+  } else if (!isCloze(f) && isCloze(old)) {
+    const r = parseCloze(S.edit.text, x.passage, old);
+    S.edit.questions = r.qs.length ? r.qs.map(q => { delete q.__gap; return q; }) : [blankQ('mcq')];
+  } else if (isCloze(f)) {
+    // đổi giữa 2 dạng cloze: chuyển câu cho đúng dạng
+    const r = parseCloze(S.edit.text, x.passage, old);
+    S.edit.text = clozeQText(r.qs.map(q => f === 'open' ? Object.assign(q, { type: 'fill', answer: q.type === 'mcq' ? (q[q.answer] || '') : q.answer })
+      : Object.assign(q, { type: 'mcq', answer: '' })), x.passage);
+  }
+  renderEditor();
+}
+
+/* ---------- Học sinh làm bài cloze ---------- */
+function czGapText(q, v) { return !v ? '' : q.type === 'mcq' ? ((q.options || {})[v] || v) : v; }
+function czLeft(e) {
+  return wordBankHTML(e.wordBank) + clozeHTML(e.passage, (n, i) => {
+    const q = e.questions[i];
+    if (!q) return `<span class="gap none"><b>${esc(n)}</b></span>`;
+    const t = czGapText(q, S.answers[q.order]);
+    return `<button class="gap ${t ? 'filled' : ''}" data-act="czGo" data-id="${esc(q.order)}"><b>${esc(n)}</b><span>${t ? esc(t) : '&nbsp;'}</span></button>`;
+  });
+}
+function czQHTML(q, i, n) {
+  const v = S.answers[q.order] || '';
+  const body = q.type === 'mcq'
+    ? `<div class="opts xshort">${Object.keys(q.options).map(k => `<label class="opt ${v === k ? 'on' : ''}">
+      <input type="radio" name="q${esc(q.order)}" value="${k}" data-q="${esc(q.order)}" ${v === k ? 'checked' : ''}><b>${k}</b><span>${esc(q.options[k])}</span></label>`).join('')}</div>`
+    : `<input class="inp" data-q="${esc(q.order)}" value="${esc(v)}" placeholder="Nhập từ cần điền..." autocomplete="off" autocapitalize="off" spellcheck="false">`;
+  return `<div class="card czq" id="q-${esc(q.order)}"><div class="qhead"><span class="qnum">Câu ${esc(n)}</span>
+    ${!isGapStem(q.question) ? `<span class="qtext" style="margin:0">${fmt(q.question)}</span>` : ''}</div>${body}</div>`;
+}
+function renderClozeExercise() {
+  const e = S.ex, gaps = gapNums(e.passage);
+  READ.e = `<div class="cz-text">${czLeft(e)}</div>`;
+  app.innerHTML = `<div class="page" style="max-width:1400px">
+    <button class="back" data-act="${e.preview ? 'admin' : 'practice'}" ${e.preview ? 'data-tab="bank"' : ''}>← Quay lại</button>
+    <div class="crumbs">${esc(levelName(e.level))} · ${esc(e.subLevel)} · ${esc(e.skill)} · ${esc(FORMATS[e.format])}${e.preview ? ' · <b>Chế độ xem trước của GV</b>' : ''}</div>
+    <h1>${esc(e.title)}</h1>
+    ${e.instruction ? `<div class="cz-ins">${fmt(e.instruction)}</div>` : ''}
+    ${e.audioUrl ? `<div class="card" style="margin:12px 0"><audio controls preload="none" src="${esc(e.audioUrl)}" style="width:100%"></audio></div>` : ''}
+    <div class="split" style="margin-top:14px"><div class="split-left"><h4>📖 Bài đọc · bấm vào chỗ trống để tới câu hỏi</h4><div class="cz-text" id="czLeft">${czLeft(e)}</div></div>
+      <div class="split-right ex-main">${readBtn('e')}${e.questions.map((q, i) => czQHTML(q, i, gaps[i] || i + 1)).join('')}</div></div>
+  </div>
+  <div class="submitbar">${exClockHTML()}<div class="progress"><div class="bar"><i id="pbar"></i></div><span id="ptext"></span></div>
+    <button class="btn primary" data-act="submit">Nộp bài</button></div>`;
+  updateProgress(); exTimerStart();
+}
+function czSync() {
+  if (!S.ex || !isCloze(S.ex.format)) return;
+  const html = czLeft(S.ex), el = $('#czLeft');
+  if (el) el.innerHTML = html;
+  READ.e = `<div class="cz-text">${html}</div>`;
+}
+function czGo(order) {
+  if (!$('#modal').hidden) closeModal();
+  const c = document.getElementById('q-' + order); if (!c) return;
+  c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  c.classList.add('flash'); setTimeout(() => c.classList.remove('flash'), 1200);
+  const inp = c.querySelector('input.inp'); if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 350);
+}
+
+/* ---------- Đồng hồ làm bài (khi bài có Thời gian > 0) ---------- */
+function exClockHTML() { return S.ex && S.ex.timeLimit > 0 ? '<span class="exclock" id="exClock">⏱ --:--</span>' : ''; }
+function exTimerStart() {
+  clearInterval(S.exTimer); S.exTimer = null;
+  const e = S.ex, el = $('#exClock');
+  if (!e || !(e.timeLimit > 0) || !el) return;
+  const key = 'start_' + e.id, limit = e.timeLimit * 60;
+  let st = load(key);
+  if (!st || (Date.now() - st) / 1000 > limit + 600) { st = Date.now(); store(key, st); }  // lần làm mới
+  const tick = () => {
+    if (!S.ex || S.ex.id !== e.id || !document.getElementById('exClock')) { clearInterval(S.exTimer); S.exTimer = null; return; }
+    const left = limit - (Date.now() - st) / 1000;
+    const c = $('#exClock'); c.textContent = '⏱ ' + fmtClock(left); c.classList.toggle('low', left < 60);
+    if (left <= 0) { clearInterval(S.exTimer); S.exTimer = null; toast('Hết giờ! Bài được nộp tự động.', 'err'); submitExercise(true); }
+  };
+  tick(); S.exTimer = setInterval(tick, 1000);
+}
+
+/* ---------- Xem lại bài cloze sau khi nộp ---------- */
+function czReviewLeft(r) {
+  return wordBankHTML(r.wordBank) + clozeHTML(r.passage, (n, i) => {
+    const it = r.items[i]; if (!it) return `<span class="gap none"><b>${esc(n)}</b></span>`;
+    const txt = v => it.type === 'mcq' ? ((it.options || {})[String(v).toUpperCase()] || v) : v;
+    const given = it.given ? txt(it.given) : '';
+    return it.correct ? `<span class="gap ok"><b>${esc(n)}</b>${esc(given)} ✓</span>`
+      : `<span class="gap bad"><b>${esc(n)}</b>${given ? `<s>${esc(given)}</s> ` : '<i>(bỏ trống)</i> '}<span class="fix">${esc(txt(it.answerText))}</span></span>`;
   });
 }
 
@@ -2885,7 +3246,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
-const NEED_SERVER = 4; let SERVER_OLD = false;
+const NEED_SERVER = 5; let SERVER_OLD = false;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {

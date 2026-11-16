@@ -36,7 +36,7 @@ const SKILLS = ['Ngữ pháp', 'Từ vựng', 'Đọc hiểu', 'Nghe', 'Viết',
 // ===================== 2. CẤU TRÚC CÁC TRANG TÍNH =====================
 const SCHEMA = {
   Users:     ['id', 'username', 'passHash', 'salt', 'fullName', 'className', 'level', 'role', 'status', 'createdAt'],
-  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt'],
+  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt', 'format', 'instruction', 'timeLimit', 'wordBank'],
   Questions: ['exerciseId', 'order', 'type', 'question', 'A', 'B', 'C', 'D', 'answer', 'explanation', 'points'],
   Results:   ['id', 'userId', 'username', 'fullName', 'className', 'exerciseId', 'title', 'level', 'subLevel',
               'autoScore', 'autoTotal', 'essayScore', 'essayTotal', 'percent', 'needsReview',
@@ -97,7 +97,7 @@ function doPost(e) {
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
 /** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
-const SERVER_VERSION = 4;
+const SERVER_VERSION = 5;
 
 function publicConfig_() {
   return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
@@ -303,10 +303,18 @@ function catalog_(p, token) {
       return {
         id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill,
         questionCount: count[e.id] || 0, hasAudio: !!e.audioUrl, hasPassage: !!e.passage,
+        format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit,
         best: (e.id in best) ? best[e.id] : null, tries: tries[e.id] || 0
       };
     });
   return { exercises: exercises, assignments: myAssignments_(u) };
+}
+
+/** Thông tin thêm của bài tập: dạng bài (''|cloze|open), hướng dẫn, thời gian (phút), danh sách lựa chọn */
+const EX_FORMATS = ['', 'cloze', 'open'];
+function exExtra_(e) {
+  return { format: EX_FORMATS.indexOf(e.format) >= 0 ? e.format : '', instruction: e.instruction || '',
+           timeLimit: num_(e.timeLimit) || 0, wordBank: e.wordBank || '' };
 }
 
 function getExercise_(p, token) {
@@ -318,7 +326,8 @@ function getExercise_(p, token) {
   });
   return {
     id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill,
-    passage: e.passage, audioUrl: audioSrc_(e.audioUrl), audioOriginal: e.audioUrl, questions: questions
+    passage: e.passage, audioUrl: audioSrc_(e.audioUrl), audioOriginal: e.audioUrl, questions: questions,
+    format: exExtra_(e).format, instruction: exExtra_(e).instruction, timeLimit: exExtra_(e).timeLimit, wordBank: exExtra_(e).wordBank
   };
 }
 
@@ -363,6 +372,7 @@ function submit_(p, token) {
   withLock_(function () { append_('Results', row); });
   const out = buildResult_(row);
   out.passage = e.passage;
+  Object.assign(out, exExtra_(e));
   return out;
 }
 
@@ -382,6 +392,7 @@ function resultDetail_(p, token) {
   const out = buildResult_(r);
   const e = rows_('Exercises').find(function (x) { return x.id === r.exerciseId; });
   out.passage = e ? e.passage : '';
+  if (e) Object.assign(out, exExtra_(e));
   return out;
 }
 
@@ -498,7 +509,8 @@ function listExercises_(p, token) {
     return {
       id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill, status: e.status,
       createdBy: e.createdBy, updatedAt: e.updatedAt || e.createdAt,
-      questionCount: count[e.id] || 0, attempts: attempts[e.id] || 0, hasAudio: !!e.audioUrl, hasPassage: !!e.passage
+      questionCount: count[e.id] || 0, attempts: attempts[e.id] || 0, hasAudio: !!e.audioUrl, hasPassage: !!e.passage,
+      format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit
     };
   });
 }
@@ -507,7 +519,7 @@ function exerciseFull_(p, token) {
   requireTeacher_(token);
   const e = findExercise_(p.id);
   return {
-    exercise: { id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill, passage: e.passage, audioUrl: e.audioUrl, status: e.status },
+    exercise: Object.assign({ id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill, passage: e.passage, audioUrl: e.audioUrl, status: e.status }, exExtra_(e)),
     questions: questionsOf_(e.id).map(function (q) {
       return { type: q.type, question: q.question, A: q.A, B: q.B, C: q.C, D: q.D, answer: q.answer, explanation: q.explanation, points: num_(q.points) || 1 };
     })
@@ -550,7 +562,9 @@ function saveExercise_(p, token) {
     const data = {
       title: title, level: lv.id, subLevel: x.subLevel, skill: skill,
       passage: clean_(x.passage, 40000), audioUrl: clean_(x.audioUrl, 500),
-      status: x.status === 'closed' ? 'closed' : 'open', updatedAt: now_()
+      status: x.status === 'closed' ? 'closed' : 'open', updatedAt: now_(),
+      format: EX_FORMATS.indexOf(x.format) >= 0 ? x.format : '', instruction: clean_(x.instruction, 2000),
+      timeLimit: clampInt_(x.timeLimit, 0, 300), wordBank: clean_(x.wordBank, 1000)
     };
     const old = id ? rows_('Exercises').find(function (e) { return e.id === id; }) : null;
     if (old) {
