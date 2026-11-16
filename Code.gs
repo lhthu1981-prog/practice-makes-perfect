@@ -35,19 +35,19 @@ const SKILLS = ['Ngữ pháp', 'Từ vựng', 'Đọc hiểu', 'Nghe', 'Viết',
 
 // ===================== 2. CẤU TRÚC CÁC TRANG TÍNH =====================
 const SCHEMA = {
-  Users:     ['id', 'username', 'passHash', 'salt', 'fullName', 'className', 'level', 'role', 'status', 'createdAt'],
-  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt', 'format', 'instruction', 'timeLimit', 'wordBank'],
+  Users:     ['id', 'username', 'passHash', 'salt', 'fullName', 'className', 'level', 'role', 'status', 'createdAt', 'scope', 'classes'],
+  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt', 'format', 'instruction', 'timeLimit', 'wordBank', 'ownerId'],
   Questions: ['exerciseId', 'order', 'type', 'question', 'A', 'B', 'C', 'D', 'answer', 'explanation', 'points'],
   Results:   ['id', 'userId', 'username', 'fullName', 'className', 'exerciseId', 'title', 'level', 'subLevel',
               'autoScore', 'autoTotal', 'essayScore', 'essayTotal', 'percent', 'needsReview',
               'teacherComment', 'reviewedBy', 'answersJson', 'submittedAt'],
-  WordSets:   ['id', 'title', 'level', 'subLevel', 'status', 'createdBy', 'createdAt', 'updatedAt'],
+  WordSets:   ['id', 'title', 'level', 'subLevel', 'status', 'createdBy', 'createdAt', 'updatedAt', 'ownerId'],
   Words:      ['setId', 'order', 'kind', 'text', 'meaning', 'example', 'image'],
   GameScores: ['id', 'userId', 'username', 'fullName', 'className', 'setId', 'setTitle', 'level', 'game',
                'score', 'correct', 'total', 'seconds', 'playedAt'],
   Classes:     ['id', 'name', 'level', 'createdBy', 'createdAt'],
   Assignments: ['id', 'classId', 'className', 'kind', 'refId', 'refTitle', 'level', 'game', 'dueAt', 'note', 'createdBy', 'createdAt'],
-  Exams:       ['id', 'title', 'grade', 'examType', 'duration', 'answerMode', 'released', 'status', 'questionCount', 'createdBy', 'createdAt', 'updatedAt'],
+  Exams:       ['id', 'title', 'grade', 'examType', 'duration', 'answerMode', 'released', 'status', 'questionCount', 'createdBy', 'createdAt', 'updatedAt', 'ownerId'],
   ExamParts:   ['examId', 'order', 'json'],
   ExamResults: ['id', 'userId', 'username', 'fullName', 'className', 'examId', 'title', 'grade', 'examType',
                 'score', 'correct', 'total', 'partsJson', 'answersJson', 'seconds', 'submittedAt']
@@ -97,7 +97,7 @@ function doPost(e) {
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
 /** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
-const SERVER_VERSION = 5;
+const SERVER_VERSION = 6;
 
 function publicConfig_() {
   return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
@@ -186,6 +186,8 @@ const ACTIONS = {
   setUserStatus: setUserStatus_,
   approveAll: approveAll_,
   setRole: setRole_,
+  listTeachers: listTeachers_,
+  saveTeacher: saveTeacher_,
   resetPassword: resetPassword_,
   listResults: listResults_,
   gradeResult: gradeResult_,
@@ -388,7 +390,7 @@ function resultDetail_(p, token) {
   const u = currentUser_(token);
   const r = rows_('Results').find(function (x) { return x.id === p.id; });
   if (!r) throw new Error('Không tìm thấy kết quả.');
-  if (u.role !== 'teacher' && r.userId !== u.id) throw new Error('Bạn không có quyền xem kết quả này.');
+  if (r.userId !== u.id && (u.role !== 'teacher' || !inScope_(u, r.className))) throw new Error('Bạn không có quyền xem kết quả này.');
   const out = buildResult_(r);
   const e = rows_('Exercises').find(function (x) { return x.id === r.exerciseId; });
   out.passage = e ? e.passage : '';
@@ -399,8 +401,9 @@ function resultDetail_(p, token) {
 
 // ===================== 8. GIÁO VIÊN QUẢN TRỊ =====================
 function overview_(p, token) {
-  requireTeacher_(token);
-  const users = rows_('Users'), res = rows_('Results'), ex = rows_('Exercises');
+  const me = requireTeacher_(token);
+  const users = rows_('Users').filter(function (u) { return studentInScope_(me, u); });
+  const res = rows_('Results').filter(function (r) { return inScope_(me, r.className); }), ex = rows_('Exercises');
   const weekAgo = Date.now() - 7 * 864e5;
   const graded = res.filter(function (r) { return r.percent !== ''; });
   const avg = graded.length ? Math.round(graded.reduce(function (s, r) { return s + num_(r.percent); }, 0) / graded.length) : 0;
@@ -417,7 +420,8 @@ function overview_(p, token) {
     };
   });
   return {
-    pending: users.filter(function (u) { return u.status === 'pending'; }).length,
+    pending: users.filter(function (u) { return u.status === 'pending' && u.role === 'student'; }).length,
+    myClasses: myClasses_(me), isAdmin: isAdmin_(me),
     students: users.filter(function (u) { return u.role === 'student' && u.status === 'approved'; }).length,
     week: res.filter(function (r) { return new Date(r.submittedAt).getTime() >= weekAgo; }).length,
     total: res.length,
@@ -426,15 +430,15 @@ function overview_(p, token) {
     exercisesOpen: ex.filter(function (e) { return e.status === 'open'; }).length,
     exercisesTotal: ex.length,
     byLevel: byLevel,
-    sheetUrl: db_().getUrl()
+    sheetUrl: isAdmin_(me) ? db_().getUrl() : ''
   };
 }
 
 function listUsers_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const attempts = {};
   rows_('Results').forEach(function (r) { attempts[r.userId] = (attempts[r.userId] || 0) + 1; });
-  return rows_('Users').map(function (u) {
+  return rows_('Users').filter(function (u) { return u.id === me.id || studentInScope_(me, u); }).map(function (u) {
     const o = publicUser_(u); o.attempts = attempts[u.id] || 0; return o;
   }).sort(byDateDesc_);
 }
@@ -444,21 +448,23 @@ function setUserStatus_(p, token) {
   if (['approved', 'rejected', 'locked', 'pending'].indexOf(p.status) < 0) throw new Error('Trạng thái không hợp lệ.');
   const u = findUser_(p.userId);
   if (u.id === me.id) throw new Error('Bạn không thể đổi trạng thái tài khoản của chính mình.');
+  requireStudentScope_(me, u);
+  if (u.username === ADMIN_USERNAME) throw new Error('Không thể khoá tài khoản quản trị chính.');
   update_('Users', u._row, { status: p.status });
   return true;
 }
 
 function approveAll_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   let n = 0;
   rows_('Users').forEach(function (u) {
-    if (u.status === 'pending') { update_('Users', u._row, { status: 'approved' }); n++; }
+    if (u.status === 'pending' && studentInScope_(me, u)) { update_('Users', u._row, { status: 'approved' }); n++; }
   });
   return n;
 }
 
 function setRole_(p, token) {
-  const me = requireTeacher_(token);
+  const me = requireAdmin_(token);
   if (['student', 'teacher'].indexOf(p.role) < 0) throw new Error('Vai trò không hợp lệ.');
   const u = findUser_(p.userId);
   if (u.id === me.id) throw new Error('Bạn không thể đổi vai trò của chính mình.');
@@ -467,23 +473,25 @@ function setRole_(p, token) {
 }
 
 function resetPassword_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   if (String(p.newPassword || '').length < 6) throw new Error('Mật khẩu mới cần ít nhất 6 ký tự.');
   const u = findUser_(p.userId);
+  requireStudentScope_(me, u);
   const salt = Utilities.getUuid();
   update_('Users', u._row, { passHash: hash_(p.newPassword, salt), salt: salt });
   return true;
 }
 
 function listResults_(p, token) {
-  requireTeacher_(token);
-  return rows_('Results').map(resultSummary_).sort(byDateDesc_).slice(0, 1000);
+  const me = requireTeacher_(token);
+  return rows_('Results').filter(function (r) { return inScope_(me, r.className); }).map(resultSummary_).sort(byDateDesc_).slice(0, 1000);
 }
 
 function gradeResult_(p, token) {
   const me = requireTeacher_(token);
   const r = rows_('Results').find(function (x) { return x.id === p.id; });
   if (!r) throw new Error('Không tìm thấy kết quả.');
+  if (!inScope_(me, r.className)) throw new Error('Kết quả này không thuộc lớp bạn phụ trách.');
   const essayTotal = num_(r.essayTotal);
   const essayScore = Number(p.essayScore);
   if (essayTotal > 0 && (isNaN(essayScore) || essayScore < 0 || essayScore > essayTotal))
@@ -501,16 +509,16 @@ function gradeResult_(p, token) {
 }
 
 function listExercises_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const count = {}, attempts = {};
   rows_('Questions').forEach(function (q) { count[q.exerciseId] = (count[q.exerciseId] || 0) + 1; });
-  rows_('Results').forEach(function (r) { attempts[r.exerciseId] = (attempts[r.exerciseId] || 0) + 1; });
+  rows_('Results').forEach(function (r) { if (inScope_(me, r.className)) attempts[r.exerciseId] = (attempts[r.exerciseId] || 0) + 1; });
   return rows_('Exercises').map(function (e) {
     return {
       id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill, status: e.status,
       createdBy: e.createdBy, updatedAt: e.updatedAt || e.createdAt,
       questionCount: count[e.id] || 0, attempts: attempts[e.id] || 0, hasAudio: !!e.audioUrl, hasPassage: !!e.passage,
-      format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit
+      format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit, mine: canEdit_(me, e)
     };
   });
 }
@@ -568,10 +576,11 @@ function saveExercise_(p, token) {
     };
     const old = id ? rows_('Exercises').find(function (e) { return e.id === id; }) : null;
     if (old) {
+      requireEdit_(me, old);
       update_('Exercises', old._row, data);
     } else {
       id = newId_('EX');
-      data.id = id; data.createdBy = me.fullName; data.createdAt = now_();
+      data.id = id; data.createdBy = me.fullName; data.createdAt = now_(); data.ownerId = me.id;
       append_('Exercises', data);
     }
     replaceQuestions_(id, qs);
@@ -580,17 +589,19 @@ function saveExercise_(p, token) {
 }
 
 function toggleExercise_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const e = findExercise_(p.id);
+  requireEdit_(me, e);
   const status = e.status === 'open' ? 'closed' : 'open';
   update_('Exercises', e._row, { status: status });
   return status;
 }
 
 function deleteExercise_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   return withLock_(function () {
     const e = findExercise_(p.id);
+    requireEdit_(me, e);
     sh_('Exercises').deleteRow(e._row);
     replaceQuestions_(e.id, []);
     return true;
@@ -687,7 +698,7 @@ function stripId_(r) { const o = Object.assign({}, r); delete o.userId; return o
 
 /** Giáo viên */
 function listWordSets_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const cnt = {}, plays = {};
   rows_('Words').forEach(function (w) {
     const c = cnt[w.setId] || (cnt[w.setId] = { words: 0, sentences: 0 });
@@ -697,7 +708,7 @@ function listWordSets_(p, token) {
   return rows_('WordSets').map(function (s) {
     const c = cnt[s.id] || { words: 0, sentences: 0 };
     return { id: s.id, title: s.title, level: s.level, subLevel: s.subLevel, status: s.status, createdBy: s.createdBy,
-             updatedAt: s.updatedAt || s.createdAt, words: c.words, sentences: c.sentences, plays: plays[s.id] || 0 };
+             updatedAt: s.updatedAt || s.createdAt, words: c.words, sentences: c.sentences, plays: plays[s.id] || 0, mine: canEdit_(me, s) };
   });
 }
 
@@ -726,10 +737,10 @@ function prepSet_(x, words, sentences, label) {
 
 function upsertSet_(id, prep, me) {
   const old = id ? rows_('WordSets').find(function (s) { return s.id === id; }) : null;
-  if (old) update_('WordSets', old._row, prep.data);
+  if (old) { requireEdit_(me, old); update_('WordSets', old._row, prep.data); }
   else {
     id = newId_('WS');
-    append_('WordSets', Object.assign({ id: id, createdBy: me.fullName, createdAt: now_() }, prep.data));
+    append_('WordSets', Object.assign({ id: id, createdBy: me.fullName, createdAt: now_(), ownerId: me.id }, prep.data));
   }
   replaceChildren_('Words', 'setId', id, prep.items);
   return id;
@@ -763,17 +774,19 @@ function importWordSets_(p, token) {
 }
 
 function toggleWordSet_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const s = findSet_(p.id);
+  requireEdit_(me, s);
   const status = s.status === 'open' ? 'closed' : 'open';
   update_('WordSets', s._row, { status: status });
   return status;
 }
 
 function deleteWordSet_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   return withLock_(function () {
     const s = findSet_(p.id);
+    requireEdit_(me, s);
     sh_('WordSets').deleteRow(s._row);
     replaceChildren_('Words', 'setId', s.id, []);
     return true;
@@ -781,8 +794,8 @@ function deleteWordSet_(p, token) {
 }
 
 function recentPlays_(p, token) {
-  requireTeacher_(token);
-  return rows_('GameScores').map(function (g) {
+  const me = requireTeacher_(token);
+  return rows_('GameScores').filter(function (g) { return inScope_(me, g.className); }).map(function (g) {
     return { fullName: g.fullName, className: g.className, username: g.username, setTitle: g.setTitle, level: g.level,
              game: g.game, score: num_(g.score), correct: num_(g.correct), total: num_(g.total), seconds: num_(g.seconds), playedAt: g.playedAt };
   }).sort(function (a, b) { return String(b.playedAt).localeCompare(String(a.playedAt)); }).slice(0, 300);
@@ -797,16 +810,16 @@ function publicInfo_() {
 }
 
 function listClasses_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const users = rows_('Users');
-  return rows_('Classes').map(function (c) {
+  return rows_('Classes').filter(function (c) { return inScope_(me, c.name); }).map(function (c) {
     return { id: c.id, name: c.name, level: c.level,
              students: users.filter(function (u) { return u.role === 'student' && u.status === 'approved' && u.className === c.name; }).length };
   }).sort(function (a, b) { return a.name.localeCompare(b.name, 'vi', { numeric: true }); });
 }
 
 function saveClass_(p, token) {
-  const me = requireTeacher_(token);
+  const me = requireAdmin_(token);
   const name = clean_(p.name, 30).replace(/\s+/g, '').toUpperCase();
   if (!name) throw new Error('Hãy nhập tên lớp, ví dụ 10A1.');
   const level = LEVELS.some(function (l) { return l.id === p.level; }) ? p.level : '';
@@ -818,7 +831,7 @@ function saveClass_(p, token) {
 }
 
 function deleteClass_(p, token) {
-  requireTeacher_(token);
+  requireAdmin_(token);
   return withLock_(function () {
     const c = rows_('Classes').find(function (x) { return x.id === p.id; });
     if (!c) throw new Error('Không tìm thấy lớp.');
@@ -831,9 +844,11 @@ function deleteClass_(p, token) {
 }
 
 function setClass_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const u = findUser_(p.userId);
+  requireStudentScope_(me, u);
   const name = String(p.className || '');
+  if (name && !inScope_(me, name)) throw new Error('Bạn chỉ được chuyển học sinh vào lớp mình phụ trách.');
   if (name && !rows_('Classes').some(function (c) { return c.name === name; })) throw new Error('Lớp không tồn tại.');
   update_('Users', u._row, { className: name });
   return true;
@@ -848,6 +863,7 @@ function assign_(p, token) {
   if (due && isNaN(due.getTime())) throw new Error('Hạn nộp không hợp lệ.');
   const classes = rows_('Classes').filter(function (c) { return (p.classIds || []).indexOf(c.id) >= 0; });
   if (!classes.length) throw new Error('Hãy chọn ít nhất một lớp.');
+  if (classes.some(function (c) { return !inScope_(me, c.name); })) throw new Error('Bạn chỉ được giao bài cho lớp mình phụ trách.');
   return withLock_(function () {
     classes.forEach(function (c) {
       append_('Assignments', {
@@ -904,10 +920,10 @@ function myAssignments_(u) {
 }
 
 function listAssignments_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const users = rows_('Users').filter(function (u) { return u.role === 'student' && u.status === 'approved'; });
   const data = asgData_();
-  return rows_('Assignments').map(function (a) {
+  return rows_('Assignments').filter(function (a) { return inScope_(me, a.className); }).map(function (a) {
     const studs = users.filter(function (u) { return u.className === a.className; });
     let done = 0, late = 0;
     studs.forEach(function (u) { const st = asgStatus_(a, u.id, data); if (st.done) { done++; if (st.late) late++; } });
@@ -918,9 +934,10 @@ function listAssignments_(p, token) {
 }
 
 function assignmentDetail_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const a = rows_('Assignments').find(function (x) { return x.id === p.id; });
   if (!a) throw new Error('Không tìm thấy bài đã giao.');
+  if (!inScope_(me, a.className)) throw new Error('Bài giao này không thuộc lớp bạn phụ trách.');
   const data = asgData_();
   const rows = rows_('Users')
     .filter(function (u) { return u.role === 'student' && u.status === 'approved' && u.className === a.className; })
@@ -933,10 +950,11 @@ function assignmentDetail_(p, token) {
 }
 
 function deleteAssignment_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   return withLock_(function () {
     const a = rows_('Assignments').find(function (x) { return x.id === p.id; });
     if (!a) throw new Error('Không tìm thấy bài đã giao.');
+    if (!inScope_(me, a.className)) throw new Error('Bài giao này không thuộc lớp bạn phụ trách.');
     sh_('Assignments').deleteRow(a._row);
     return true;
   });
@@ -1076,23 +1094,24 @@ function examResultDetail_(p, token) {
   const u = currentUser_(token);
   const r = rows_('ExamResults').find(function (x) { return x.id === p.id; });
   if (!r) throw new Error('Không tìm thấy kết quả.');
-  if (u.role !== 'teacher' && r.userId !== u.id) throw new Error('Bạn không có quyền xem kết quả này.');
+  if (r.userId !== u.id && (u.role !== 'teacher' || !inScope_(u, r.className))) throw new Error('Bạn không có quyền xem kết quả này.');
   const e = rows_('Exams').find(function (x) { return x.id === r.examId; });
   return examResultView_(r, e || null, e ? examSections_(e.id) : [], u);
 }
 
 /** Giáo viên */
 function examsAdmin_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const stat = {};
   rows_('ExamResults').forEach(function (r) {
+    if (!inScope_(me, r.className)) return;
     const s = stat[r.examId] || (stat[r.examId] = { n: 0, sum: 0 });
     s.n++; s.sum += num_(r.score);
   });
   return rows_('Exams').map(function (e) {
     const m = examMeta_(e), s = stat[e.id];
     m.attempts = s ? s.n : 0; m.avg = s ? Math.round(s.sum / s.n * 100) / 100 : null;
-    m.createdBy = e.createdBy; m.updatedAt = e.updatedAt || e.createdAt;
+    m.createdBy = e.createdBy; m.updatedAt = e.updatedAt || e.createdAt; m.mine = canEdit_(me, e);
     return m;
   });
 }
@@ -1141,33 +1160,36 @@ function examSave_(p, token) {
                    answerMode: x.answerMode === 'teacher' ? 'teacher' : 'instant', status: x.status === 'closed' ? 'closed' : 'open',
                    questionCount: count, updatedAt: now_() };
     const old = id ? rows_('Exams').find(function (e) { return e.id === id; }) : null;
-    if (old) update_('Exams', old._row, data);
-    else { id = newId_('EZ'); append_('Exams', Object.assign({ id: id, released: 'FALSE', createdBy: me.fullName, createdAt: now_() }, data)); }
+    if (old) { requireEdit_(me, old); update_('Exams', old._row, data); }
+    else { id = newId_('EZ'); append_('Exams', Object.assign({ id: id, released: 'FALSE', createdBy: me.fullName, createdAt: now_(), ownerId: me.id }, data)); }
     replaceChildren_('ExamParts', 'examId', id, secs);
     return { id: id, questions: count };
   });
 }
 
 function examToggle_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const e = findExam_(p.id);
+  requireEdit_(me, e);
   const status = e.status === 'open' ? 'closed' : 'open';
   update_('Exams', e._row, { status: status });
   return status;
 }
 
 function examRelease_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   const e = findExam_(p.id);
+  requireEdit_(me, e);
   const v = !isTrue_(e.released);
   update_('Exams', e._row, { released: v ? 'TRUE' : 'FALSE' });
   return v;
 }
 
 function examDelete_(p, token) {
-  requireTeacher_(token);
+  const me = requireTeacher_(token);
   return withLock_(function () {
     const e = findExam_(p.id);
+    requireEdit_(me, e);
     sh_('Exams').deleteRow(e._row);
     replaceChildren_('ExamParts', 'examId', e.id, []);
     return true;
@@ -1175,8 +1197,8 @@ function examDelete_(p, token) {
 }
 
 function examResultsAdmin_(p, token) {
-  requireTeacher_(token);
-  return rows_('ExamResults').filter(function (r) { return !p.examId || r.examId === p.examId; })
+  const me = requireTeacher_(token);
+  return rows_('ExamResults').filter(function (r) { return (!p.examId || r.examId === p.examId) && inScope_(me, r.className); })
     .map(examSummary_).sort(function (a, b) { return b.score - a.score || a.seconds - b.seconds; });
 }
 
@@ -1387,8 +1409,67 @@ function requireTeacher_(token) {
   return u;
 }
 
+/* ---- Phân quyền giáo viên ----
+   Quản trị chính (admin) và giáo viên "toàn quyền" (scope trống hoặc 'all') thấy tất cả.
+   Giáo viên phụ trách lớp (scope = 'classes') chỉ thấy học sinh, kết quả, bài giao của các lớp trong cột classes. */
+function isAdmin_(u) { return u.role === 'teacher' && (u.username === ADMIN_USERNAME || u.scope !== 'classes'); }
+function myClasses_(u) { return isAdmin_(u) ? null : String(u.classes || '').split(',').map(function (c) { return c.trim(); }).filter(String); }
+function inScope_(u, className) { const c = myClasses_(u); return !c || c.indexOf(String(className || '')) >= 0; }
+function requireAdmin_(token) {
+  const u = requireTeacher_(token);
+  if (!isAdmin_(u)) throw new Error('Chức năng này chỉ dành cho quản trị viên.');
+  return u;
+}
+function studentInScope_(me, u) { return isAdmin_(me) || (u.role === 'student' && inScope_(me, u.className)); }
+function requireStudentScope_(me, u) { if (!studentInScope_(me, u)) throw new Error('Học sinh này không thuộc lớp bạn phụ trách.'); }
+/** Bài tập / bộ từ / đề do ai tạo thì người đó (và quản trị viên) được sửa, xoá */
+function canEdit_(u, item) { return isAdmin_(u) || (item.ownerId ? item.ownerId === u.id : item.createdBy === u.fullName); }
+function requireEdit_(u, item) { if (!canEdit_(u, item)) throw new Error('Bạn chỉ được sửa, đóng/mở hoặc xoá tài liệu do chính mình tạo.'); }
+
+/** Quản trị viên: danh sách giáo viên */
+function listTeachers_(p, token) {
+  requireAdmin_(token);
+  return rows_('Users').filter(function (u) { return u.role === 'teacher'; }).map(function (u) {
+    const o = publicUser_(u); o.isMain = u.username === ADMIN_USERNAME; return o;
+  }).sort(function (a, b) { return (b.isMain - a.isMain) || a.fullName.localeCompare(b.fullName, 'vi'); });
+}
+
+/** Quản trị viên: tạo / sửa tài khoản giáo viên */
+function saveTeacher_(p, token) {
+  const me = requireAdmin_(token);
+  const fullName = clean_(p.fullName, 80);
+  if (!fullName) throw new Error('Hãy nhập họ tên giáo viên.');
+  const scope = p.scope === 'all' ? 'all' : 'classes';
+  const all = rows_('Classes').map(function (c) { return c.name; });
+  const classes = (p.classes || []).map(String).filter(function (c) { return all.indexOf(c) >= 0; });
+  if (scope === 'classes' && !classes.length) throw new Error('Hãy chọn ít nhất một lớp phụ trách (hoặc chọn Toàn quyền).');
+  const pw = String(p.password || '');
+  if (pw && pw.length < 6) throw new Error('Mật khẩu cần ít nhất 6 ký tự.');
+  return withLock_(function () {
+    if (p.id) {
+      const u = findUser_(p.id);
+      if (u.role !== 'teacher') throw new Error('Tài khoản này không phải giáo viên.');
+      const data = { fullName: fullName, scope: u.username === ADMIN_USERNAME ? 'all' : scope, classes: classes.join(',') };
+      if (u.id === me.id && data.scope !== 'all') throw new Error('Bạn không thể tự bỏ quyền quản trị của mình.');
+      if (pw) { const salt = Utilities.getUuid(); data.passHash = hash_(pw, salt); data.salt = salt; }
+      update_('Users', u._row, data);
+      return { id: u.id };
+    }
+    const username = String(p.username || '').trim().toLowerCase();
+    if (!/^[a-z0-9_.]{3,30}$/.test(username)) throw new Error('Tên đăng nhập dài 3–30 ký tự, chỉ gồm chữ không dấu, số, dấu _ hoặc dấu chấm.');
+    if (!pw) throw new Error('Hãy đặt mật khẩu (ít nhất 6 ký tự).');
+    if (rows_('Users').some(function (u) { return u.username === username; })) throw new Error('Tên đăng nhập này đã có người dùng.');
+    const salt = Utilities.getUuid(), id = newId_('U');
+    append_('Users', { id: id, username: username, passHash: hash_(pw, salt), salt: salt, fullName: fullName, className: '', level: '',
+                       role: 'teacher', status: 'approved', createdAt: now_(), scope: scope, classes: classes.join(',') });
+    return { id: id };
+  });
+}
+
 function publicUser_(u) {
-  return { id: u.id, username: u.username, fullName: u.fullName, className: u.className, level: u.level, role: u.role, status: u.status, createdAt: u.createdAt };
+  const o = { id: u.id, username: u.username, fullName: u.fullName, className: u.className, level: u.level, role: u.role, status: u.status, createdAt: u.createdAt };
+  if (u.role === 'teacher') { o.isAdmin = isAdmin_(u); o.classes = myClasses_(u) || []; }
+  return o;
 }
 
 /** Âm thanh trên Google Drive: đổi link chia sẻ thành link phát trực tiếp */

@@ -157,6 +157,8 @@
     .qtype{font-size:12px;color:var(--muted);background:#f5f2fb;padding:2px 8px;border-radius:6px}
     .qpts{font-size:12px;color:var(--warn);font-weight:600}
     .qtext{white-space:pre-wrap;font-size:16px;margin-bottom:12px;font-weight:500}
+    .scope-note{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px}
+    .t-classes{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px}.t-classes label{display:flex;gap:6px;align-items:center;font-weight:600;cursor:pointer}
     .arr-hint{font-size:13px;color:#6d28d9;font-weight:600;margin:2px 0 8px}
     .arr{display:grid;gap:8px;margin:0 0 14px}
     .arr-row{display:flex;gap:12px;align-items:flex-start;background:#faf7ff;border:1px solid #ece5fb;border-radius:12px;padding:9px 14px;line-height:1.55;font-size:15.5px}
@@ -522,6 +524,13 @@ const ACTS = {
   unlock: d => setStatus(d.id, 'approved'),
   approveAll: () => approveAll(),
   makeTeacher: d => setRole(d.id, 'teacher'),
+  tNew: () => openTeacher(null),
+  tEdit: d => openTeacher(d.id),
+  tSave: d => saveTeacher(d.id),
+  tScope: d => { $('#tClasses').style.display = d.id === 'all' ? 'none' : ''; document.querySelectorAll('[data-act=tScope]').forEach(b => b.classList.toggle('on', b.dataset.id === d.id)); S.tScope = d.id; },
+  tLock: d => run(async () => { await call('setUserStatus', { userId: d.id, status: d.st }); toast(d.st === 'locked' ? 'Đã khoá tài khoản' : 'Đã mở khoá', 'ok'); await loadAdmin('teachers'); }),
+  tPass: d => teacherPass(d.id, d.name),
+  tPassSave: d => run(async () => { await call('resetPassword', { userId: d.id, newPassword: $('#tPass').value }); closeModal(); toast('Đã đặt mật khẩu mới', 'ok'); }),
   makeStudent: d => setRole(d.id, 'student'),
   resetPw: d => resetPw(d.id, d.name),
   gradeOpen: d => openGrade(d.id),
@@ -1006,6 +1015,7 @@ async function showAdmin(tab) {
 async function loadAdmin(tab) {
   await run(async () => {
     if (tab === 'overview') S.adm.overview = await call('overview');
+    if (tab === 'teachers') { S.adm.teachers = await call('listTeachers'); S.adm.classes = await call('listClasses'); }
     if (tab === 'pending' || tab === 'users') S.adm.users = await call('listUsers');
     if (tab === 'users' || tab === 'assign') S.adm.classes = await call('listClasses');
     if (tab === 'assign') S.adm.assigns = await call('listAssignments');
@@ -1021,17 +1031,20 @@ function adminFrame(inner) {
   const pending = S.adm.overview ? S.adm.overview.pending : (S.adm.users ? S.adm.users.filter(u => u.status === 'pending').length : 0);
   return `<div class="page">
     <div class="page-head"><h1>Quản trị</h1><button class="btn" data-act="admin" data-tab="${S.adminTab}">↻ Làm mới</button></div>
-    <div class="pills">${ADMIN_TABS.map(([k, l]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" data-act="admin" data-tab="${k}">${l}
+    <div class="pills">${adminTabs().map(([k, l]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" data-act="admin" data-tab="${k}">${l}
       ${k === 'pending' && pending ? `<span class="badge">${pending}</span>` : ''}</button>`).join('')}</div>
     ${SERVER_OLD ? `<div class="card" style="border:2px solid #f59e0b;background:#fffbeb;margin-bottom:14px">
       <b>⚠️ Máy chủ Apps Script đang chạy bản cũ.</b> Trang này đã có tính năng mới (ví dụ Luyện đề khối 6–9) nhưng máy chủ chưa cập nhật.
       <div class="small" style="margin-top:6px">Mở Apps Script → dán Code.gs mới → Lưu → <b>Triển khai → Quản lý các bản triển khai → ✏️ → Phiên bản: Phiên bản mới → Triển khai</b>. Xong thì tải lại trang (Ctrl + F5).</div></div>` : ''}
+    ${S.user && S.user.isAdmin === false ? `<div class="scope-note">👩‍🏫 Bạn phụ trách lớp <b>${esc((S.user.classes || []).join(', ') || '(chưa có)')}</b>: chỉ thấy và quản lí học sinh, kết quả, bài giao của các lớp này. Kho bài tập, đề thi, bộ từ dùng chung – bạn sửa/xoá được tài liệu do mình tạo.</div>` : ''}
     <div id="adminBody">${inner}</div></div>`;
 }
+const isMainAdmin = () => !!(S.user && S.user.isAdmin !== false);
+function adminTabs() { return ADMIN_TABS.concat(S.user && S.user.isAdmin ? [['teachers', 'Giáo viên']] : []); }
 
 function renderAdmin() {
   const t = S.adminTab;
-  const html = t === 'overview' ? aOverview() : t === 'pending' ? aPending() : t === 'users' ? aUsers() : t === 'results' ? aResults() : t === 'games' ? aGames() : t === 'assign' ? aAssign() : t === 'exams' ? aExams() : aBank();
+  const html = t === 'teachers' ? aTeachers() : t === 'overview' ? aOverview() : t === 'pending' ? aPending() : t === 'users' ? aUsers() : t === 'results' ? aResults() : t === 'games' ? aGames() : t === 'assign' ? aAssign() : t === 'exams' ? aExams() : aBank();
   // giữ con trỏ khi đang gõ ô tìm kiếm
   const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.filter : null;
   app.innerHTML = adminFrame(html);
@@ -1052,7 +1065,7 @@ function aOverview() {
     </div>
     <div class="card bank-card">
       <div><h3>Kho bài luyện</h3><div class="muted">${o.exercisesOpen} bài đang mở / ${o.exercisesTotal} bài. Thêm, sửa, xoá bài ngay trong “Kho bài tập”, hoặc sửa trực tiếp trên Google Sheets.</div></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-act="newEx">+ Thêm bài tập</button><button class="btn" data-act="openSheet">▦ Mở Google Sheet</button></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-act="newEx">+ Thêm bài tập</button>${o.sheetUrl ? '<button class="btn" data-act="openSheet">▦ Mở Google Sheet</button>' : ''}</div>
     </div>
     <div class="card tablewrap"><h3 style="margin-bottom:8px">Theo cấp độ</h3>
       <table><thead><tr><th>Cấp độ</th><th>Bài đang mở</th><th>Học sinh</th><th>Lượt làm</th><th>Điểm TB</th></tr></thead><tbody>
@@ -1099,7 +1112,7 @@ function aUsers() {
       <td>${u.role === 'teacher' ? '<span class="tag" style="background:#ede9fe;color:#6d28d9">Giáo viên</span>' : 'Học sinh'}</td><td>${u.attempts}</td><td>${stTag(u)}</td>
       <td><div class="actions">${u.id === S.user.id ? '<span class="muted small">(bạn)</span>' : `
         ${u.status === 'approved' ? `<button class="btn sm" data-act="lock" data-id="${esc(u.id)}">Khoá</button>` : `<button class="btn sm" data-act="unlock" data-id="${esc(u.id)}">Mở khoá</button>`}
-        ${u.role === 'student' ? `<button class="btn sm" data-act="makeTeacher" data-id="${esc(u.id)}">Cấp quyền GV</button>` : `<button class="btn sm" data-act="makeStudent" data-id="${esc(u.id)}">Bỏ quyền GV</button>`}
+        ${!isMainAdmin() || u.id === S.user.id ? '' : u.role === 'student' ? `<button class="btn sm" data-act="makeTeacher" data-id="${esc(u.id)}">Cấp quyền GV</button>` : `<button class="btn sm" data-act="makeStudent" data-id="${esc(u.id)}">Bỏ quyền GV</button>`}
         <button class="btn sm" data-act="resetPw" data-id="${esc(u.id)}" data-name="${esc(u.fullName)}">Đặt lại MK</button>`}</div></td></tr>`).join('')}
     </tbody></table>` : '<div class="empty">Không có tài khoản phù hợp.</div>'}</div>`;
 }
@@ -1119,6 +1132,52 @@ async function approveAll() {
   if (!(await confirmBox('Duyệt tất cả tài khoản đang chờ?', 'Duyệt tất cả'))) return;
   await run(async () => { const n = await call('approveAll'); toast(`Đã duyệt ${n} tài khoản`, 'ok'); S.adm.overview = null; await loadAdmin('pending'); });
 }
+/* ---- Tab Giáo viên (chỉ quản trị viên) ---- */
+function aTeachers() {
+  const list = S.adm.teachers || [];
+  return `<div class="toolbar"><div class="muted small" style="flex:1">Giáo viên <b>toàn quyền</b> quản lí mọi lớp như quản trị viên. Giáo viên <b>phụ trách lớp</b> chỉ thấy học sinh, kết quả, bài giao của lớp mình; dùng chung kho bài tập, đề thi, bộ từ và chỉ sửa/xoá tài liệu do mình tạo.</div>
+      <button class="btn primary" data-act="tNew">+ Thêm giáo viên</button></div>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Giáo viên</th><th>Quyền</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+    ${list.map(t => `<tr><td><b>${esc(t.fullName)}</b>${t.isMain ? ' <span class="tag" style="background:#ede9fe;color:#6d28d9">Quản trị chính</span>' : ''}<div class="muted small">@${esc(t.username)}</div></td>
+      <td>${t.isAdmin ? '<span class="tag ok">Toàn quyền</span>' : `Lớp: <b>${esc((t.classes || []).join(', ') || '—')}</b>`}</td>
+      <td>${t.status === 'locked' ? '<span class="tag bad">Đang khoá</span>' : '<span class="tag ok">Hoạt động</span>'}</td>
+      <td><div class="actions">${t.isMain ? '' : `<button class="btn sm" data-act="tEdit" data-id="${esc(t.id)}">Sửa</button>
+        <button class="btn sm" data-act="tPass" data-id="${esc(t.id)}" data-name="${esc(t.fullName)}">Đặt lại mật khẩu</button>
+        ${t.id === S.user.id ? '' : `<button class="btn sm ${t.status === 'locked' ? '' : 'danger'}" data-act="tLock" data-id="${esc(t.id)}" data-st="${t.status === 'locked' ? 'approved' : 'locked'}">${t.status === 'locked' ? 'Mở khoá' : 'Khoá'}</button>`}`}</div></td></tr>`).join('')}
+    </tbody></table>` : '<div class="empty">Chưa có giáo viên nào.</div>'}</div>`;
+}
+function openTeacher(id) {
+  const t = id ? (S.adm.teachers || []).find(x => x.id === id) : null;
+  const classes = S.adm.classes || [];
+  S.tScope = t && t.isAdmin ? 'all' : 'classes';
+  openModal(`<h3>${t ? 'Sửa tài khoản giáo viên' : 'Thêm giáo viên'}</h3>
+    <label class="f">Họ và tên *</label><input class="inp" id="tName" value="${esc(t ? t.fullName : '')}" placeholder="VD: Nguyễn Thị Lan">
+    ${t ? `<div class="muted small" style="margin-top:6px">Tên đăng nhập: <b>@${esc(t.username)}</b></div>`
+      : `<label class="f">Tên đăng nhập *</label><input class="inp" id="tUser" placeholder="VD: lan.nguyen (chữ không dấu, số, . _)" autocapitalize="off">`}
+    <label class="f">${t ? 'Mật khẩu mới (bỏ trống nếu không đổi)' : 'Mật khẩu * (ít nhất 6 ký tự)'}</label><input class="inp" id="tPass" type="text" autocomplete="off">
+    <label class="f">Quyền</label>
+    <div class="chips" style="margin:0"><button class="chip ${S.tScope === 'classes' ? 'on' : ''}" data-act="tScope" data-id="classes">👩‍🏫 Phụ trách lớp</button>
+      <button class="chip ${S.tScope === 'all' ? 'on' : ''}" data-act="tScope" data-id="all">🛡️ Toàn quyền (như quản trị viên)</button></div>
+    <div id="tClasses" style="${S.tScope === 'all' ? 'display:none' : ''}"><label class="f">Lớp phụ trách *</label>
+      ${classes.length ? `<div class="t-classes">${classes.map(c => `<label><input type="checkbox" value="${esc(c.name)}" ${t && (t.classes || []).includes(c.name) ? 'checked' : ''}> ${esc(c.name)}</label>`).join('')}</div>`
+        : '<div class="muted small">Chưa có lớp nào. Vào tab “Giao bài” để thêm lớp trước.</div>'}</div>
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" data-act="tSave" data-id="${esc(id || '')}">Lưu</button></div>`);
+}
+async function saveTeacher(id) {
+  const payload = { id: id || '', fullName: $('#tName').value, password: $('#tPass').value, scope: S.tScope,
+    classes: [...document.querySelectorAll('#tClasses input:checked')].map(i => i.value) };
+  if (!id) payload.username = $('#tUser').value;
+  await run(async () => {
+    await call('saveTeacher', payload);
+    closeModal(); toast(id ? 'Đã cập nhật giáo viên' : 'Đã tạo tài khoản giáo viên. Gửi tên đăng nhập + mật khẩu cho thầy/cô ấy.', 'ok');
+    await loadAdmin('teachers');
+  });
+}
+function teacherPass(id, name) {
+  openModal(`<h3>Đặt lại mật khẩu – ${esc(name)}</h3><label class="f">Mật khẩu mới (ít nhất 6 ký tự)</label><input class="inp" id="tPass" type="text" autocomplete="off">
+    <div class="m-actions"><button class="btn" data-act="closeModal">Huỷ</button><button class="btn primary" data-act="tPassSave" data-id="${esc(id)}">Lưu</button></div>`);
+}
+
 async function setRole(id, role) {
   const msg = role === 'teacher' ? 'Cấp quyền giáo viên cho tài khoản này? Họ sẽ vào được trang Quản trị.' : 'Bỏ quyền giáo viên của tài khoản này?';
   if (!(await confirmBox(msg, 'Đồng ý'))) return;
@@ -1304,9 +1363,9 @@ function aBank() {
     <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Bài tập</th><th>Cấp độ</th><th>Kỹ năng</th><th>Số câu</th><th>Lượt làm</th><th>Mở</th><th></th></tr></thead><tbody>
     ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${e.format ? '🧩 ' + esc(FORMATS[e.format] || '') + ' · ' : ''}${e.timeLimit ? '⏱ ' + e.timeLimit + "' · " : ''}${e.hasAudio ? '🎧 ' : ''}${e.hasPassage ? '📖 ' : ''}${esc(e.createdBy || '')}</div></td>
       <td>${esc(levelName(e.level))}<div class="muted small">${esc(e.subLevel)}</div></td><td>${skillTag(e.skill)}</td><td>${e.questionCount}</td><td>${e.attempts}</td>
-      <td><button class="switch ${e.status === 'open' ? 'on' : ''}" title="${e.status === 'open' ? 'Đang mở – bấm để đóng' : 'Đang đóng – bấm để mở'}" data-act="toggleEx" data-id="${esc(e.id)}"></button></td>
-      <td><div class="actions"><button class="btn sm primary" data-act="assignEx" data-id="${esc(e.id)}">Giao</button><button class="btn sm" data-act="previewEx" data-id="${esc(e.id)}">Xem thử</button><button class="btn sm" data-act="editEx" data-id="${esc(e.id)}">Sửa</button>
-        <button class="btn sm danger" data-act="delEx" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button></div></td></tr>`).join('')}
+      <td>${e.mine === false ? (e.status === 'open' ? '<span class="tag ok">Mở</span>' : '<span class="tag">Đóng</span>') : `<button class="switch ${e.status === 'open' ? 'on' : ''}" title="${e.status === 'open' ? 'Đang mở – bấm để đóng' : 'Đang đóng – bấm để mở'}" data-act="toggleEx" data-id="${esc(e.id)}"></button>`}</td>
+      <td><div class="actions"><button class="btn sm primary" data-act="assignEx" data-id="${esc(e.id)}">Giao</button><button class="btn sm" data-act="previewEx" data-id="${esc(e.id)}">Xem thử</button>${e.mine === false ? '' : `<button class="btn sm" data-act="editEx" data-id="${esc(e.id)}">Sửa</button>
+        <button class="btn sm danger" data-act="delEx" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button>`}</div></td></tr>`).join('')}
     </tbody></table>` : '<div class="empty">Chưa có bài tập nào ở mục này.</div>'}</div>`;
 }
 
@@ -2378,9 +2437,9 @@ function aGames() {
     <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Bộ từ</th><th>Cấp độ</th><th>Từ vựng</th><th>Câu</th><th>Lượt chơi</th><th>Mở</th><th></th></tr></thead><tbody>
       ${list.map(s => `<tr><td><b>${esc(s.title)}</b><div class="muted small">${esc(s.createdBy || '')}</div></td>
         <td>${esc(levelName(s.level))}<div class="muted small">${esc(s.subLevel)}</div></td><td>${s.words}</td><td>${s.sentences}</td><td>${s.plays}</td>
-        <td><button class="switch ${s.status === 'open' ? 'on' : ''}" data-act="toggleSet" data-id="${esc(s.id)}" title="Bấm để mở/đóng"></button></td>
-        <td><div class="actions"><button class="btn sm primary" data-act="assignSet" data-id="${esc(s.id)}">Giao</button><button class="btn sm" data-act="openSet" data-id="${esc(s.id)}">Chơi thử</button><button class="btn sm" data-act="editSet" data-id="${esc(s.id)}">Sửa</button>
-          <button class="btn sm danger" data-act="delSet" data-id="${esc(s.id)}" data-title="${esc(s.title)}">Xoá</button></div></td></tr>`).join('')}
+        <td>${s.mine === false ? (s.status === 'open' ? '<span class="tag ok">Mở</span>' : '<span class="tag">Đóng</span>') : `<button class="switch ${s.status === 'open' ? 'on' : ''}" data-act="toggleSet" data-id="${esc(s.id)}" title="Bấm để mở/đóng"></button>`}</td>
+        <td><div class="actions"><button class="btn sm primary" data-act="assignSet" data-id="${esc(s.id)}">Giao</button><button class="btn sm" data-act="openSet" data-id="${esc(s.id)}">Chơi thử</button>${s.mine === false ? '' : `<button class="btn sm" data-act="editSet" data-id="${esc(s.id)}">Sửa</button>
+          <button class="btn sm danger" data-act="delSet" data-id="${esc(s.id)}" data-title="${esc(s.title)}">Xoá</button>`}</div></td></tr>`).join('')}
       </tbody></table>` : '<div class="empty">Chưa có bộ từ nào. Bấm “+ Thêm bộ từ” để tạo.</div>'}</div>
     <h2 style="margin:28px 0 12px">Lượt chơi gần đây</h2>
     <div class="card tablewrap">${plays.length ? `<table><thead><tr><th>Thời gian</th><th>Học sinh</th><th>Bộ từ</th><th>Trò chơi</th><th>Điểm</th><th>Đúng</th><th>Thời lượng</th></tr></thead><tbody>
@@ -2539,9 +2598,9 @@ function aAssign() {
   const classes = S.adm.classes || [], list = S.adm.assigns || [];
   const shown = list.filter(a => !S.f.asgClass || a.classId === S.f.asgClass);
   return `<div class="card" style="margin-bottom:18px">
-      <div class="page-head" style="margin-bottom:10px"><h3>🏫 Lớp học (${classes.length})</h3><button class="btn sm" data-act="newClass">+ Thêm lớp</button></div>
+      <div class="page-head" style="margin-bottom:10px"><h3>🏫 ${isMainAdmin() ? 'Lớp học' : 'Lớp bạn phụ trách'} (${classes.length})</h3>${isMainAdmin() ? '<button class="btn sm" data-act="newClass">+ Thêm lớp</button>' : ''}</div>
       ${classes.length ? `<div class="chips" style="margin:0">${classes.map(c => `<span class="chip" style="cursor:default">${esc(c.name)} · ${c.students} HS${c.level ? ' · ' + esc(levelName(c.level)) : ''}
-        <button class="xbtn" data-act="delClass" data-id="${esc(c.id)}" data-name="${esc(c.name)}" title="Xoá lớp">✕</button></span>`).join('')}</div>
+        ${isMainAdmin() ? `<button class="xbtn" data-act="delClass" data-id="${esc(c.id)}" data-name="${esc(c.name)}" title="Xoá lớp">✕</button>` : ''}</span>`).join('')}</div>
         <div class="hint">Học sinh chọn lớp khi đăng ký. Học sinh cũ: vào tab “Học sinh” để xếp lớp.</div>`
         : '<div class="muted">Chưa có lớp nào. Hãy thêm lớp trước (vd: 10A1, 10A2), sau đó học sinh sẽ chọn lớp khi đăng ký.</div>'}
     </div>
@@ -3112,13 +3171,13 @@ function aExams() {
       ${list.map(e => `<tr><td><b>${esc(e.title)}</b><div class="muted small">${esc(e.createdBy || '')}</div></td>
         <td>Khối ${esc(e.grade)}<div class="muted small">${esc(typeName(e.examType))}</div></td><td>${e.questionCount} câu<div class="muted small">${e.duration} phút</div></td>
         <td>${e.attempts}<div class="muted small">${e.avg == null ? '—' : 'ĐTB ' + fmtScore(e.avg)}</div></td>
-        <td><button class="switch ${e.status === 'open' ? 'on' : ''}" data-act="xaToggle" data-id="${esc(e.id)}"></button></td>
-        <td>${e.answerMode === 'teacher' ? `<button class="btn sm ${e.released ? '' : 'primary'}" data-act="xaRelease" data-id="${esc(e.id)}">${e.released ? '🔓 Đã mở · Khoá lại' : '🔒 Mở đáp án'}</button>` : '<span class="tag ok">Xem ngay</span>'}</td>
+        <td>${e.mine === false ? (e.status === 'open' ? '<span class="tag ok">Mở</span>' : '<span class="tag">Đóng</span>') : `<button class="switch ${e.status === 'open' ? 'on' : ''}" data-act="xaToggle" data-id="${esc(e.id)}"></button>`}</td>
+        <td>${e.answerMode === 'teacher' && e.mine === false ? (e.released ? '<span class="tag ok">Đã mở</span>' : '<span class="tag">Chưa mở</span>') : e.answerMode === 'teacher' ? `<button class="btn sm ${e.released ? '' : 'primary'}" data-act="xaRelease" data-id="${esc(e.id)}">${e.released ? '🔓 Đã mở · Khoá lại' : '🔒 Mở đáp án'}</button>` : '<span class="tag ok">Xem ngay</span>'}</td>
         <td><div class="actions"><button class="btn sm primary" data-act="assignExam" data-id="${esc(e.id)}">Giao</button>
           <button class="btn sm" data-act="xaResults" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Kết quả</button>
           <button class="btn sm" data-act="xaPreview" data-id="${esc(e.id)}">Làm thử</button>
-          <button class="btn sm" data-act="xaEdit" data-id="${esc(e.id)}">Sửa</button>
-          <button class="btn sm danger" data-act="xaDel" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button></div></td></tr>`).join('')}
+          ${e.mine === false ? '' : `<button class="btn sm" data-act="xaEdit" data-id="${esc(e.id)}">Sửa</button>
+          <button class="btn sm danger" data-act="xaDel" data-id="${esc(e.id)}" data-title="${esc(e.title)}">Xoá</button>`}</div></td></tr>`).join('')}
     </tbody></table>` : '<div class="empty">Chưa có đề nào. Bấm “+ Thêm đề” rồi dán nội dung đề.</div>'}</div>`;
 }
 
@@ -3375,7 +3434,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
-const NEED_SERVER = 5; let SERVER_OLD = false;
+const NEED_SERVER = 6; let SERVER_OLD = false;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {
