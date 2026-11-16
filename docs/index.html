@@ -161,6 +161,15 @@
     .qtype{font-size:12px;color:var(--muted);background:#f5f2fb;padding:2px 8px;border-radius:6px}
     .qpts{font-size:12px;color:var(--warn);font-weight:600}
     .qtext{white-space:pre-wrap;font-size:16px;margin-bottom:12px;font-weight:500}
+    .arr-hint{font-size:13px;color:#6d28d9;font-weight:600;margin:2px 0 8px}
+    .arr{display:grid;gap:8px;margin:0 0 14px}
+    .arr-row{display:flex;gap:12px;align-items:flex-start;background:#faf7ff;border:1px solid #ece5fb;border-radius:12px;padding:9px 14px;line-height:1.55;font-size:15.5px}
+    .arr-k{flex:none;width:28px;height:28px;border-radius:50%;background:#7c3aed;color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px;margin-top:-1px}
+    .arr-sp{color:#6d28d9}
+    .arr-order{background:#ecfdf5;border:1px solid #a7f3d0;border-radius:12px;padding:10px 14px;margin-top:10px;display:grid;gap:6px;line-height:1.55}
+    .arr-order>div{display:flex;gap:10px;align-items:flex-start}
+    .arr-k.sm{width:22px;height:22px;font-size:12px;background:#059669;margin-top:1px}
+    .arr-note{font-style:italic;color:#6b6480;padding:0 4px}
     .opts{display:grid;gap:8px}
     .opt{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border:1.5px solid var(--line);border-radius:12px;cursor:pointer;transition:all .12s}
     .opt:hover{border-color:#c4b5fd}
@@ -865,8 +874,33 @@ function questionHTML(q, i) {
   } else {
     body = `<textarea class="inp" rows="8" data-q="${esc(q.order)}" placeholder="Viết bài của bạn ở đây...">${esc(v)}</textarea><div class="wc" data-wc="${esc(q.order)}">${wordCount(v)} từ</div>`;
   }
-  return `<div class="card" id="q-${esc(q.order)}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span><span class="qtype">${TYPE_LABEL[q.type]}</span>
-    ${q.points !== 1 ? `<span class="qpts">${fmtNum(q.points)} điểm</span>` : ''}</div><div class="qtext">${esc(q.question)}</div>${body}</div>`;
+  return `<div class="card" id="q-${esc(q.order)}"><div class="qhead"><span class="qnum">Câu ${i + 1}</span><span class="qtype">${isArr(q.question) ? 'Sắp xếp' : TYPE_LABEL[q.type]}</span>
+    ${q.points !== 1 ? `<span class="qpts">${fmtNum(q.points)} điểm</span>` : ''}</div>${stemHTML(q.question)}${body}</div>`;
+}
+
+/** Sau khi nộp: hiện các câu theo thứ tự đúng (lấy từ phương án đúng, vd "c – a – e – b – d") */
+function arrOrderHTML(t, key) {
+  if (!isArr(t) || !key) return '';
+  const map = {};
+  String(t).split('\n').forEach(l => { const m = l.trim().match(/^([a-e])\s*[.)]\s+(.*)$/); if (m) map[m[1]] = m[2]; });
+  const order = (String(key).match(/[a-e]/g) || []).filter(k => map[k]);
+  if (order.length < 3) return '';
+  return `<div class="arr-order"><b>✅ Thứ tự đúng:</b>${order.map(k => { const sp = map[k].match(/^([^:]{1,24}):\s+(.*)$/);
+    return `<div><span class="arr-k sm">${k}</span><div>${sp ? `<b class="arr-sp">${esc(sp[1])}:</b> ${esc(sp[2])}` : esc(map[k])}</div></div>`; }).join('')}</div>`;
+}
+
+/* ---- Câu sắp xếp (arrangement): các dòng a. b. c. … hiện thành thẻ có chữ cái; "Tên: lời" in đậm tên ---- */
+function isArr(t) { return String(t || '').split('\n').filter(l => /^[a-e]\s*[.)]\s+/.test(l.trim())).length >= 3; }
+function stemHTML(t, f) {
+  f = f || esc;
+  if (!isArr(t)) return `<div class="qtext">${f(t)}</div>`;
+  const rows = String(t).split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const m = l.match(/^([a-e])\s*[.)]\s+(.*)$/);
+    if (!m) return `<div class="arr-note">${f(l)}</div>`;
+    const sp = m[2].match(/^([^:]{1,24}):\s+(.*)$/);
+    return `<div class="arr-row"><span class="arr-k">${m[1]}</span><div>${sp ? `<b class="arr-sp">${f(sp[1])}:</b> ${f(sp[2])}` : f(m[2])}</div></div>`;
+  }).join('');
+  return `<div class="arr-hint">🔀 Chọn thứ tự đúng của các câu / lượt lời:</div><div class="arr">${rows}</div>`;
 }
 
 function updateProgress() {
@@ -932,7 +966,7 @@ function reviewItems(r) {
       body = `<div class="essay-box">${it.given ? esc(it.given) : '<i class="muted">(bỏ trống)</i>'}</div><div class="wc">${wordCount(it.given)} từ</div>`;
     }
     return `<div class="card rv ${cls}"><div class="qhead"><span class="qnum">Câu ${esc(gaps[i] || i + 1)}</span>${status}<span class="qpts">${fmtNum(it.points)} điểm</span></div>
-      ${isGapStem(it.question) ? '' : `<div class="qtext">${esc(it.question)}</div>`}${body}
+      ${isGapStem(it.question) ? '' : stemHTML(it.question)}${body}${arrOrderHTML(it.question, (it.options || {})[it.answerText])}
       ${it.explanation ? `<div class="solution">💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}</div>` : ''}</div>`;
   }).join('');
 }
@@ -2824,7 +2858,7 @@ function examQHTML(q) {
   }
   return `<div class="xq" id="xq-${q.n}"><div class="qhead"><span class="qnum">Câu ${q.n}</span>
       <button class="flag ${fl ? 'on' : ''}" data-act="xFlag" data-n="${q.n}" title="Đánh dấu xem lại">🚩</button></div>
-    ${blank ? `<div class="muted small" style="margin-bottom:8px">Chọn đáp án đúng cho chỗ trống (${q.n})</div>` : `<div class="qtext">${fmt(q.q)}</div>`}
+    ${blank ? `<div class="muted small" style="margin-bottom:8px">Chọn đáp án đúng cho chỗ trống (${q.n})</div>` : stemHTML(q.q, fmt)}
     ${body}</div>`;
 }
 
@@ -2959,7 +2993,7 @@ function examReviewHTML(r) {
         }).join('') : `<div><span class="k">Bạn trả lời:</span> <b>${esc(it.given) || '<i class="muted">(bỏ trống)</i>'}</b></div>${it.correct ? '' : `<div><span class="k">Đáp án:</span> <b style="color:var(--ok)">${esc(it.answerText)}</b></div>`}`;
         return `<div class="xq rv ${it.correct ? 'ok' : 'bad'}" style="padding-left:12px"><div class="qhead"><span class="qnum">Câu ${it.n}</span>
           ${it.correct ? '<span class="tag ok">✓ Đúng</span>' : it.given ? '<span class="tag bad">✗ Sai</span>' : '<span class="tag warn">Bỏ trống</span>'}</div>
-          ${it.question && !/^\(\d+\)$/.test(it.question.trim()) ? `<div class="qtext">${fmt(it.question)}</div>` : ''}
+          ${it.question && !/^\(\d+\)$/.test(it.question.trim()) ? stemHTML(it.question, fmt) : ''}
           <div class="ans">${opts}</div>
           <div class="solution"><b class="h">✔ Đáp án: ${esc(it.answerText)}</b>${it.explanation ? `<br>💡 <b>Lời giải chi tiết:</b> ${esc(it.explanation)}` : ''}</div></div>`;
       }).join('');
