@@ -442,7 +442,7 @@ const S = {
   token: load('token'), user: null,
   catalog: null, level: '', sub: '', skill: '',
   ex: null, answers: {},
-  adminTab: 'overview', adm: {}, f: { bankLevel: '', bankSub: '', bankQ: '', resLevel: '', resClass: '', resState: '', resQ: '', userQ: '', userRole: '', setLevel: '', asgClass: '', examGrade: '' },
+  adminTab: 'overview', adm: {}, f: { bankLevel: '', bankSub: '', bankQ: '', resItem: '', resClass: '', resState: '', resQ: '', userQ: '', userRole: '', setLevel: '', asgClass: '', examGrade: '' },
   edit: null
 };
 const app = document.getElementById('app');
@@ -1043,7 +1043,7 @@ async function loadAdmin(tab) {
     if (tab === 'users' || tab === 'assign') S.adm.classes = await call('listClasses');
     if (tab === 'assign') S.adm.assigns = await call('listAssignments');
     if (tab === 'exams') S.adm.exams = await call('examsAdmin');
-    if (tab === 'results') S.adm.results = await call('listResults');
+    if (tab === 'results') { S.adm.results = await call('listResults'); S.adm.examRes = await call('examResults', {}); }
     if (tab === 'bank') S.adm.exercises = await call('listExercises');
     if (tab === 'games') { S.adm.sets = await call('listWordSets'); S.adm.plays = await call('recentPlays'); }
     renderAdmin();
@@ -1213,8 +1213,21 @@ async function resetPw(id, name) {
 }
 
 /* ---- Tab Kết quả ---- */
+/** Gộp kết quả bài tập + luyện đề thành một danh sách */
+function allResults() {
+  const ex = (S.adm.results || []).map(r => Object.assign({}, r, { kind: 'ex', key: 'ex:' + r.exerciseId }));
+  const xm = (S.adm.examRes || []).map(r => ({ id: r.id, kind: 'exam', key: 'exam:' + r.examId, title: r.title, className: r.className, fullName: r.fullName,
+    username: r.username, submittedAt: r.submittedAt, score: r.score, percent: Math.round(r.score * 100) / 10, needsReview: false,
+    sub: typeName(r.examType) + ' · Lớp ' + r.grade, correct: r.correct, total: r.total }));
+  return ex.concat(xm).sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)));
+}
+function resItems(all) {
+  const m = {};
+  all.forEach(r => { const it = m[r.key] || (m[r.key] = { key: r.key, kind: r.kind, title: r.title, n: 0 }); it.n++; });
+  return Object.values(m).sort((a, b) => String(a.title).localeCompare(String(b.title), 'vi', { numeric: true }));
+}
 function aResults() {
-  const all = S.adm.results || [];
+  const all = allResults();
   const list = filteredResults();
   const classes = [...new Set(all.map(r => r.className).filter(Boolean))].sort(byClass);
   const noClass = all.some(r => !r.className);
@@ -1223,19 +1236,21 @@ function aResults() {
       <select class="inp" style="max-width:170px" data-filter="resClass"><option value="">Mọi lớp</option>
         ${classes.map(c => `<option value="${esc(c)}" ${S.f.resClass === c ? 'selected' : ''}>Lớp ${esc(c)} (${all.filter(r => r.className === c).length})</option>`).join('')}
         ${noClass ? `<option value="__none" ${S.f.resClass === '__none' ? 'selected' : ''}>Chưa có lớp</option>` : ''}</select>
-      <select class="inp" style="max-width:170px" data-filter="resLevel"><option value="">Mọi cấp độ</option>
-        ${LEVELS.map(l => `<option value="${esc(l.id)}" ${S.f.resLevel === l.id ? 'selected' : ''}>${esc(l.name)}</option>`).join('')}</select>
+      <select class="inp" style="max-width:300px" data-filter="resItem"><option value="">Mọi bài tập / đề</option>
+        ${[['ex', '📝 Bài tập'], ['exam', '📄 Đề thi']].map(([k, label]) => { const its = resItems(all).filter(it => it.kind === k);
+          return its.length ? `<optgroup label="${label}">${its.map(it => `<option value="${esc(it.key)}" ${S.f.resItem === it.key ? 'selected' : ''}>${esc(it.title)} (${it.n})</option>`).join('')}</optgroup>` : ''; }).join('')}</select>
       <select class="inp" style="max-width:190px" data-filter="resState"><option value="">Tất cả</option>
         <option value="review" ${S.f.resState === 'review' ? 'selected' : ''}>Cần GV chấm (${all.filter(r => r.needsReview).length})</option>
         <option value="done" ${S.f.resState === 'done' ? 'selected' : ''}>Đã có điểm</option></select>
       <span class="muted small">${list.length} lượt</span><span style="flex:1"></span>
       <button class="btn primary" data-act="exportRes" ${list.length ? '' : 'disabled'}>📥 Xuất Excel (.xlsx)</button></div>
-    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Thời gian</th><th>Học sinh</th><th>Bài</th><th>Điểm</th><th></th></tr></thead><tbody>
+    <div class="card tablewrap">${list.length ? `<table><thead><tr><th>Thời gian</th><th>Học sinh</th><th>Bài tập / Đề</th><th>Điểm</th><th></th></tr></thead><tbody>
     ${list.slice(0, 300).map(r => `<tr><td class="muted">${fmtDate(r.submittedAt)}</td>
       <td><b>${esc(r.fullName)}</b><div class="muted small">${r.className ? 'Lớp ' + esc(r.className) + ' · ' : ''}@${esc(r.username)}</div></td>
-      <td>${esc(r.title)}<div class="muted small">${esc(levelName(r.level))} · ${esc(r.subLevel)}</div></td>
-      <td>${pctTag(r.percent)} ${r.needsReview ? '<span class="tag warn">Cần chấm</span>' : ''}</td>
-      <td><button class="btn sm ${r.needsReview ? 'primary' : ''}" data-act="gradeOpen" data-id="${esc(r.id)}">${r.needsReview ? 'Chấm bài' : 'Xem'}</button></td></tr>`).join('')}
+      <td><b>${esc(r.title)}</b><div class="muted small">${r.kind === 'exam' ? '📄 Đề · ' + esc(r.sub) : '📝 Bài tập · ' + esc(r.subLevel)}</div></td>
+      <td>${r.kind === 'exam' ? `<span class="tag ${r.score >= 8 ? 'ok' : r.score >= 5 ? '' : 'bad'}">${fmtScore(r.score)}/10</span>` : pctTag(r.percent)} ${r.needsReview ? '<span class="tag warn">Cần chấm</span>' : ''}</td>
+      <td>${r.kind === 'exam' ? `<button class="btn sm" data-act="xaView" data-id="${esc(r.id)}">Xem</button>`
+        : `<button class="btn sm ${r.needsReview ? 'primary' : ''}" data-act="gradeOpen" data-id="${esc(r.id)}">${r.needsReview ? 'Chấm bài' : 'Xem'}</button>`}</td></tr>`).join('')}
     </tbody></table>${list.length > 300 ? '<p class="muted small">Đang hiện 300 lượt mới nhất (file Excel có đủ tất cả lượt theo bộ lọc).</p>' : ''}` : '<div class="empty">Chưa có kết quả phù hợp.</div>'}</div>`;
 }
 
@@ -1295,7 +1310,7 @@ function downloadBlob(blob, name) {
 const byClass = (a, b) => String(a).localeCompare(String(b), 'vi', { numeric: true });
 function filteredResults() {
   const q = S.f.resQ.toLowerCase().trim();
-  return (S.adm.results || []).filter(r => (!S.f.resLevel || r.level === S.f.resLevel)
+  return allResults().filter(r => (!S.f.resItem || r.key === S.f.resItem)
     && (!S.f.resClass || (S.f.resClass === '__none' ? !r.className : r.className === S.f.resClass))
     && (!S.f.resState || (S.f.resState === 'review' ? r.needsReview : !r.needsReview))
     && (!q || (r.fullName + ' ' + r.username + ' ' + r.className + ' ' + r.title).toLowerCase().includes(q)));
@@ -1307,23 +1322,25 @@ function exportResults() {
   const num = v => (v === null || v === undefined || v === '' ? '' : Number(v));
   const sorted = list.slice().sort((a, b) => byClass(a.className, b.className) || String(a.fullName).localeCompare(String(b.fullName), 'vi') || String(a.submittedAt).localeCompare(String(b.submittedAt)));
   // Sheet 1: chi tiết từng lượt
-  const detail = [['STT', 'Lớp', 'Họ và tên', 'Tên đăng nhập', 'Bài tập', 'Cấp độ', 'Lớp / cấp', 'Điểm tự động', 'Điểm tự luận', 'Tổng điểm tối đa', 'Phần trăm (%)', 'Trạng thái', 'Nhận xét của GV', 'Thời gian nộp']];
-  sorted.forEach((r, i) => detail.push([i + 1, r.className || '', r.fullName, r.username, r.title, levelName(r.level), r.subLevel, num(r.autoScore),
-    r.essayTotal ? num(r.essayScore) : '', num(r.autoTotal) + num(r.essayTotal || 0), r.needsReview ? '' : num(r.percent), r.needsReview ? 'Chờ GV chấm' : 'Đã có điểm', r.teacherComment || '', d(r.submittedAt)]));
+  const detail = [['STT', 'Lớp', 'Họ và tên', 'Tên đăng nhập', 'Loại', 'Bài tập / Đề', 'Điểm', 'Thang điểm', 'Phần trăm (%)', 'Trạng thái', 'Nhận xét của GV', 'Thời gian nộp']];
+  sorted.forEach((r, i) => detail.push(r.kind === 'exam'
+    ? [i + 1, r.className || '', r.fullName, r.username, 'Đề thi', r.title, num(r.score), 10, num(r.percent), 'Đã có điểm', '', d(r.submittedAt)]
+    : [i + 1, r.className || '', r.fullName, r.username, 'Bài tập', r.title, r.needsReview ? num(r.autoScore) : num(r.autoScore) + num(r.essayScore || 0),
+       num(r.autoTotal) + num(r.essayTotal || 0), r.needsReview ? '' : num(r.percent), r.needsReview ? 'Chờ GV chấm phần tự luận' : 'Đã có điểm', r.teacherComment || '', d(r.submittedAt)]));
   // Sheet 2: tổng hợp theo học sinh
   const by = {};
   sorted.forEach(r => { const k = r.username; const s = by[k] || (by[k] = { r, n: 0, ex: {}, sum: 0, cnt: 0, best: null, last: '' });
-    s.n++; s.ex[r.exerciseId] = 1; if (!r.needsReview && r.percent != null && r.percent !== '') { s.sum += +r.percent; s.cnt++; s.best = Math.max(s.best == null ? 0 : s.best, +r.percent); }
+    s.n++; s.ex[r.key] = 1; if (!r.needsReview && r.percent != null && r.percent !== '') { s.sum += +r.percent; s.cnt++; s.best = Math.max(s.best == null ? 0 : s.best, +r.percent); }
     if (String(r.submittedAt) > s.last) s.last = r.submittedAt; });
   const sum = [['STT', 'Lớp', 'Họ và tên', 'Tên đăng nhập', 'Số lượt làm', 'Số bài đã làm', 'Điểm TB (%)', 'Cao nhất (%)', 'Lần làm gần nhất']];
   Object.values(by).forEach((s, i) => sum.push([i + 1, s.r.className || '', s.r.fullName, s.r.username, s.n, Object.keys(s.ex).length,
     s.cnt ? Math.round(s.sum / s.cnt * 10) / 10 : '', s.best == null ? '' : s.best, d(s.last)]));
   // Sheet 3: bảng điểm học sinh × bài (lấy điểm cao nhất)
-  const exs = []; sorted.forEach(r => { if (!exs.find(e => e.id === r.exerciseId)) exs.push({ id: r.exerciseId, title: r.title }); });
+  const exs = []; sorted.forEach(r => { if (!exs.find(e => e.id === r.key)) exs.push({ id: r.key, title: (r.kind === 'exam' ? '[Đề] ' : '') + r.title }); });
   const grid = [['STT', 'Lớp', 'Họ và tên', ...exs.map(e => e.title), 'TB (%)']];
   Object.values(by).forEach((s, i) => {
     const mine = sorted.filter(r => r.username === s.r.username && !r.needsReview && r.percent !== '' && r.percent != null);
-    const cells = exs.map(e => { const v = mine.filter(r => r.exerciseId === e.id).map(r => +r.percent); return v.length ? Math.max(...v) : ''; });
+    const cells = exs.map(e => { const v = mine.filter(r => r.key === e.id).map(r => +r.percent); return v.length ? Math.max(...v) : ''; });
     const got = cells.filter(v => v !== '');
     grid.push([i + 1, s.r.className || '', s.r.fullName, ...cells, got.length ? Math.round(got.reduce((a, b) => a + b, 0) / got.length * 10) / 10 : '']);
   });
@@ -1332,7 +1349,7 @@ function exportResults() {
   downloadBlob(makeXlsx([
     { name: 'Tổng hợp theo HS', rows: sum, widths: [6, 10, 28, 18, 12, 13, 12, 12, 18] },
     { name: 'Bảng điểm', rows: grid, widths: [6, 10, 28, ...exs.map(() => 18), 10] },
-    { name: 'Chi tiết từng lượt', rows: detail, widths: [6, 10, 28, 18, 40, 10, 12, 12, 12, 14, 13, 14, 40, 18] }
+    { name: 'Chi tiết từng lượt', rows: detail, widths: [6, 10, 28, 18, 10, 42, 9, 11, 13, 22, 36, 18] }
   ]), `KetQua_${slugify(cls)}_${day}.xlsx`);
   toast(`Đã xuất ${list.length} lượt làm bài ra file Excel`, 'ok');
 }
