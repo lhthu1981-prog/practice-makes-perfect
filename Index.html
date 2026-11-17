@@ -1040,7 +1040,7 @@ function adminFrame(inner) {
     <div class="pills">${adminTabs().map(([k, l]) => `<button class="pill ${S.adminTab === k ? 'on' : ''}" data-act="admin" data-tab="${k}">${l}
       ${k === 'pending' && pending ? `<span class="badge">${pending}</span>` : ''}</button>`).join('')}</div>
     ${SERVER_OLD ? `<div class="card" style="border:2px solid #f59e0b;background:#fffbeb;margin-bottom:14px">
-      <b>⚠️ Máy chủ Apps Script đang chạy bản cũ.</b> Trang này đã có tính năng mới (ví dụ Luyện đề khối 6–9) nhưng máy chủ chưa cập nhật.
+      <b>⚠️ Máy chủ Apps Script đang chạy bản cũ</b> (máy chủ: <b>bản ${SERVER_VER || 'rất cũ'}</b> · trang cần: <b>bản ${NEED_SERVER}</b>). Hãy dán file Code.gs <b>mới nhất</b> – trong Code.gs đúng sẽ có dòng <code>const SERVER_VERSION = ${NEED_SERVER};</code>
       <div class="small" style="margin-top:6px">Mở Apps Script → dán Code.gs mới → Lưu → <b>Triển khai → Quản lý các bản triển khai → ✏️ → Phiên bản: Phiên bản mới → Triển khai</b>. Xong thì tải lại trang (Ctrl + F5).</div></div>` : ''}
     ${S.user && S.user.isAdmin === false ? `<div class="scope-note">👩‍🏫 Bạn phụ trách lớp <b>${esc((S.user.classes || []).join(', ') || '(chưa có)')}</b>: chỉ thấy và quản lí học sinh, kết quả, bài giao của các lớp này. Kho bài tập, đề thi, bộ từ dùng chung – bạn sửa/xoá được tài liệu do mình tạo.</div>` : ''}
     <div id="adminBody">${inner}</div></div>`;
@@ -3516,7 +3516,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
-const NEED_SERVER = 8; let SERVER_OLD = false;
+const NEED_SERVER = 8; let SERVER_OLD = false, SERVER_VER = 0;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {
@@ -3525,7 +3525,7 @@ async function loadConfig() {
     LEVELS.splice(0, LEVELS.length, ...c.levels);
     SKILLS.splice(0, SKILLS.length, ...c.skills);
     EXAM.grades = c.exam.grades; EXAM.types = c.exam.types;
-    SERVER_OLD = (c.version || 0) < NEED_SERVER;
+    SERVER_VER = c.version || 0; SERVER_OLD = SERVER_VER < NEED_SERVER;
     document.title = APP_NAME;
   } catch (e) {
     // Không gọi được cổng API (Apps Script chưa cập nhật doPost, hoặc lỗi tạm thời): chuyển sang giao diện chạy trực tiếp trên Apps Script
