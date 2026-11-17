@@ -409,7 +409,7 @@
 
 <script>
 /* Bản GitHub Pages: giao diện ở đây, dữ liệu ở Google Apps Script */
-const API_URL = "https://script.google.com/macros/s/AKfycbyScsarIh_yF_LcYRYX-Ev5J1zaEZahD9zCc0L5u7Z-UCfyt_g1o9cpiod1IlxEAEkbfw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzFf9o5U25GrY0UjONK66zA8oXSad6IlE_KIYfM7uqbl07TWxQqtL26UZJD69I1ItYOSA/exec";
 window.google = { script: { run: (function mk(ok, fail) {
   return new Proxy({}, { get(_, fn) {
     if (fn === 'withSuccessHandler') return h => mk(h, fail);
