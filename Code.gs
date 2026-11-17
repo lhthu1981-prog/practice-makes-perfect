@@ -21,6 +21,10 @@ const ADMIN_FULLNAME = 'Giáo viên quản trị';
 // Đăng nhập được giữ trong bao nhiêu giờ (tối đa 6)
 const SESSION_HOURS = 6;
 
+/** true = học sinh chỉ thấy bài tập và đề thi đã được giao cho lớp mình (bộ từ trò chơi vẫn thấy tất cả).
+    Đổi thành false nếu muốn học sinh thấy toàn bộ kho bài tập và đề thi đang mở. */
+const ONLY_ASSIGNED = true;
+
 // Các cấp độ và cấp nhỏ bên trong — thêm/bớt tuỳ ý
 const LEVELS = [
   { id: 'THCS',  name: 'THCS',          subs: ['Lớp 6', 'Lớp 7', 'Lớp 8', 'Lớp 9'] },
@@ -97,7 +101,7 @@ function doPost(e) {
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
 /** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
-const SERVER_VERSION = 6;
+const SERVER_VERSION = 7;
 
 function publicConfig_() {
   return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
@@ -299,8 +303,9 @@ function catalog_(p, token) {
     const pc = num_(r.percent);
     if (!(r.exerciseId in best) || pc > best[r.exerciseId]) best[r.exerciseId] = pc;
   });
+  const only = limitToAssigned_(u), asg = only ? assignedIds_(u, 'exercise') : null;
   const exercises = rows_('Exercises')
-    .filter(function (e) { return e.status === 'open'; })
+    .filter(function (e) { return e.status === 'open' && (!only || asg[e.id]); })
     .map(function (e) {
       return {
         id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill,
@@ -309,7 +314,7 @@ function catalog_(p, token) {
         best: (e.id in best) ? best[e.id] : null, tries: tries[e.id] || 0
       };
     });
-  return { exercises: exercises, assignments: myAssignments_(u) };
+  return { exercises: exercises, assignments: myAssignments_(u), onlyAssigned: only };
 }
 
 /** Thông tin thêm của bài tập: dạng bài (''|cloze|open), hướng dẫn, thời gian (phút), danh sách lựa chọn */
@@ -323,6 +328,7 @@ function getExercise_(p, token) {
   const u = currentUser_(token);
   const e = findExercise_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Bài tập này đang đóng.');
+  if (limitToAssigned_(u) && !assignedIds_(u, 'exercise')[e.id]) throw new Error('Bài tập này chưa được giao cho lớp của bạn.');
   const questions = questionsOf_(e.id).map(function (q) {
     return { order: q.order, type: q.type, question: q.question, options: q.type === 'mcq' ? optionsOf_(q) : null, points: num_(q.points) || 1 };
   });
@@ -903,19 +909,34 @@ function asgStatus_(a, userId, data) {
   return { done: done, late: done && !onTime, best: best, at: at };
 }
 
+/** Học sinh chỉ được thấy bài/đề đã giao cho lớp mình (giáo viên thấy tất cả) */
+function limitToAssigned_(u) { return ONLY_ASSIGNED && u.role !== 'teacher'; }
+function assignedIds_(u, kind) {
+  const ids = {};
+  if (!u.className) return ids;
+  rows_('Assignments').forEach(function (a) { if (a.className === u.className && a.kind === kind) ids[a.refId] = true; });
+  return ids;
+}
+
 function myAssignments_(u) {
   if (!u.className) return [];
   const data = asgData_();
-  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+  // "lớp" (khối) của từng bài để học sinh lọc: bài tập/bộ từ lấy "Lớp / cấp nhỏ", đề thi lấy "Lớp " + khối
+  const grade = {}, alive = {};
+  rows_('Exercises').forEach(function (e) { grade['exercise' + e.id] = e.subLevel; alive['exercise' + e.id] = e.status === 'open'; });
+  rows_('WordSets').forEach(function (s) { grade['wordset' + s.id] = s.subLevel; alive['wordset' + s.id] = s.status === 'open'; });
+  rows_('Exams').forEach(function (e) { grade['exam' + e.id] = 'Lớp ' + e.grade; alive['exam' + e.id] = e.status === 'open'; });
+  const seen = {};
   return rows_('Assignments')
-    .filter(function (a) { return a.className === u.className; })
+    .filter(function (a) { return a.className === u.className && alive[a.kind + a.refId]; })
+    .sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); })
+    // một bài giao nhiều lần: chỉ giữ lần giao mới nhất
+    .filter(function (a) { const k = a.kind + a.refId + '|' + a.game; if (seen[k]) return false; seen[k] = true; return true; })
     .map(function (a) {
       const st = asgStatus_(a, u.id, data);
       return { id: a.id, kind: a.kind, refId: a.refId, title: a.refTitle, level: a.level, game: a.game, dueAt: a.dueAt, note: a.note,
-               createdBy: a.createdBy, done: st.done, late: st.late, best: st.best };
+               createdBy: a.createdBy, createdAt: a.createdAt, done: st.done, late: st.late, best: st.best, grade: grade[a.kind + a.refId] || '' };
     })
-    // ẩn bài đã làm xong và đã quá hạn hơn 7 ngày
-    .filter(function (a) { return !a.done || !a.dueAt || a.dueAt >= weekAgo; })
     .sort(function (a, b) { return (a.done - b.done) || String(a.dueAt || '9').localeCompare(String(b.dueAt || '9')); });
 }
 
@@ -995,7 +1016,8 @@ function examsList_(p, token) {
     tries[r.examId] = (tries[r.examId] || 0) + 1;
     if (!(r.examId in best) || num_(r.score) > best[r.examId]) best[r.examId] = num_(r.score);
   });
-  return rows_('Exams').filter(function (e) { return e.status === 'open'; }).map(function (e) {
+  const only = limitToAssigned_(u), asg = only ? assignedIds_(u, 'exam') : null;
+  return rows_('Exams').filter(function (e) { return e.status === 'open' && (!only || asg[e.id]); }).map(function (e) {
     const m = examMeta_(e); m.best = (e.id in best) ? best[e.id] : null; m.tries = tries[e.id] || 0; return m;
   });
 }
@@ -1005,6 +1027,7 @@ function examGet_(p, token) {
   const u = currentUser_(token);
   const e = findExam_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Đề này đang đóng.');
+  if (limitToAssigned_(u) && !assignedIds_(u, 'exam')[e.id]) throw new Error('Đề này chưa được giao cho lớp của bạn.');
   let n = 0;
   const sections = examSections_(e.id).map(function (s) {
     return { part: s.part, title: s.title, instruction: s.instruction, passage: s.passage, audioUrl: audioSrc_(s.audioUrl),

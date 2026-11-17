@@ -159,6 +159,10 @@
     .qtext{white-space:pre-wrap;font-size:16px;margin-bottom:12px;font-weight:500}
     .scope-note{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:14px}
     .t-classes{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:6px}.t-classes label{display:flex;gap:6px;align-items:center;font-weight:600;cursor:pointer}
+    .sfilter{display:grid;gap:4px;margin:4px 0 12px;padding:10px 12px;background:#faf7ff;border-radius:12px}
+    .sf-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.sf-row .chips{margin:4px 0}
+    .sf-l{font-weight:700;font-size:13px;color:#6d28d9;min-width:74px}
+    .chip .cnt{font-size:11.5px;opacity:.7;margin-left:2px}
     .arr-hint{font-size:13px;color:#6d28d9;font-weight:600;margin:2px 0 8px}
     .arr{display:grid;gap:8px;margin:0 0 14px}
     .arr-row{display:flex;gap:12px;align-items:flex-start;background:#faf7ff;border:1px solid #ece5fb;border-radius:12px;padding:9px 14px;line-height:1.55;font-size:15.5px}
@@ -536,6 +540,7 @@ const ACTS = {
   gradeOpen: d => openGrade(d.id),
   gradeSave: d => saveGrade(d.id),
   newEx: () => showEditor(null),
+  af: d => { S.af[d.k] = d.id; renderStudentHome(); },
   exportRes: () => exportResults(),
   newCloze: () => showEditor(null, 'cloze'),
   czBank: d => { S.edit.showBank = d.id === 'on'; if (d.id === 'off') S.edit.exercise.wordBank = ''; renderEditor(); },
@@ -784,6 +789,7 @@ async function showPractice() {
 }
 
 function renderPractice() {
+  if (S.user.role !== 'teacher' && S.catalog.onlyAssigned) return renderStudentHome();
   const all = S.catalog.exercises;
   const lv = LEVELS.find(l => l.id === S.level) || LEVELS[0];
   const inLevel = all.filter(e => e.level === lv.id);
@@ -2575,15 +2581,52 @@ function myAsgHTML() {
   return `<div class="card asg-card">
     <div class="page-head" style="margin-bottom:8px"><h3>📌 Bài được giao · Lớp ${esc(S.user.className)}</h3>
       <span class="tag ${todo ? 'warn' : 'ok'}">${todo ? todo + ' bài chưa làm' : 'Đã làm hết 🎉'}</span></div>
-    ${list.map(a => `<div class="asg-row ${a.done ? 'done' : ''}" data-act="doAsg" data-kind="${a.kind}" data-ref="${esc(a.refId)}" data-game="${esc(a.game)}">
+    ${list.map(asgRowHTML).join('')}
+  </div>`;
+}
+function asgRowHTML(a) {
+  return `<div class="asg-row ${a.done ? 'done' : ''}" data-act="doAsg" data-kind="${a.kind}" data-ref="${esc(a.refId)}" data-game="${esc(a.game)}">
       <div class="asg-ic">${asgIcon(a)}</div>
       <div style="flex:1;min-width:0"><b>${esc(a.title)}</b>
-        <div class="muted small">${asgWhat(a)}${a.note ? ' · ' + esc(a.note) : ''}</div>
+        <div class="muted small">${a.grade ? esc(a.grade) + ' · ' : ''}${asgWhat(a)}${a.note ? ' · ' + esc(a.note) : ''}</div>
         <div style="margin-top:4px">${dueTag(a.dueAt, a.done)}</div></div>
       <div>${a.done ? `<span class="tag ok">✓ Đã làm${a.best != null ? ' · ' + (a.kind === 'exam' ? fmtScore(a.best) + '/10' : a.best + (a.kind === 'exercise' ? '%' : ' điểm')) : ''}</span>${a.late ? ' <span class="tag bad">Nộp muộn</span>' : ''}`
         : '<span class="btn sm primary">Làm ngay</span>'}</div>
-    </div>`).join('')}
-  </div>`;
+    </div>`;
+}
+
+/* ---- Trang chủ học sinh: chỉ bài được giao + lọc theo lớp, loại bài, trạng thái ---- */
+function renderStudentHome() {
+  const all = (S.catalog.assignments || []).slice();
+  const F = S.af || (S.af = { grade: '', kind: '', st: '' });
+  const grades = [...new Set(all.map(a => a.grade).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'vi', { numeric: true }));
+  if (F.grade && !grades.includes(F.grade)) F.grade = '';
+  const KINDS = [['exercise', '📝 Bài tập'], ['exam', '📄 Đề thi'], ['wordset', '🎮 Trò chơi']].filter(([k]) => all.some(a => a.kind === k));
+  const pass = (a, skip) => (skip === 'grade' || !F.grade || a.grade === F.grade) && (skip === 'kind' || !F.kind || a.kind === F.kind)
+    && (skip === 'st' || !F.st || (F.st === 'todo' ? !a.done : a.done));
+  const list = all.filter(a => pass(a)).sort((a, b) => (a.done - b.done)
+    || (!a.done ? String(a.dueAt || '9').localeCompare(String(b.dueAt || '9')) : String(b.createdAt).localeCompare(String(a.createdAt))));
+  const n = (k, v) => all.filter(a => pass(a, k) && (k === 'grade' ? (!v || a.grade === v) : k === 'kind' ? (!v || a.kind === v) : (!v || (v === 'todo' ? !a.done : a.done)))).length;
+  const chip = (k, v, label) => `<button class="chip ${F[k] === v ? 'on' : ''}" data-act="af" data-k="${k}" data-id="${esc(v)}">${label} <span class="cnt">${n(k, v)}</span></button>`;
+  const done = all.filter(a => a.done).length;
+  const ex = S.catalog.exercises.filter(e => e.best != null);
+  const avg = ex.length ? Math.round(ex.reduce((s2, e) => s2 + e.best, 0) / ex.length) : 0;
+  app.innerHTML = `<div class="page">
+    <div class="card hello">
+      <div><h2>Xin chào, ${esc(S.user.fullName)} 👋</h2><div style="opacity:.9">${S.user.className ? 'Lớp ' + esc(S.user.className) + ' · ' : ''}Hôm nay mình làm bài nào nhỉ?</div></div>
+      <div style="display:flex;gap:10px"><div class="stat"><b>${all.length - done}</b>bài chưa làm</div><div class="stat"><b>${done}</b>đã làm</div><div class="stat"><b>${avg}%</b>điểm TB</div></div>
+    </div>
+    <div class="card asg-card">
+      <div class="page-head" style="margin-bottom:6px"><h3>📌 Bài được giao${S.user.className ? ' · Lớp ' + esc(S.user.className) : ''}</h3></div>
+      ${!S.user.className ? '<div class="empty">Bạn chưa được xếp lớp nên chưa có bài. Hãy báo thầy cô xếp lớp cho bạn nhé!</div>'
+      : !all.length ? '<div class="empty">Thầy cô chưa giao bài nào cho lớp bạn. Quay lại sau nhé! 📚</div>'
+      : `<div class="sfilter">
+          ${grades.length ? `<div class="sf-row"><span class="sf-l">Lớp</span><div class="chips">${chip('grade', '', 'Tất cả')}${grades.map(g => chip('grade', g, esc(g))).join('')}</div></div>` : ''}
+          ${KINDS.length > 1 ? `<div class="sf-row"><span class="sf-l">Loại</span><div class="chips">${chip('kind', '', 'Tất cả')}${KINDS.map(([k, l]) => chip('kind', k, l)).join('')}</div></div>` : ''}
+          <div class="sf-row"><span class="sf-l">Trạng thái</span><div class="chips">${chip('st', '', 'Tất cả')}${chip('st', 'todo', '⏳ Chưa làm')}${chip('st', 'done', '✓ Đã làm')}</div></div>
+        </div>
+        ${list.length ? list.map(asgRowHTML).join('') : '<div class="empty">Không có bài nào khớp bộ lọc.</div>'}`}
+    </div></div>`;
 }
 
 function doAsg(d) {
@@ -2888,22 +2931,26 @@ async function showExams() {
   });
 }
 function renderExams() {
+  const student = S.user.role !== 'teacher';
+  const grades = student ? EXAM.grades.filter(g => X.list.some(e => e.grade === g)) : EXAM.grades;
+  if (student && grades.length && !grades.includes(X.grade)) X.grade = grades[0];
   const inGrade = X.list.filter(e => e.grade === X.grade);
   const list = inGrade.filter(e => !X.type || e.examType === X.type);
   const types = Object.keys(EXAM.types).filter(t => t !== 'TN' || X.grade === '12');
   app.innerHTML = `<div class="page">
     <div class="page-head"><div><h1>📝 Luyện đề</h1><div class="muted">Làm đề như thi thật: có giờ, có phần nghe, chấm điểm thang 10.</div></div></div>
-    <div class="pills">${EXAM.grades.map(g => `<button class="pill ${g === X.grade ? 'on' : ''}" data-act="xGrade" data-id="${g}">Khối ${g}
+    ${student && !X.list.length ? '<div class="card empty">Thầy cô chưa giao đề nào cho lớp bạn. Quay lại sau nhé! 📚</div>' : ''}
+    <div class="pills" ${student && !X.list.length ? 'hidden' : ''}>${grades.map(g => `<button class="pill ${g === X.grade ? 'on' : ''}" data-act="xGrade" data-id="${g}">Lớp ${g}
       <span class="small" style="opacity:.75">${X.list.filter(e => e.grade === g).length}</span></button>`).join('')}</div>
-    <div class="chips"><button class="chip ${!X.type ? 'on' : ''}" data-act="xType" data-id="">Tất cả</button>
-      ${types.map(t => `<button class="chip ${X.type === t ? 'on' : ''}" data-act="xType" data-id="${t}">${esc(typeName(t))}</button>`).join('')}</div>
+    <div class="chips" ${student && !X.list.length ? 'hidden' : ''}><button class="chip ${!X.type ? 'on' : ''}" data-act="xType" data-id="">Tất cả</button>
+      ${types.filter(t => !student || inGrade.some(e => e.examType === t)).map(t => `<button class="chip ${X.type === t ? 'on' : ''}" data-act="xType" data-id="${t}">${esc(typeName(t))}</button>`).join('')}</div>
     ${list.length ? `<div class="grid">${list.map(e => `<div class="card ex-card" data-act="xOpen" data-id="${esc(e.id)}">
-        <div class="meta"><span class="tag" style="background:#ede9fe;color:#6d28d9">${esc(typeName(e.examType))}</span><span class="tag">Khối ${esc(e.grade)}</span></div>
+        <div class="meta"><span class="tag" style="background:#ede9fe;color:#6d28d9">${esc(typeName(e.examType))}</span><span class="tag">Lớp ${esc(e.grade)}</span></div>
         <h3>${esc(e.title)}</h3>
         <div class="muted small">⏱ ${e.duration} phút · ${e.questionCount} câu</div>
         <div class="foot"><span class="muted small">${e.tries ? 'Đã làm ' + e.tries + ' lần' : ''}</span>
           ${e.best != null ? `<span class="tag ${e.best >= 8 ? 'ok' : e.best >= 5 ? '' : 'bad'}">Cao nhất ${fmtScore(e.best)}</span>` : '<span class="btn sm primary">Làm đề</span>'}</div>
-      </div>`).join('')}</div>` : '<div class="card empty">Chưa có đề nào ở mục này. Thầy cô sẽ sớm cập nhật! 📚</div>'}
+      </div>`).join('')}</div>` : student && !X.list.length ? '' : '<div class="card empty">Chưa có đề nào ở mục này. Thầy cô sẽ sớm cập nhật! 📚</div>'}
   </div>`;
 }
 
@@ -3434,7 +3481,7 @@ async function saveExamEdit() {
    KHỞI ĐỘNG
    ===================================================================== */
 /** Bản đặt trên GitHub Pages: lấy cấu hình mới nhất từ máy chủ (tên app, cấp độ, kỹ năng, loại đề) */
-const NEED_SERVER = 6; let SERVER_OLD = false;
+const NEED_SERVER = 7; let SERVER_OLD = false;
 async function loadConfig() {
   if (typeof API_URL === 'undefined') return;
   try {
