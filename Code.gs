@@ -40,7 +40,7 @@ const SKILLS = ['Ngữ pháp', 'Từ vựng', 'Đọc hiểu', 'Nghe', 'Viết',
 // ===================== 2. CẤU TRÚC CÁC TRANG TÍNH =====================
 const SCHEMA = {
   Users:     ['id', 'username', 'passHash', 'salt', 'fullName', 'className', 'level', 'role', 'status', 'createdAt', 'scope', 'classes'],
-  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt', 'format', 'instruction', 'timeLimit', 'wordBank', 'ownerId'],
+  Exercises: ['id', 'title', 'level', 'subLevel', 'skill', 'passage', 'audioUrl', 'status', 'createdBy', 'createdAt', 'updatedAt', 'format', 'instruction', 'timeLimit', 'wordBank', 'ownerId', 'maxAttempts'],
   Questions: ['exerciseId', 'order', 'type', 'question', 'A', 'B', 'C', 'D', 'answer', 'explanation', 'points'],
   Results:   ['id', 'userId', 'username', 'fullName', 'className', 'exerciseId', 'title', 'level', 'subLevel',
               'autoScore', 'autoTotal', 'essayScore', 'essayTotal', 'percent', 'needsReview',
@@ -51,7 +51,7 @@ const SCHEMA = {
                'score', 'correct', 'total', 'seconds', 'playedAt'],
   Classes:     ['id', 'name', 'level', 'createdBy', 'createdAt'],
   Assignments: ['id', 'classId', 'className', 'kind', 'refId', 'refTitle', 'level', 'game', 'dueAt', 'note', 'createdBy', 'createdAt'],
-  Exams:       ['id', 'title', 'grade', 'examType', 'duration', 'answerMode', 'released', 'status', 'questionCount', 'createdBy', 'createdAt', 'updatedAt', 'ownerId'],
+  Exams:       ['id', 'title', 'grade', 'examType', 'duration', 'answerMode', 'released', 'status', 'questionCount', 'createdBy', 'createdAt', 'updatedAt', 'ownerId', 'maxAttempts'],
   ExamParts:   ['examId', 'order', 'json'],
   ExamResults: ['id', 'userId', 'username', 'fullName', 'className', 'examId', 'title', 'grade', 'examType',
                 'score', 'correct', 'total', 'partsJson', 'answersJson', 'seconds', 'submittedAt']
@@ -101,7 +101,7 @@ function doPost(e) {
 
 /** Cấu hình công khai cho giao diện (tên app, cấp độ, kỹ năng, loại đề) */
 /** Tăng số này mỗi khi Code.gs có thay đổi mà trang GitHub cần (trang sẽ nhắc giáo viên triển khai lại) */
-const SERVER_VERSION = 7;
+const SERVER_VERSION = 8;
 
 function publicConfig_() {
   return { version: SERVER_VERSION, appName: APP_NAME, schoolName: SCHOOL_NAME, levels: LEVELS, skills: SKILLS,
@@ -310,7 +310,7 @@ function catalog_(p, token) {
       return {
         id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill,
         questionCount: count[e.id] || 0, hasAudio: !!e.audioUrl, hasPassage: !!e.passage,
-        format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit,
+        format: exExtra_(e).format, timeLimit: exExtra_(e).timeLimit, maxAttempts: exExtra_(e).maxAttempts,
         best: (e.id in best) ? best[e.id] : null, tries: tries[e.id] || 0
       };
     });
@@ -321,21 +321,36 @@ function catalog_(p, token) {
 const EX_FORMATS = ['', 'cloze', 'open'];
 function exExtra_(e) {
   return { format: EX_FORMATS.indexOf(e.format) >= 0 ? e.format : '', instruction: e.instruction || '',
-           timeLimit: num_(e.timeLimit) || 0, wordBank: e.wordBank || '' };
+           timeLimit: num_(e.timeLimit) || 0, wordBank: e.wordBank || '', maxAttempts: num_(e.maxAttempts) || 0 };
 }
+
+/* ---- Giới hạn số lần làm (0 = không giới hạn; giáo viên không bị giới hạn) ---- */
+function triesOf_(sheet, field, refId, userId) {
+  return rows_(sheet).filter(function (r) { return r[field] === refId && r.userId === userId; }).length;
+}
+function checkAttempts_(u, max, used, what) {
+  if (u.role === 'teacher' || !(max > 0)) return;
+  if (used >= max) throw new Error('Bạn đã dùng hết ' + max + ' lượt làm ' + what + ' này.');
+}
+
+/** Lớp hiện tại của học sinh (nếu học sinh được chuyển lớp, kết quả cũ đi theo lớp mới) */
+function classMap_() { const m = {}; rows_('Users').forEach(function (u) { m[u.id] = u.className; }); return m; }
+function curClass_(map, r) { return (r.userId in map && map[r.userId]) ? map[r.userId] : r.className; }
 
 function getExercise_(p, token) {
   const u = currentUser_(token);
   const e = findExercise_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Bài tập này đang đóng.');
   if (limitToAssigned_(u) && !assignedIds_(u, 'exercise')[e.id]) throw new Error('Bài tập này chưa được giao cho lớp của bạn.');
+  checkAttempts_(u, num_(e.maxAttempts), triesOf_('Results', 'exerciseId', e.id, u.id), 'bài tập');
   const questions = questionsOf_(e.id).map(function (q) {
     return { order: q.order, type: q.type, question: q.question, options: q.type === 'mcq' ? optionsOf_(q) : null, points: num_(q.points) || 1 };
   });
   return {
     id: e.id, title: e.title, level: e.level, subLevel: e.subLevel, skill: e.skill,
     passage: e.passage, audioUrl: audioSrc_(e.audioUrl), audioOriginal: e.audioUrl, questions: questions,
-    format: exExtra_(e).format, instruction: exExtra_(e).instruction, timeLimit: exExtra_(e).timeLimit, wordBank: exExtra_(e).wordBank
+    format: exExtra_(e).format, instruction: exExtra_(e).instruction, timeLimit: exExtra_(e).timeLimit, wordBank: exExtra_(e).wordBank,
+    maxAttempts: exExtra_(e).maxAttempts, tries: triesOf_('Results', 'exerciseId', e.id, u.id)
   };
 }
 
@@ -343,6 +358,7 @@ function submit_(p, token) {
   const u = currentUser_(token);
   const e = findExercise_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Bài tập này đang đóng.');
+  checkAttempts_(u, num_(e.maxAttempts), triesOf_('Results', 'exerciseId', e.id, u.id), 'bài tập');
   const qs = questionsOf_(e.id);
   if (!qs.length) throw new Error('Bài tập chưa có câu hỏi.');
   const answers = p.answers || {};
@@ -381,6 +397,7 @@ function submit_(p, token) {
   const out = buildResult_(row);
   out.passage = e.passage;
   Object.assign(out, exExtra_(e));
+  out.tries = triesOf_('Results', 'exerciseId', e.id, u.id);
   return out;
 }
 
@@ -490,7 +507,9 @@ function resetPassword_(p, token) {
 
 function listResults_(p, token) {
   const me = requireTeacher_(token);
-  return rows_('Results').filter(function (r) { return inScope_(me, r.className); }).map(resultSummary_).sort(byDateDesc_).slice(0, 1000);
+  const cm = classMap_();
+  return rows_('Results').map(function (r) { r.className = curClass_(cm, r); return r; })
+    .filter(function (r) { return inScope_(me, r.className); }).map(resultSummary_).sort(byDateDesc_);
 }
 
 function gradeResult_(p, token) {
@@ -578,7 +597,7 @@ function saveExercise_(p, token) {
       passage: clean_(x.passage, 40000), audioUrl: clean_(x.audioUrl, 500),
       status: x.status === 'closed' ? 'closed' : 'open', updatedAt: now_(),
       format: EX_FORMATS.indexOf(x.format) >= 0 ? x.format : '', instruction: clean_(x.instruction, 2000),
-      timeLimit: clampInt_(x.timeLimit, 0, 300), wordBank: clean_(x.wordBank, 1000)
+      timeLimit: clampInt_(x.timeLimit, 0, 300), wordBank: clean_(x.wordBank, 1000), maxAttempts: clampInt_(x.maxAttempts, 0, 50)
     };
     const old = id ? rows_('Exercises').find(function (e) { return e.id === id; }) : null;
     if (old) {
@@ -922,10 +941,12 @@ function myAssignments_(u) {
   if (!u.className) return [];
   const data = asgData_();
   // "lớp" (khối) của từng bài để học sinh lọc: bài tập/bộ từ lấy "Lớp / cấp nhỏ", đề thi lấy "Lớp " + khối
-  const grade = {}, alive = {};
-  rows_('Exercises').forEach(function (e) { grade['exercise' + e.id] = e.subLevel; alive['exercise' + e.id] = e.status === 'open'; });
+  const grade = {}, alive = {}, maxA = {}, tries = {};
+  rows_('Exercises').forEach(function (e) { grade['exercise' + e.id] = e.subLevel; alive['exercise' + e.id] = e.status === 'open'; maxA['exercise' + e.id] = num_(e.maxAttempts); });
+  data.results.forEach(function (r) { if (r.userId === u.id) tries['exercise' + r.exerciseId] = (tries['exercise' + r.exerciseId] || 0) + 1; });
+  data.exams.forEach(function (r) { if (r.userId === u.id) tries['exam' + r.examId] = (tries['exam' + r.examId] || 0) + 1; });
   rows_('WordSets').forEach(function (s) { grade['wordset' + s.id] = s.subLevel; alive['wordset' + s.id] = s.status === 'open'; });
-  rows_('Exams').forEach(function (e) { grade['exam' + e.id] = 'Lớp ' + e.grade; alive['exam' + e.id] = e.status === 'open'; });
+  rows_('Exams').forEach(function (e) { grade['exam' + e.id] = 'Lớp ' + e.grade; alive['exam' + e.id] = e.status === 'open'; maxA['exam' + e.id] = num_(e.maxAttempts); });
   const seen = {};
   return rows_('Assignments')
     .filter(function (a) { return a.className === u.className && alive[a.kind + a.refId]; })
@@ -935,7 +956,8 @@ function myAssignments_(u) {
     .map(function (a) {
       const st = asgStatus_(a, u.id, data);
       return { id: a.id, kind: a.kind, refId: a.refId, title: a.refTitle, level: a.level, game: a.game, dueAt: a.dueAt, note: a.note,
-               createdBy: a.createdBy, createdAt: a.createdAt, done: st.done, late: st.late, best: st.best, grade: grade[a.kind + a.refId] || '' };
+               createdBy: a.createdBy, createdAt: a.createdAt, done: st.done, late: st.late, best: st.best, grade: grade[a.kind + a.refId] || '',
+               maxAttempts: maxA[a.kind + a.refId] || 0, tries: tries[a.kind + a.refId] || 0 };
     })
     .sort(function (a, b) { return (a.done - b.done) || String(a.dueAt || '9').localeCompare(String(b.dueAt || '9')); });
 }
@@ -1003,7 +1025,7 @@ function examSections_(id) {
 function examMeta_(e) {
   return { id: e.id, title: e.title, grade: e.grade, examType: e.examType, duration: num_(e.duration) || 60,
            answerMode: e.answerMode === 'teacher' ? 'teacher' : 'instant', released: isTrue_(e.released),
-           status: e.status, questionCount: num_(e.questionCount) };
+           status: e.status, questionCount: num_(e.questionCount), maxAttempts: num_(e.maxAttempts) || 0 };
 }
 function canSeeAnswers_(e, u) { return u.role === 'teacher' || e.answerMode !== 'teacher' || isTrue_(e.released); }
 
@@ -1028,13 +1050,15 @@ function examGet_(p, token) {
   const e = findExam_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Đề này đang đóng.');
   if (limitToAssigned_(u) && !assignedIds_(u, 'exam')[e.id]) throw new Error('Đề này chưa được giao cho lớp của bạn.');
+  const used = triesOf_('ExamResults', 'examId', e.id, u.id);
+  checkAttempts_(u, num_(e.maxAttempts), used, 'đề');
   let n = 0;
   const sections = examSections_(e.id).map(function (s) {
     return { part: s.part, title: s.title, instruction: s.instruction, passage: s.passage, audioUrl: audioSrc_(s.audioUrl),
              script: s.script || [],
              questions: (s.questions || []).map(function (q) { n++; return { n: n, type: q.type, q: q.q, options: q.options || null }; }) };
   });
-  const m = examMeta_(e); m.sections = sections; return m;
+  const m = examMeta_(e); m.sections = sections; m.tries = used; return m;
 }
 
 function gradeExam_(sections, answers) {
@@ -1060,6 +1084,7 @@ function examSubmit_(p, token) {
   const u = currentUser_(token);
   const e = findExam_(p.id);
   if (e.status !== 'open' && u.role !== 'teacher') throw new Error('Đề này đang đóng.');
+  checkAttempts_(u, num_(e.maxAttempts), triesOf_('ExamResults', 'examId', e.id, u.id), 'đề');
   const secs = examSections_(e.id);
   const answers = p.answers || {};
   const g = gradeExam_(secs, answers);
@@ -1181,7 +1206,7 @@ function examSave_(p, token) {
     let id = x.id;
     const data = { title: title, grade: String(x.grade), examType: x.examType, duration: duration,
                    answerMode: x.answerMode === 'teacher' ? 'teacher' : 'instant', status: x.status === 'closed' ? 'closed' : 'open',
-                   questionCount: count, updatedAt: now_() };
+                   questionCount: count, updatedAt: now_(), maxAttempts: clampInt_(x.maxAttempts, 0, 50) };
     const old = id ? rows_('Exams').find(function (e) { return e.id === id; }) : null;
     if (old) { requireEdit_(me, old); update_('Exams', old._row, data); }
     else { id = newId_('EZ'); append_('Exams', Object.assign({ id: id, released: 'FALSE', createdBy: me.fullName, createdAt: now_(), ownerId: me.id }, data)); }
@@ -1221,7 +1246,9 @@ function examDelete_(p, token) {
 
 function examResultsAdmin_(p, token) {
   const me = requireTeacher_(token);
-  return rows_('ExamResults').filter(function (r) { return (!p.examId || r.examId === p.examId) && inScope_(me, r.className); })
+  const cm = classMap_();
+  return rows_('ExamResults').map(function (r) { r.className = curClass_(cm, r); return r; })
+    .filter(function (r) { return (!p.examId || r.examId === p.examId) && inScope_(me, r.className); })
     .map(examSummary_).sort(function (a, b) { return b.score - a.score || a.seconds - b.seconds; });
 }
 
@@ -1266,7 +1293,7 @@ function buildResult_(r) {
 }
 
 function resultSummary_(r) {
-  const o = buildResult_(r);
+  const o = buildResult_(Object.assign({}, r, { answersJson: '[]' }));  // danh sách không cần chi tiết từng câu
   delete o.items;
   o.userId = r.userId;
   return o;
