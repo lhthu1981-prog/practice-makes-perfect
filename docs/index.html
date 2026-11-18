@@ -442,7 +442,7 @@ const S = {
   token: load('token'), user: null,
   catalog: null, level: '', sub: '', skill: '',
   ex: null, answers: {},
-  adminTab: 'overview', adm: {}, f: { bankLevel: '', bankSub: '', bankQ: '', resItem: '', resClass: '', resState: '', resQ: '', userQ: '', userRole: '', setLevel: '', asgClass: '', examGrade: '' },
+  adminTab: 'overview', adm: {}, f: { bankLevel: '', bankSub: '', bankQ: '', resItem: '', resClass: '', resState: '', resQ: '', userQ: '', userRole: '', userClass: '', setLevel: '', asgClass: '', examGrade: '' },
   edit: null
 };
 const app = document.getElementById('app');
@@ -1122,10 +1122,18 @@ function aUsers() {
   const q = S.f.userQ.toLowerCase().trim();
   const list = (S.adm.users || []).filter(u => u.status !== 'pending')
     .filter(u => !S.f.userRole || u.role === S.f.userRole || (S.f.userRole === 'locked' && (u.status === 'locked' || u.status === 'rejected')))
+    .filter(u => !S.f.userClass || (S.f.userClass === '__none' ? !u.className && u.role === 'student' : u.className === S.f.userClass))
     .filter(u => !q || (u.fullName + ' ' + u.username + ' ' + u.className).toLowerCase().includes(q));
+  if (S.f.userClass) list.sort((a, b) => String(a.fullName).split(' ').pop().localeCompare(String(b.fullName).split(' ').pop(), 'vi') || String(a.fullName).localeCompare(String(b.fullName), 'vi'));
+  const studs = (S.adm.users || []).filter(u => u.status !== 'pending' && u.role === 'student');
+  const classes = [...new Set(studs.map(u => u.className).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'vi', { numeric: true }));
+  const noCls = studs.filter(u => !u.className).length;
   const stTag = u => u.status === 'approved' ? '<span class="tag ok">Hoạt động</span>' : u.status === 'locked' ? '<span class="tag bad">Đã khoá</span>' : '<span class="tag bad">Bị từ chối</span>';
   return `<div class="toolbar">
-      <input class="inp" placeholder="🔍 Tìm tên, lớp, tên đăng nhập..." data-filter="userQ" value="${esc(S.f.userQ)}">
+      <input class="inp" style="min-width:220px" placeholder="🔍 Tìm tên, lớp, tên đăng nhập..." data-filter="userQ" value="${esc(S.f.userQ)}">
+      <select class="inp" style="max-width:190px" data-filter="userClass"><option value="">Mọi lớp</option>
+        ${classes.map(c => `<option value="${esc(c)}" ${S.f.userClass === c ? 'selected' : ''}>Lớp ${esc(c)} (${studs.filter(u => u.className === c).length})</option>`).join('')}
+        ${noCls ? `<option value="__none" ${S.f.userClass === '__none' ? 'selected' : ''}>Chưa xếp lớp (${noCls})</option>` : ''}</select>
       <select class="inp" style="max-width:200px" data-filter="userRole">
         <option value="">Tất cả</option><option value="student" ${S.f.userRole === 'student' ? 'selected' : ''}>Học sinh</option>
         <option value="teacher" ${S.f.userRole === 'teacher' ? 'selected' : ''}>Giáo viên</option><option value="locked" ${S.f.userRole === 'locked' ? 'selected' : ''}>Bị khoá / từ chối</option></select>
