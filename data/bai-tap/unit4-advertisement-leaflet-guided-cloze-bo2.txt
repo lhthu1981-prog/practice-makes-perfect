@@ -1,0 +1,157 @@
+GUIDED CLOZE – UNIT 4 (URBANISATION) – ADVERTISEMENT & LEAFLET (BỘ 2)
+Mỗi bài 6 câu: 2 ngữ pháp · 2 nghĩa của từ (1 danh từ, 1 tính từ) · 1 phrasal verb · 1 collocation.
+Cách nhập: Quản trị → Kho bài tập → 🧩 + Guided cloze → chọn Cấp độ THPT, Lớp 12, Kỹ năng "Ngữ pháp" (hoặc "Đọc") → dán từng phần vào đúng ô (không chép dòng "--- … ---") → Lưu bài tập → Giao cho lớp. Mỗi bài nhập riêng.
+
+══════════════════════════════════════════════
+BÀI 1 – ADVERTISEMENT (câu 1–6)
+══════════════════════════════════════════════
+
+--- Tiêu đề ---
+Unit 4 – Advertisement: Riverside Green Homes
+
+--- Thời gian (phút) ---
+8
+
+--- Hướng dẫn làm bài ---
+Read the following advertisement and choose the option (A, B, C or D) that best fits each of the numbered blanks from 1 to 6.
+
+--- Ngữ liệu (bài đọc) ---
+# RIVERSIDE GREEN HOMES – OPEN DAY
+= Saturday, 5 December 2026 · 8:00 a.m. – 4:00 p.m.
+
+Looking for a new home in the city? Since 2020, the area along the river {{1}} into a lively neighbourhood with shops, cafés and green parks. Our homes are close to offices and schools – and the closer you live to work, the {{2}} time you spend travelling!
+
+Over 500 {{3}} have already moved in and made Riverside their home. Here is what you can enjoy:
+
+- bright, {{4}} flats with large windows and plenty of room for the whole family
+- free electric shuttle buses, so it is easy to {{5}} the area without a car
+- a shared gym and a rooftop garden that everyone can {{6}} use of every day
+
+= Visit our show flats and get a free gift! **Register at the gate.**
+
+--- Câu hỏi và đáp án ---
+1.
+A. grows
+B. grew
+C. has grown
+D. is growing
+Đáp án: C
+Giải thích: Ngữ pháp – thì hiện tại hoàn thành: dấu hiệu "Since 2020" (từ năm 2020 đến nay) → has + V3: has grown. grows (hiện tại đơn), grew (quá khứ đơn) và is growing (hiện tại tiếp diễn) không dùng với "since + mốc thời gian".
+
+2.
+A. less
+B. fewer
+C. least
+D. little
+Đáp án: A
+Giải thích: Ngữ pháp – so sánh kép: The + so sánh hơn …, the + so sánh hơn … (càng … càng …). "time" là danh từ không đếm được → little → less. fewer dùng cho danh từ đếm được số nhiều; least là so sánh nhất; little chưa phải dạng so sánh hơn.
+
+3.
+A. visitors
+B. passengers
+C. spectators
+D. residents
+Đáp án: D
+Giải thích: Nghĩa của từ (danh từ): residents = cư dân, người sống ở một nơi – phù hợp với "have already moved in and made Riverside their home". visitors = khách đến thăm; passengers = hành khách; spectators = khán giả – đều không "dọn đến ở".
+
+4.
+A. crowded
+B. spacious
+C. narrow
+D. remote
+Đáp án: B
+Giải thích: Nghĩa của từ (tính từ): spacious = rộng rãi, khớp với "plenty of room for the whole family". crowded = đông đúc, chật chội; narrow = hẹp; remote = xa xôi, hẻo lánh – đều trái nghĩa với ngữ cảnh.
+
+5.
+A. get around
+B. get over
+C. get by
+D. get away
+Đáp án: A
+Giải thích: Phrasal verb: get around (a place) = đi lại, di chuyển quanh một khu vực → "easy to get around the area without a car". get over = vượt qua (khó khăn, bệnh); get by = xoay xở để sống; get away = trốn thoát, đi nghỉ.
+
+6.
+A. take
+B. do
+C. make
+D. give
+Đáp án: C
+Giải thích: Collocation: make use of something = tận dụng, sử dụng cái gì → "a shared gym and a rooftop garden that everyone can make use of every day". Không nói take / do / give use of.
+
+
+══════════════════════════════════════════════
+BÀI 2 – LEAFLET (câu 7–12)
+══════════════════════════════════════════════
+
+--- Tiêu đề ---
+Unit 4 – Leaflet: Beat the Traffic
+
+--- Thời gian (phút) ---
+8
+
+--- Hướng dẫn làm bài ---
+Read the following leaflet and choose the option (A, B, C or D) that best fits each of the numbered blanks from 7 to 12.
+
+--- Ngữ liệu (bài đọc) ---
+# BEAT THE TRAFFIC
+= A Guide for City Commuters
+
+Our city is growing fast, and getting to work or school is not always easy. Here are some tips from the Urban Transport Office:
+
+- **Use the new buses.** Last year, the city {{7}} three new bus routes, so more neighbourhoods are now connected.
+- **Ride a bike.** The more people cycle, the {{8}} the air becomes.
+- **Avoid peak times.** Traffic {{9}} is one of the biggest problems in our city, especially from 6:30 to 7:30 a.m.
+- **Plan your trip.** Buses are now more {{10}}: they almost always arrive on time, and you can check the timetable online.
+- **Drive less.** Try to {{11}} unnecessary car trips – walk if the journey is under one kilometre.
+- **Go car-free on Sundays.** Leave your car at home and {{12}} public transport.
+
+= Together we can make our city a better place to live!
+
+--- Câu hỏi và đáp án ---
+7.
+A. has opened
+B. opened
+C. opens
+D. had opened
+Đáp án: B
+Giải thích: Ngữ pháp – thì quá khứ đơn: dấu hiệu "Last year" (mốc thời gian đã kết thúc) → opened. has opened (hiện tại hoàn thành) không đi với "last year"; opens là hiện tại đơn; had opened (quá khứ hoàn thành) cần một mốc quá khứ khác làm mốc.
+
+8.
+A. more clean
+B. cleanest
+C. cleanly
+D. cleaner
+Đáp án: D
+Giải thích: Ngữ pháp – so sánh kép: The more people cycle, the cleaner the air becomes. clean là tính từ ngắn → cleaner (không dùng more clean). cleanest là so sánh nhất; cleanly là trạng từ, không đứng sau "the" làm vị ngữ cho "becomes".
+
+9.
+A. congestion
+B. construction
+C. conversation
+D. consumption
+Đáp án: A
+Giải thích: Nghĩa của từ (danh từ): traffic congestion = tắc nghẽn giao thông, khớp với "Avoid peak times" và khung giờ 6:30–7:30. construction = sự xây dựng; conversation = cuộc trò chuyện; consumption = sự tiêu thụ.
+
+10.
+A. crowded
+B. expensive
+C. reliable
+D. noisy
+Đáp án: C
+Giải thích: Nghĩa của từ (tính từ): reliable = đáng tin cậy – giải thích ngay sau dấu hai chấm "they almost always arrive on time" (gần như luôn đến đúng giờ). crowded = đông đúc; expensive = đắt; noisy = ồn ào – không liên quan đến đúng giờ.
+
+11.
+A. look forward to
+B. come up with
+C. run out of
+D. cut down on
+Đáp án: D
+Giải thích: Phrasal verb: cut down on something = cắt giảm, bớt cái gì → "cut down on unnecessary car trips" (bớt những chuyến đi ô tô không cần thiết). look forward to = mong đợi; come up with = nghĩ ra; run out of = hết, cạn.
+
+12.
+A. make
+B. take
+C. do
+D. go
+Đáp án: B
+Giải thích: Collocation: take public transport / take the bus = đi phương tiện công cộng. Không nói make / do public transport; "go" cần giới từ: go by public transport.
